@@ -9,7 +9,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Runner stage
+#Runner stage
 FROM node:20-alpine AS runner
 
 WORKDIR /app
