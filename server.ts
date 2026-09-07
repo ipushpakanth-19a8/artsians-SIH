@@ -634,8 +634,8 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`KALAtech Artisan Market Linkage Server running on http://0.0.0.0:${PORT}`);
+  app.listen(PORT, () => {
+    console.log(`KALAtech Artisan Market Linkage Server running on http://localhost:${PORT}`);
   });
 }
 
