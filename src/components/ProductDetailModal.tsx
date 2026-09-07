@@ -278,7 +278,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         Master artisan {product.artisan_name} will contact you on WhatsApp/Phone.
                       </p>
                       <a
-                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Hello ${product.artisan_name}, I am ${buyerName} and I submitted an order enquiry for "${product.title}" via Antigravity.`)}`}
+                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Hello ${product.artisan_name}, I am ${buyerName} and I submitted an order enquiry for "${product.title}" via KALAtech.`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-block mt-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm"

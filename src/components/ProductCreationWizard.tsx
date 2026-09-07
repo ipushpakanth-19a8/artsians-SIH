@@ -74,7 +74,7 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
   // Check for offline saved draft on mount (T21)
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('antigravity_artisan_draft');
+      const saved = localStorage.getItem('kalatech_artisan_draft');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && (parsed.rawImage || parsed.title)) {
@@ -110,7 +110,7 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
         savedAt: new Date().toISOString()
       };
       try {
-        localStorage.setItem('antigravity_artisan_draft', JSON.stringify(draft));
+        localStorage.setItem('kalatech_artisan_draft', JSON.stringify(draft));
       } catch (e) {
         // quota exceeded / private mode
       }
@@ -119,7 +119,7 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
 
   const resumeSavedDraft = () => {
     try {
-      const saved = localStorage.getItem('antigravity_artisan_draft');
+      const saved = localStorage.getItem('kalatech_artisan_draft');
       if (saved) {
         const d = JSON.parse(saved);
         if (d.productId) setProductId(d.productId);
@@ -146,7 +146,7 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
   };
 
   const discardSavedDraft = () => {
-    localStorage.removeItem('antigravity_artisan_draft');
+    localStorage.removeItem('kalatech_artisan_draft');
     setHasSavedDraft(false);
   };
 
@@ -1138,7 +1138,7 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
             <button
               id="view-marketplace-btn"
               onClick={() => {
-                localStorage.removeItem('antigravity_artisan_draft');
+                localStorage.removeItem('kalatech_artisan_draft');
                 if (publishedProduct) onFinished(publishedProduct);
               }}
               className="flex-1 py-3.5 px-6 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold rounded-2xl shadow-md text-sm transition-all"
@@ -1148,7 +1148,7 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
             <button
               id="return-studio-btn"
               onClick={() => {
-                localStorage.removeItem('antigravity_artisan_draft');
+                localStorage.removeItem('kalatech_artisan_draft');
                 if (publishedProduct) onFinished(publishedProduct);
               }}
               className="py-3.5 px-6 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold rounded-2xl text-sm transition-all"

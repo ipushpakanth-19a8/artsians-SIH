@@ -128,7 +128,7 @@ export interface UIStrings {
 
 export const translations: Record<LanguageCode, UIStrings> = {
   en: {
-    appName: "Antigravity",
+    appName: "KALAtech",
     tagline: "AI Market Linkage & Smart Cataloging for Artisans",
     forArtisans: "Artisan Studio",
     forBuyers: "Buyer Marketplace",
@@ -244,7 +244,7 @@ export const translations: Record<LanguageCode, UIStrings> = {
   },
   
   hi: {
-    appName: "Antigravity",
+    appName: "KALAtech",
     tagline: "कारीगरों के लिए AI बाज़ार लिंकेज एवं स्मार्ट कैटलॉगिंग",
     forArtisans: "कारीगर स्टूडियो (Artisan)",
     forBuyers: "ग्राहक बाज़ार (Buyer)",
@@ -360,7 +360,7 @@ export const translations: Record<LanguageCode, UIStrings> = {
   },
   
   te: {
-    appName: "Antigravity",
+    appName: "KALAtech",
     tagline: "చేతివృత్తి కళాకారుల కోసం AI మార్కెట్ లింకేజ్ & స్మార్ట్ క్యాటలాగ్",
     forArtisans: "కళాకారుల స్టూడియో (Artisan)",
     forBuyers: "కొనుగోలుదారుల మార్కెట్ (Buyer)",

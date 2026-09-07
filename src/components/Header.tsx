@@ -53,12 +53,12 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-3 w-full md:w-auto justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-600 to-orange-700 flex items-center justify-center shadow-lg shadow-orange-950/40 text-amber-100 font-black text-xl border border-amber-500/30">
-                AG
+                KT
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-extrabold tracking-tight text-lg text-white font-['Rozha_One',serif]">
-                    Antigravity
+                    KALAtech
                   </span>
                   <span className="hidden sm:inline-block px-2 py-0.5 text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full">
                     Artisan Market Linkage

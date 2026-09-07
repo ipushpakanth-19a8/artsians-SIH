@@ -28,7 +28,7 @@ export const EvaluatorTourModal: React.FC<EvaluatorTourModalProps> = ({
       title: 'Low-Literacy Onboarding & Trilingual Switch',
       tag: 'Section 4.1 & 9',
       wow: 'Accessibility & Zero-Friction Entry',
-      desc: 'Marginalized craftspeople cannot fill out complex English business forms. Antigravity introduces an icon-first, voice-assisted trilingual onboarding flow (English, Hindi, Telugu) with instant demo phone OTP authorization.',
+      desc: 'Marginalized craftspeople cannot fill out complex English business forms. KALAtech introduces an icon-first, voice-assisted trilingual onboarding flow (English, Hindi, Telugu) with instant demo phone OTP authorization.',
       actionLabel: 'Open Artisan Onboarding Screen',
       actionCode: 1,
       evaluatorNotes: 'Evaluator Focus: Notice how every action button features large tap targets, audio narration prompts, and zero required English literacy.'

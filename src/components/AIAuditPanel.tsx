@@ -56,11 +56,11 @@ export const AIAuditPanel: React.FC<AIAuditPanelProps> = ({ language }) => {
   const evaluatorFaqs = [
     {
       q: 'Where does your market pricing data come from?',
-      a: 'Antigravity integrates a curated market benchmark dataset built from official Indian handicraft cooperative reports (TRIFED, Dastkar, APCO, All India Artisans and Craftworkers Association), verified fair-trade boutique prices (Fabindia, Jaypore), and direct master artisan field interviews across 6 major craft clusters. This grounded reference set ensures AI pricing is rooted in verifiable real-world trade numbers rather than uncalibrated hallucinations.'
+      a: 'KALAtech integrates a curated market benchmark dataset built from official Indian handicraft cooperative reports (TRIFED, Dastkar, APCO, All India Artisans and Craftworkers Association), verified fair-trade boutique prices (Fabindia, Jaypore), and direct master artisan field interviews across 6 major craft clusters. This grounded reference set ensures AI pricing is rooted in verifiable real-world trade numbers rather than uncalibrated hallucinations.'
     },
     {
       q: 'Why is AI strictly necessary for this solution?',
-      a: 'Rural artisans frequently face literacy hurdles and digital exclusion. Standard e-commerce platforms require typing English descriptions, specifying SEO keywords, estimating retail margins, and creating foreign marketing copy. Antigravity uses Gemini Multimodal Vision to inspect the craft photo directly—extracting motif significance, weave structure, and material identity in under 2 seconds—and automates trilingual translation into English, Hindi, and Telugu.'
+      a: 'Rural artisans frequently face literacy hurdles and digital exclusion. Standard e-commerce platforms require typing English descriptions, specifying SEO keywords, estimating retail margins, and creating foreign marketing copy. KALAtech uses Gemini Multimodal Vision to inspect the craft photo directly—extracting motif significance, weave structure, and material identity in under 2 seconds—and automates trilingual translation into English, Hindi, and Telugu.'
     },
     {
       q: 'How does the Smart Pricing Recommendation calculate fair prices?',

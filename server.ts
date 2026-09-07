@@ -17,7 +17,7 @@ async function startServer() {
 
   // Health check
   app.get("/api/health", (_req, res) => {
-    res.json({ status: "ok", app: "Antigravity Artisan Market Linkage", timestamp: new Date().toISOString() });
+    res.json({ status: "ok", app: "KALAtech Artisan Market Linkage", timestamp: new Date().toISOString() });
   });
 
   // T03: Auth (OTP Request & Verify)
@@ -522,7 +522,7 @@ async function startServer() {
     res.json({
       success: true,
       razorpay_order_id: razorpayOrderId,
-      key_id: "rzp_test_antigravity_artisan",
+      key_id: "rzp_test_kalatech_artisan",
       amount: totalAmount,
       currency: "INR",
       product: {
@@ -635,7 +635,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Antigravity Artisan Market Linkage Server running on http://0.0.0.0:${PORT}`);
+    console.log(`KALAtech Artisan Market Linkage Server running on http://0.0.0.0:${PORT}`);
   });
 }
 

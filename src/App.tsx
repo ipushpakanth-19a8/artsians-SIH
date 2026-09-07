@@ -213,7 +213,7 @@ export default function App() {
       <footer className="border-t border-stone-200 bg-white py-6 px-4 text-center text-xs text-stone-500 pb-20 md:pb-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-stone-800 font-['Rozha_One',serif]">Antigravity</span>
+            <span className="font-bold text-stone-800 font-['Rozha_One',serif]">KALAtech</span>
             <span>• Multimodal Artisan Market Linkage & Smart Cataloging Mobile App</span>
           </div>
           <div className="flex items-center gap-3">

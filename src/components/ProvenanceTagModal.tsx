@@ -156,7 +156,7 @@ export const ProvenanceTagModal: React.FC<ProvenanceTagModalProps> = ({
             {/* Footer Assurance Tag */}
             <div className="text-center pt-2 text-[10px] text-stone-500 flex items-center justify-center gap-1.5 border-t border-stone-200">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Certified GI / Fair Trade Direct Handloom • Antigravity AI Linkage</span>
+              <span>Certified GI / Fair Trade Direct Handloom • KALAtech AI Linkage</span>
             </div>
 
           </div>
