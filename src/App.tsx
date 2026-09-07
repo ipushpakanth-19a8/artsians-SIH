@@ -72,7 +72,13 @@ export default function App() {
         {/* Navigation & Toolbar */}
         <Header
           currentRole={currentRole}
-          setRole={setRole}
+          setRole={(role) => {
+            setRole(role);
+            if (role === 'artisan') {
+              setIsCreatingProduct(false);
+              setShowOnboarding(false);
+            }
+          }}
           language={language}
           setLanguage={setLanguage}
           isMobileFrame={isMobileFrame}
@@ -129,6 +135,11 @@ export default function App() {
           {currentRole === 'mobile-design' && (
             <MobileAppDesign
               language={language}
+              onNavigateToStudio={() => {
+                setRole('artisan');
+                setIsCreatingProduct(false);
+                setShowOnboarding(false);
+              }}
               onNavigateToWizard={() => {
                 setRole('artisan');
                 setIsCreatingProduct(true);

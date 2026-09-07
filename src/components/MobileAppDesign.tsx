@@ -4,13 +4,14 @@ import {
   ShoppingBag, QrCode, ArrowRight, CheckCircle2, ChevronRight,
   TrendingUp, Share2, Phone, MessageSquare, Sliders, Layers,
   ExternalLink, Info, Check, Play, RotateCcw, Battery, Wifi, Signal,
-  Palette, Grid, Maximize2, Apple, Disc, ArrowLeft
+  Palette, Grid, Maximize2, Apple, Disc, ArrowLeft, Hammer
 } from 'lucide-react';
 import { LanguageCode } from '../types';
 import { translations, speakText } from '../lib/i18n';
 
 interface MobileAppDesignProps {
   language: LanguageCode;
+  onNavigateToStudio?: () => void;
   onNavigateToWizard?: () => void;
   onNavigateToMarket?: () => void;
 }
@@ -21,6 +22,7 @@ type ActiveTab = 'simulator' | 'specs' | 'flows';
 
 export const MobileAppDesign: React.FC<MobileAppDesignProps> = ({
   language,
+  onNavigateToStudio,
   onNavigateToWizard,
   onNavigateToMarket
 }) => {
@@ -36,18 +38,34 @@ export const MobileAppDesign: React.FC<MobileAppDesignProps> = ({
   const [simMaterialCost, setSimMaterialCost] = useState(850);
   const [simLaborHours, setSimLaborHours] = useState(16);
   const [simHourlyWage, setSimHourlyWage] = useState(85);
+  const [cameraFlash, setCameraFlash] = useState(false);
+  const [simVoiceRecording, setSimVoiceRecording] = useState(false);
+  const [simLanguage, setSimLanguage] = useState<LanguageCode>(language);
 
   const calculatedBase = simMaterialCost + (simLaborHours * simHourlyWage);
   const calculatedRecommended = Math.round(calculatedBase * 1.25);
   const middlemanCutLoss = Math.round(calculatedRecommended * 0.55);
+
+  const handleShutterClick = () => {
+    setCameraFlash(true);
+    setTimeout(() => setCameraFlash(false), 220);
+    setSimRawPhoto(!simRawPhoto);
+  };
 
   const handleSimVoice = (text: string) => {
     if (simAudioPlaying) {
       setSimAudioPlaying(false);
     } else {
       setSimAudioPlaying(true);
-      speakText(text, language);
+      speakText(text, simLanguage);
       setTimeout(() => setSimAudioPlaying(false), 4500);
+    }
+  };
+
+  const handleToggleVoiceRecord = () => {
+    setSimVoiceRecording(!simVoiceRecording);
+    if (!simVoiceRecording) {
+      setTimeout(() => setSimVoiceRecording(false), 4000);
     }
   };
 
@@ -70,11 +88,24 @@ export const MobileAppDesign: React.FC<MobileAppDesignProps> = ({
             </p>
           </div>
 
-          {/* Top Mode Tabs */}
-          <div className="flex flex-wrap items-center gap-2 p-1.5 bg-stone-950/80 border border-stone-800 rounded-2xl shrink-0">
-            <button
-              id="tab-mobile-simulator-btn"
-              onClick={() => setActiveTab('simulator')}
+          {/* Top Mode Tabs & Studio Return */}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {onNavigateToStudio && (
+              <button
+                id="mobile-back-to-artisan-studio-btn"
+                onClick={onNavigateToStudio}
+                className="px-3.5 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-orange-950/40 border border-amber-400 transition-transform active:scale-95"
+                title="Return to Artisan Studio Dashboard"
+              >
+                <Hammer className="w-3.5 h-3.5 text-white" />
+                <span>Artisan Studio</span>
+              </button>
+            )}
+
+            <div className="flex flex-wrap items-center gap-2 p-1.5 bg-stone-950/80 border border-stone-800 rounded-2xl">
+              <button
+                id="tab-mobile-simulator-btn"
+                onClick={() => setActiveTab('simulator')}
               className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
                 activeTab === 'simulator'
                   ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-stone-950 shadow-md shadow-orange-950/40'
@@ -113,8 +144,9 @@ export const MobileAppDesign: React.FC<MobileAppDesignProps> = ({
           </div>
         </div>
       </div>
+    </div>
 
-      {/* TAB 1: INTERACTIVE SMARTPHONE SIMULATOR */}
+    {/* TAB 1: INTERACTIVE SMARTPHONE SIMULATOR */}
       {activeTab === 'simulator' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
@@ -255,7 +287,32 @@ export const MobileAppDesign: React.FC<MobileAppDesignProps> = ({
                   
                   {/* SCREEN 1: ARTISAN STUDIO HOME */}
                   {currentScreen === 'studio' && (
-                    <div className="space-y-4 animate-fadeIn">
+                    <div className="space-y-3.5 animate-fadeIn">
+                      {/* In-Phone Vernacular Language Switcher */}
+                      <div className="flex items-center justify-between px-1 text-[10px]">
+                        <span className="text-stone-500 font-bold">App Language</span>
+                        <div className="flex items-center gap-1 bg-stone-200/80 p-0.5 rounded-lg">
+                          <button
+                            onClick={() => setSimLanguage('en')}
+                            className={`px-2 py-0.5 rounded font-bold transition-all ${simLanguage === 'en' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600'}`}
+                          >
+                            EN
+                          </button>
+                          <button
+                            onClick={() => setSimLanguage('hi')}
+                            className={`px-2 py-0.5 rounded font-bold transition-all ${simLanguage === 'hi' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600'}`}
+                          >
+                            हिन्दी
+                          </button>
+                          <button
+                            onClick={() => setSimLanguage('te')}
+                            className={`px-2 py-0.5 rounded font-bold transition-all ${simLanguage === 'te' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600'}`}
+                          >
+                            తెలుగు
+                          </button>
+                        </div>
+                      </div>
+
                       {/* Vernacular Greeting Card */}
                       <div className="bg-gradient-to-br from-stone-900 to-stone-850 text-white p-4 rounded-2xl shadow-md border border-stone-800 relative overflow-hidden">
                         <div className="flex items-center justify-between">
@@ -267,15 +324,15 @@ export const MobileAppDesign: React.FC<MobileAppDesignProps> = ({
                             />
                             <div>
                               <h4 className="text-xs font-bold text-white font-['Rozha_One',serif]">
-                                Namaste, Rameshwar ji
+                                {simLanguage === 'te' ? 'నమస్కారం, రామేశ్వర్ రావు గారు' : simLanguage === 'hi' ? 'नमस्ते, रामेश्वर जी' : 'Namaste, Rameshwar ji'}
                               </h4>
                               <p className="text-[10px] text-amber-300">Pochampally Weaving Guild</p>
                             </div>
                           </div>
                           <button
                             onClick={() => handleSimVoice("Namaste Rameshwar ji! You have 3 buyer inquiries today and ₹42,800 direct revenue.")}
-                            className={`p-2 rounded-xl ${simAudioPlaying ? 'bg-amber-500 text-stone-950 animate-pulse' : 'bg-stone-800 text-amber-400'}`}
-                            title="Listen in Telugu"
+                            className={`p-2 rounded-xl transition-all ${simAudioPlaying ? 'bg-amber-500 text-stone-950 animate-pulse' : 'bg-stone-800 text-amber-400'}`}
+                            title="Listen in Selected Language"
                           >
                             <Volume2 className="w-3.5 h-3.5" />
                           </button>
@@ -291,6 +348,42 @@ export const MobileAppDesign: React.FC<MobileAppDesignProps> = ({
                             <span className="text-stone-400 text-[10px]">Middleman Cut Saved</span>
                             <p className="text-amber-400 font-extrabold text-sm">+₹18,200</p>
                           </div>
+                        </div>
+                      </div>
+
+                      {/* Interactive Low-Literacy Voice Assistant Tile */}
+                      <div className={`p-3 rounded-2xl border transition-all ${
+                        simVoiceRecording
+                          ? 'bg-red-500/10 border-red-500 text-red-950 shadow-sm'
+                          : 'bg-white border-stone-200 shadow-xs'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <button
+                              onClick={handleToggleVoiceRecord}
+                              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                                simVoiceRecording ? 'bg-red-600 text-white animate-pulse' : 'bg-amber-500 text-stone-950'
+                              }`}
+                            >
+                              <Mic className="w-4 h-4" />
+                            </button>
+                            <div>
+                              <p className="text-xs font-bold text-stone-900">
+                                {simVoiceRecording ? "Recording Voice..." : "Tap Mic to Speak Craft Details"}
+                              </p>
+                              <p className="text-[10px] text-stone-500">
+                                {simVoiceRecording ? "AI listening in Telugu / Hindi" : "Zero manual typing needed"}
+                              </p>
+                            </div>
+                          </div>
+                          {simVoiceRecording && (
+                            <div className="flex items-center gap-1 h-5">
+                              <div className="w-1 bg-red-500 rounded-full animate-wave-1" />
+                              <div className="w-1 bg-red-500 rounded-full animate-wave-2" />
+                              <div className="w-1 bg-red-500 rounded-full animate-wave-3" />
+                              <div className="w-1 bg-red-500 rounded-full animate-wave-4" />
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -356,14 +449,19 @@ export const MobileAppDesign: React.FC<MobileAppDesignProps> = ({
                     <div className="space-y-3 animate-fadeIn">
                       <div className="relative rounded-2xl overflow-hidden bg-stone-950 aspect-[4/5] border border-stone-800 shadow-inner flex flex-col justify-between p-3">
                         
+                        {/* Shutter Camera Flash Strobe */}
+                        {cameraFlash && (
+                          <div className="absolute inset-0 bg-white z-50 pointer-events-none animate-ping" />
+                        )}
+
                         {/* Camera Top HUD */}
                         <div className="flex items-center justify-between text-white text-xs z-20">
                           <span className="px-2 py-0.5 bg-black/60 backdrop-blur rounded-full text-[10px] font-bold text-amber-400 flex items-center gap-1">
                             <Sparkles className="w-3 h-3" /> Auto AI Lighting
                           </span>
                           <button
-                            onClick={() => setSimRawPhoto(!simRawPhoto)}
-                            className="px-2.5 py-1 bg-white/20 hover:bg-white/30 backdrop-blur text-white text-[10px] font-bold rounded-full border border-white/30"
+                            onClick={handleShutterClick}
+                            className="px-2.5 py-1 bg-white/20 hover:bg-white/30 backdrop-blur text-white text-[10px] font-bold rounded-full border border-white/30 transition-all"
                           >
                             {simRawPhoto ? "Show Studio AI" : "Show Raw Photo"}
                           </button>
@@ -402,10 +500,11 @@ export const MobileAppDesign: React.FC<MobileAppDesignProps> = ({
                             <Volume2 className="w-4 h-4" />
                           </button>
 
-                          {/* Shutter Button */}
+                          {/* Shutter Button with Flash Effect */}
                           <button
-                            onClick={() => setSimRawPhoto(!simRawPhoto)}
+                            onClick={handleShutterClick}
                             className="w-12 h-12 rounded-full border-4 border-white bg-amber-500 shadow-lg flex items-center justify-center active:scale-90 transition-transform"
+                            title="Snap & Enhance Craft"
                           >
                             <div className="w-9 h-9 rounded-full bg-white" />
                           </button>
@@ -722,36 +821,96 @@ export const MobileAppDesign: React.FC<MobileAppDesignProps> = ({
             </div>
           </div>
 
-          {/* Section 2: Low-Literacy Ergonomics & Design Rules */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-700 flex items-center justify-center font-black">
-                48dp+
+          {/* Section 3: Typography Specimens & Vernacular Hierarchy */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-6">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-stone-100 text-stone-900 border border-stone-300 rounded-full text-xs font-bold mb-2">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                <span>Vernacular Typography Stack</span>
               </div>
-              <h3 className="text-sm font-bold text-stone-900">Minimum 48x48dp Touch Targets</h3>
-              <p className="text-xs text-stone-600 leading-relaxed">
-                Rural weavers, potters, and sculptors frequently have calloused or clay-dusted fingers. All interactive buttons, camera shutters, and audio triggers adhere to strict 48dp+ hit slates.
+              <h2 className="text-xl font-black font-['Rozha_One',serif] text-stone-900">
+                Heritage Indian Script & Western Latin Font Pairing
+              </h2>
+              <p className="text-xs text-stone-500 mt-1">
+                Combining majestic traditional Indian serif headlines with clean, highly legible modern geometric numerals and vernacular scripts.
               </p>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-orange-500/10 text-orange-700 flex items-center justify-center font-black">
-                <Volume2 className="w-5 h-5" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="p-5 bg-stone-50 rounded-2xl border border-stone-200 space-y-2">
+                <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Heritage Headline Display</span>
+                <p className="font-['Rozha_One',serif] text-2xl font-black text-stone-900 leading-tight">
+                  कलाटेक हस्तशिल्प
+                </p>
+                <p className="font-['Rozha_One',serif] text-xl font-black text-stone-800">
+                  KALAtech Heritage
+                </p>
+                <p className="text-[11px] text-stone-500 font-sans">
+                  Rozha One (Google Fonts) — Authentic Indian serif display inspired by historical woodblock carved signboards.
+                </p>
               </div>
-              <h3 className="text-sm font-bold text-stone-900">Audio-First Vernacular Feedback</h3>
-              <p className="text-xs text-stone-600 leading-relaxed">
-                Zero reliance on reading lengthy technical texts. Every price breakdown and status prompt has a high-visibility speaker icon speaking natural colloquial Telugu, Hindi, and English.
-              </p>
-            </div>
 
-            <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center font-black">
-                <CheckCircle2 className="w-5 h-5" />
+              <div className="p-5 bg-stone-50 rounded-2xl border border-stone-200 space-y-2">
+                <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Vernacular Script Legibility</span>
+                <p className="font-['Noto_Sans_Telugu',sans-serif] text-base font-bold text-stone-900 leading-relaxed">
+                  చేనేత వస్త్రాల సాంప్రదాయం • పోచంపల్లి ఇక్కత్
+                </p>
+                <p className="font-['Noto_Sans_Devanagari',sans-serif] text-base font-bold text-stone-900 leading-relaxed">
+                  हथकरघा परंपरा • उचित मूल्य गारंटी
+                </p>
+                <p className="text-[11px] text-stone-500 font-sans">
+                  Noto Sans Devanagari & Telugu — High stroke contrast for crystal clear reading on low-resolution Android screens.
+                </p>
               </div>
-              <h3 className="text-sm font-bold text-stone-900">Offline-First SQLite Architecture</h3>
-              <p className="text-xs text-stone-600 leading-relaxed">
-                Craft workshops in remote villages often experience intermittent 2G/3G connectivity. Photos, voice recordings, and price drafts are queued in local phone storage and sync seamlessly upon reconnection.
-              </p>
+
+              <div className="p-5 bg-stone-50 rounded-2xl border border-stone-200 space-y-2">
+                <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Numeric & Functional Sans</span>
+                <p className="font-['Plus_Jakarta_Sans',sans-serif] text-2xl font-black text-amber-800 font-mono">
+                  ₹42,800 • 100% Direct
+                </p>
+                <p className="text-xs text-stone-700 font-semibold">
+                  Zero commission • Tamper-proof GI Hash 0x89f2
+                </p>
+                <p className="text-[11px] text-stone-500 font-sans">
+                  Plus Jakarta Sans & JetBrains Mono — High tabular number distinction preventing misreading of pricing decimals.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 4: Tactile Button Interaction Matrix */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-stone-900">Tactile Touch States (Ergonomic Haptic Design)</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
+                <span className="text-[10px] text-stone-500 font-bold block">1. Normal Rest</span>
+                <button className="w-full py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold rounded-xl text-xs shadow-md">
+                  Take Craft Photo
+                </button>
+              </div>
+
+              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
+                <span className="text-[10px] text-stone-500 font-bold block">2. Pressed / Active (Haptic 20ms)</span>
+                <button className="w-full py-2.5 bg-amber-700 text-white font-bold rounded-xl text-xs shadow-inner scale-95 transition-transform">
+                  Pressed (0.95 Scale)
+                </button>
+              </div>
+
+              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
+                <span className="text-[10px] text-stone-500 font-bold block">3. Voice Listening</span>
+                <button className="w-full py-2.5 bg-red-600 text-white font-bold rounded-xl text-xs shadow-md flex items-center justify-center gap-1.5 animate-pulse">
+                  <Mic className="w-3.5 h-3.5" />
+                  <span>Listening...</span>
+                </button>
+              </div>
+
+              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
+                <span className="text-[10px] text-stone-500 font-bold block">4. Direct WhatsApp</span>
+                <button className="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md flex items-center justify-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>1-Tap Order</span>
+                </button>
+              </div>
             </div>
           </div>
 

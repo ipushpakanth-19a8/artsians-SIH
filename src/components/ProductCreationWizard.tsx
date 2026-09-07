@@ -483,10 +483,12 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
         </div>
 
         <button
+          id="wizard-back-to-artisan-studio-btn"
           onClick={onCancel}
-          className="text-stone-500 hover:text-stone-800 font-bold"
+          className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-900 rounded-xl font-bold flex items-center gap-1.5 text-xs transition-colors shadow-xs"
         >
-          Cancel & Close
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Artisan Studio</span>
         </button>
       </div>
       

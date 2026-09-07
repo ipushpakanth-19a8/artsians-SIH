@@ -106,14 +106,15 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="nav-artisan-btn"
               onClick={() => setRole('artisan')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 currentRole === 'artisan'
-                  ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-sm'
-                  : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/50'
+                  ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-sm ring-1 ring-amber-400/50'
+                  : 'text-stone-300 hover:text-white hover:bg-stone-800/80 bg-stone-900/60'
               }`}
+              title="Open Artisan Studio Dashboard"
             >
-              <Hammer className="w-3.5 h-3.5" />
-              <span>{t.forArtisans}</span>
+              <Hammer className="w-3.5 h-3.5 text-amber-400" />
+              <span>Artisan Studio</span>
             </button>
 
             <button
