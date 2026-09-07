@@ -6,13 +6,14 @@ import { ArtisanDashboard } from './components/ArtisanDashboard';
 import { ProductCreationWizard } from './components/ProductCreationWizard';
 import { BuyerMarketplace } from './components/BuyerMarketplace';
 import { AIAuditPanel } from './components/AIAuditPanel';
+import { MobileAppDesign } from './components/MobileAppDesign';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { EvaluatorTourModal } from './components/EvaluatorTourModal';
 import { LanguageCode, Artisan, Product } from './types';
 import { translations } from './lib/i18n';
 
 export default function App() {
-  const [currentRole, setRole] = useState<'artisan' | 'buyer' | 'audit'>('artisan');
+  const [currentRole, setRole] = useState<'artisan' | 'buyer' | 'audit' | 'mobile-design'>('artisan');
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [isMobileFrame, setIsMobileFrame] = useState<boolean>(false);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
@@ -106,6 +107,7 @@ export default function App() {
                   language={language}
                   onAddNewProduct={() => setIsCreatingProduct(true)}
                   onViewProduct={(prod) => setSelectedProductModal(prod)}
+                  onOpenMobileDesign={() => setRole('mobile-design')}
                 />
               )}
             </>
@@ -122,6 +124,19 @@ export default function App() {
 
           {currentRole === 'audit' && (
             <AIAuditPanel language={language} />
+          )}
+
+          {currentRole === 'mobile-design' && (
+            <MobileAppDesign
+              language={language}
+              onNavigateToWizard={() => {
+                setRole('artisan');
+                setIsCreatingProduct(true);
+              }}
+              onNavigateToMarket={() => {
+                setRole('buyer');
+              }}
+            />
           )}
         </main>
       </div>
@@ -162,6 +177,20 @@ export default function App() {
 
         <button
           onClick={() => {
+            setRole('mobile-design');
+            setShowOnboarding(false);
+            setIsCreatingProduct(false);
+          }}
+          className={`flex flex-col items-center gap-0.5 p-1 transition-colors ${
+            currentRole === 'mobile-design' ? 'text-amber-400 font-black' : 'hover:text-white'
+          }`}
+        >
+          <Smartphone className="w-4 h-4" />
+          <span>App Design</span>
+        </button>
+
+        <button
+          onClick={() => {
             setRole('artisan');
             setShowOnboarding(false);
             setIsCreatingProduct(true);
@@ -198,14 +227,6 @@ export default function App() {
         >
           <ShieldCheck className="w-4 h-4" />
           <span>Audit</span>
-        </button>
-
-        <button
-          onClick={() => setShowEvaluatorTour(true)}
-          className="flex flex-col items-center gap-0.5 p-1 text-amber-300 hover:text-amber-100 transition-colors"
-        >
-          <Sparkles className="w-4 h-4" />
-          <span>5-Min Tour</span>
         </button>
       </div>
 

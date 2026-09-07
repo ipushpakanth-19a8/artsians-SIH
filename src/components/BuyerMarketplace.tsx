@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Search, Filter, MapPin, Eye, ShoppingBag, Sparkles,
-  ArrowUpDown, CheckCircle2, ChevronRight, SlidersHorizontal
+  ArrowUpDown, CheckCircle2, ChevronRight, SlidersHorizontal, MessageSquare
 } from 'lucide-react';
 import { LanguageCode, Product } from '../types';
 import { translations } from '../lib/i18n';
@@ -172,8 +172,15 @@ export const BuyerMarketplace: React.FC<BuyerMarketplaceProps> = ({
                     alt={product.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute top-3 left-3 bg-stone-950/80 backdrop-blur text-white px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border border-white/10">
-                    {product.category}
+                  <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                    <div className="bg-stone-950/80 backdrop-blur text-white px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border border-white/10">
+                      {product.category}
+                    </div>
+                    {product.provenance_hash && (
+                      <div className="bg-amber-500/90 text-stone-950 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow">
+                        GI Verified
+                      </div>
+                    )}
                   </div>
                   <div className="absolute bottom-3 right-3 bg-amber-600 text-white px-2.5 py-1 rounded-xl text-xs font-black shadow-md font-mono">
                     ₹{product.final_price?.toLocaleString()}
@@ -211,14 +218,28 @@ export const BuyerMarketplace: React.FC<BuyerMarketplaceProps> = ({
                       {product.material}
                     </span>
 
-                    <button
-                      id={`view-craft-btn-${product.id}`}
-                      onClick={() => setSelectedProduct(product)}
-                      className="px-3.5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold flex items-center gap-1 transition-all shrink-0"
-                    >
-                      <span>{t.directEnquiry}</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        title="Chat with Artisan on WhatsApp"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const msg = `Hi ${product.artisan_name}, I am interested in purchasing ${product.title} (₹${product.final_price}) on KALAtech. Is this craft available?`;
+                          window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+                        }}
+                        className="p-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition-all shrink-0"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        id={`view-craft-btn-${product.id}`}
+                        onClick={() => setSelectedProduct(product)}
+                        className="px-3.5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold flex items-center gap-1 transition-all shrink-0 shadow-sm"
+                      >
+                        <span>{t.directEnquiry}</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 

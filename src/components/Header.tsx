@@ -4,8 +4,8 @@ import { LanguageCode } from '../types';
 import { translations, speakText, stopSpeaking } from '../lib/i18n';
 
 interface HeaderProps {
-  currentRole: 'artisan' | 'buyer' | 'audit';
-  setRole: (role: 'artisan' | 'buyer' | 'audit') => void;
+  currentRole: 'artisan' | 'buyer' | 'audit' | 'mobile-design';
+  setRole: (role: 'artisan' | 'buyer' | 'audit' | 'mobile-design') => void;
   language: LanguageCode;
   setLanguage: (lang: LanguageCode) => void;
   isMobileFrame: boolean;
@@ -38,6 +38,8 @@ export const Header: React.FC<HeaderProps> = ({
         ? `${t.appName}. ${t.welcomeTitle}. ${t.welcomeSub}`
         : currentRole === 'buyer'
         ? `${t.browseCatalog}. ${t.searchCrafts}`
+        : currentRole === 'mobile-design'
+        ? "KALAtech Native Mobile App Design with offline-first vernacular voice architecture."
         : `${t.evaluatorDefense}. AI audit trail and pricing benchmarks.`;
       speakText(speech, language);
       setTimeout(() => setIsSpeaking(false), 8000);
@@ -51,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* Logo & Brand */}
           <div className="flex items-center gap-3 w-full md:w-auto justify-between">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setRole('artisan')}>
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-600 to-orange-700 flex items-center justify-center shadow-lg shadow-orange-950/40 text-amber-100 font-black text-xl border border-amber-500/30">
                 KT
               </div>
@@ -100,11 +102,11 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Center: Main View Navigation */}
-          <nav className="flex items-center gap-1 p-1 bg-stone-950/70 border border-stone-800 rounded-xl w-full sm:w-auto justify-center">
+          <nav className="flex items-center gap-1 p-1 bg-stone-950/70 border border-stone-800 rounded-xl w-full sm:w-auto justify-center overflow-x-auto">
             <button
               id="nav-artisan-btn"
               onClick={() => setRole('artisan')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 currentRole === 'artisan'
                   ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-sm'
                   : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/50'
@@ -117,7 +119,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="nav-buyer-btn"
               onClick={() => setRole('buyer')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 currentRole === 'buyer'
                   ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-sm'
                   : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/50'
@@ -128,9 +130,25 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
+              id="nav-mobile-design-btn"
+              onClick={() => setRole('mobile-design')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                currentRole === 'mobile-design'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-stone-950 font-black shadow-sm'
+                  : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/50'
+              }`}
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>Mobile App Design</span>
+              <span className="hidden sm:inline px-1.5 py-0.5 bg-amber-400/20 text-amber-300 text-[10px] rounded-full">
+                App
+              </span>
+            </button>
+
+            <button
               id="nav-audit-btn"
               onClick={() => setRole('audit')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 currentRole === 'audit'
                   ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-sm'
                   : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/50'

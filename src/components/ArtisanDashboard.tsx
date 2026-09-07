@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Plus, Eye, MessageSquare, TrendingUp, ShieldCheck, Share2,
   ExternalLink, Phone, Mail, MapPin, Clock, Sparkles, Volume2, CheckCircle2,
-  QrCode, CreditCard, Package, DollarSign
+  QrCode, CreditCard, Package, DollarSign, Smartphone
 } from 'lucide-react';
 import { LanguageCode, Product, Artisan, Enquiry, Order } from '../types';
 import { translations, speakText } from '../lib/i18n';
@@ -13,13 +13,15 @@ interface ArtisanDashboardProps {
   language: LanguageCode;
   onAddNewProduct: () => void;
   onViewProduct: (product: Product) => void;
+  onOpenMobileDesign?: () => void;
 }
 
 export const ArtisanDashboard: React.FC<ArtisanDashboardProps> = ({
   artisan,
   language,
   onAddNewProduct,
-  onViewProduct
+  onViewProduct,
+  onOpenMobileDesign
 }) => {
   const t = translations[language];
 
@@ -173,6 +175,38 @@ export const ArtisanDashboard: React.FC<ArtisanDashboardProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Handheld Mobile App Highlight Banner */}
+      {onOpenMobileDesign && (
+        <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-transparent border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-amber-500 text-stone-950 rounded-xl font-bold shrink-0 shadow-sm">
+              <Smartphone className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-xs sm:text-sm font-bold text-stone-900">
+                  Try Handheld Artisan Mobile App Experience
+                </h4>
+                <span className="px-2 py-0.5 bg-amber-500/20 text-amber-800 text-[10px] font-extrabold rounded-full">
+                  Live Simulator
+                </span>
+              </div>
+              <p className="text-[11px] text-stone-600">
+                Experience voice-guided craft recording, camera studio relighting, and WhatsApp direct checkout inside a phone chassis.
+              </p>
+            </div>
+          </div>
+          <button
+            id="dashboard-open-mobile-app-btn"
+            onClick={onOpenMobileDesign}
+            className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-amber-400 text-xs font-bold rounded-xl border border-stone-700 shrink-0 flex items-center gap-1.5 transition-all active:scale-95 shadow"
+          >
+            <span>Launch Mobile View</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Main Section: Product Catalog & Inquiries/Orders Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
