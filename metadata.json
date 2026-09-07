@@ -1,0 +1,6 @@
+{
+  "name": "Antigravity — Artisan Market Linkage & Smart Cataloging",
+  "description": "AI-powered mobile and web solution for marginalized artisans featuring low-literacy multimodal cataloging, before/after photo enhancement, cost-plus fair price reasoning, market linkage channel matching, multilingual translation, and direct buyer enquiry connectivity.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
