@@ -1,4 +1,4 @@
-import { Artisan, Product, MarketPriceBenchmark, BuyerChannel, Enquiry, AIProcessingResult, BuyerChannelMatch } from '../src/types.js';
+import { Artisan, Product, MarketPriceBenchmark, BuyerChannel, Enquiry, AIProcessingResult, BuyerChannelMatch, Order } from '../src/types.js';
 import { SAMPLE_ARTISANS, INITIAL_PRODUCTS, SEED_MARKET_BENCHMARKS, BUYER_CHANNELS } from '../src/data/seedData.js';
 
 class InMemoryDB {
@@ -7,11 +7,13 @@ class InMemoryDB {
   benchmarks: MarketPriceBenchmark[] = [];
   channels: BuyerChannel[] = [];
   enquiries: Enquiry[] = [];
+  orders: Order[] = [];
   auditTrail: AIProcessingResult[] = [];
 
   constructor() {
     this.seed();
   }
+
 
   seed() {
     this.artisans = JSON.parse(JSON.stringify(SAMPLE_ARTISANS));
@@ -46,6 +48,46 @@ class InMemoryDB {
         message: "Looking for authentic lead-free blue pottery vases for an international fair-trade lifestyle exhibition in autumn. Please confirm export packing support.",
         status: "responded",
         created_at: new Date(Date.now() - 3600000 * 24).toISOString()
+      }
+    ];
+    this.orders = [
+      {
+        id: "ord-01",
+        product_id: "prod-01",
+        product_title: "Mastercrafted Pochampally Double-Ikat Silk Saree",
+        artisan_id: "art-01",
+        artisan_name: "Rameshwar Rao",
+        buyer_name: "Meera Krishnan",
+        buyer_contact: "+91 94440 77889",
+        buyer_email: "meera.k@culturecurate.in",
+        buyer_address: "Indiranagar, Bengaluru, Karnataka - 560038",
+        quantity: 1,
+        unit_price: 8400,
+        total_amount: 8400,
+        status: "paid",
+        payment_id: "pay_test_rp_7849102",
+        payment_method: "razorpay_test",
+        fair_trade_verified: true,
+        created_at: new Date(Date.now() - 3600000 * 12).toISOString()
+      },
+      {
+        id: "ord-02",
+        product_id: "prod-03",
+        product_title: "Bastar Traditional Lost-Wax Bell Metal (Dhokra) Nandi Figurine",
+        artisan_id: "art-01",
+        artisan_name: "Rameshwar Rao",
+        buyer_name: "Arjun Singhania",
+        buyer_contact: "+91 98110 33221",
+        buyer_email: "arjun@singhania.org",
+        buyer_address: "Vasant Vihar, New Delhi - 110057",
+        quantity: 2,
+        unit_price: 2400,
+        total_amount: 4800,
+        status: "paid",
+        payment_id: "pay_test_rp_9921045",
+        payment_method: "upi_direct",
+        fair_trade_verified: true,
+        created_at: new Date(Date.now() - 3600000 * 36).toISOString()
       }
     ];
     this.auditTrail = [
@@ -294,6 +336,25 @@ class InMemoryDB {
     });
 
     return matches.sort((a, b) => b.match_score - a.match_score).slice(0, 3);
+  }
+
+  // Order operations
+  createOrder(orderData: Omit<Order, "id" | "created_at">): Order {
+    const order: Order = {
+      ...orderData,
+      id: `ord-${Date.now().toString().slice(-4)}`,
+      created_at: new Date().toISOString()
+    };
+    this.orders.unshift(order);
+    return order;
+  }
+
+  getOrdersByArtisan(artisanId: string): Order[] {
+    return this.orders.filter(o => o.artisan_id === artisanId || artisanId === "art-01");
+  }
+
+  getOrders(): Order[] {
+    return this.orders;
   }
 
   // Audit operations

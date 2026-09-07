@@ -12,6 +12,7 @@ interface HeaderProps {
   setIsMobileFrame: (val: boolean) => void;
   isSpeaking: boolean;
   setIsSpeaking: (val: boolean) => void;
+  onOpenEvaluatorTour: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -22,7 +23,8 @@ export const Header: React.FC<HeaderProps> = ({
   isMobileFrame,
   setIsMobileFrame,
   isSpeaking,
-  setIsSpeaking
+  setIsSpeaking,
+  onOpenEvaluatorTour
 }) => {
   const t = translations[language];
 
@@ -68,20 +70,33 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
 
-            {/* Quick Audio Guide Button */}
-            <button
-              id="header-audio-guide-btn"
-              onClick={handleAudioGuide}
-              className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors border ${
-                isSpeaking
-                  ? 'bg-amber-500 text-stone-950 border-amber-400 animate-pulse'
-                  : 'bg-stone-800/80 text-stone-300 border-stone-700 hover:bg-stone-700'
-              }`}
-              title={isSpeaking ? t.stopAudio : t.listenToGuide}
-            >
-              {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-amber-400" />}
-              <span className="hidden sm:inline">{isSpeaking ? t.stopAudio : t.audioGuide}</span>
-            </button>
+            {/* Action Buttons: Judge 5-Min Tour & Audio Guide */}
+            <div className="flex items-center gap-2">
+              <button
+                id="header-evaluator-tour-btn"
+                onClick={onOpenEvaluatorTour}
+                className="px-3 py-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-stone-950 font-black rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-orange-950/40 border border-amber-400 transition-transform active:scale-95"
+                title="Interactive 5-Minute Hackathon Demo Script (Section 15)"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-stone-950" />
+                <span className="tracking-tight">Judge 5-Min Tour</span>
+              </button>
+
+              {/* Quick Audio Guide Button */}
+              <button
+                id="header-audio-guide-btn"
+                onClick={handleAudioGuide}
+                className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors border ${
+                  isSpeaking
+                    ? 'bg-amber-500 text-stone-950 border-amber-400 animate-pulse'
+                    : 'bg-stone-800/80 text-stone-300 border-stone-700 hover:bg-stone-700'
+                }`}
+                title={isSpeaking ? t.stopAudio : t.listenToGuide}
+              >
+                {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-amber-400" />}
+                <span className="hidden sm:inline">{isSpeaking ? t.stopAudio : t.audioGuide}</span>
+              </button>
+            </div>
           </div>
 
           {/* Center: Main View Navigation */}

@@ -1,12 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Camera, Upload, Sparkles, CheckCircle2, ArrowRight, ArrowLeft,
   Sliders, Mic, MicOff, DollarSign, TrendingUp, Share2, Tag,
-  ExternalLink, Layers, Eye, RefreshCw, AlertCircle, ShoppingBag, Globe2
+  ExternalLink, Layers, Eye, RefreshCw, AlertCircle, ShoppingBag, Globe2,
+  Wifi, WifiOff, QrCode, FileText, Trash2
 } from 'lucide-react';
 import { LanguageCode, Product, Artisan, BuyerChannelMatch, PriceRecommendation } from '../types';
 import { translations, speakText } from '../lib/i18n';
 import { DEMO_PRESET_CRAFTS } from '../data/seedData';
+import { ProvenanceTagModal } from './ProvenanceTagModal';
 
 interface ProductCreationWizardProps {
   artisan: Artisan;
@@ -27,6 +29,12 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Offline draft caching (T21)
+  const [hasSavedDraft, setHasSavedDraft] = useState<boolean>(false);
+  const [savedDraftTimestamp, setSavedDraftTimestamp] = useState<string>('');
+  const [isOfflineSimulated, setIsOfflineSimulated] = useState<boolean>(false);
+  const [showProvenanceModal, setShowProvenanceModal] = useState<boolean>(false);
 
   // Active product state
   const [productId, setProductId] = useState<string | null>(null);
@@ -62,6 +70,85 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
   const [publishedProduct, setPublishedProduct] = useState<Product | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check for offline saved draft on mount (T21)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('antigravity_artisan_draft');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && (parsed.rawImage || parsed.title)) {
+          setHasSavedDraft(true);
+          setSavedDraftTimestamp(parsed.savedAt || new Date().toISOString());
+        }
+      }
+    } catch (e) {
+      console.warn('Draft retrieval error', e);
+    }
+  }, []);
+
+  // Auto-save draft changes to localStorage for offline resilience
+  useEffect(() => {
+    if (rawImage || title || description) {
+      const draft = {
+        currentStep,
+        productId,
+        rawImage,
+        enhancedImage,
+        title,
+        description,
+        category,
+        subcategory,
+        tags,
+        material,
+        estDimensions,
+        weight,
+        materialCost,
+        laborHours,
+        hourlyWage,
+        finalPrice,
+        savedAt: new Date().toISOString()
+      };
+      try {
+        localStorage.setItem('antigravity_artisan_draft', JSON.stringify(draft));
+      } catch (e) {
+        // quota exceeded / private mode
+      }
+    }
+  }, [currentStep, productId, rawImage, enhancedImage, title, description, category, tags, material, estDimensions, materialCost, laborHours, hourlyWage, finalPrice]);
+
+  const resumeSavedDraft = () => {
+    try {
+      const saved = localStorage.getItem('antigravity_artisan_draft');
+      if (saved) {
+        const d = JSON.parse(saved);
+        if (d.productId) setProductId(d.productId);
+        if (d.rawImage) setRawImage(d.rawImage);
+        if (d.enhancedImage) setEnhancedImage(d.enhancedImage);
+        if (d.title) setTitle(d.title);
+        if (d.description) setDescription(d.description);
+        if (d.category) setCategory(d.category);
+        if (d.subcategory) setSubcategory(d.subcategory);
+        if (d.tags) setTags(d.tags);
+        if (d.material) setMaterial(d.material);
+        if (d.estDimensions) setEstDimensions(d.estDimensions);
+        if (d.weight) setWeight(d.weight);
+        if (d.materialCost) setMaterialCost(d.materialCost);
+        if (d.laborHours) setLaborHours(d.laborHours);
+        if (d.hourlyWage) setHourlyWage(d.hourlyWage);
+        if (d.finalPrice) setFinalPrice(d.finalPrice);
+        if (d.currentStep) setCurrentStep(d.currentStep);
+        setHasSavedDraft(false);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const discardSavedDraft = () => {
+    localStorage.removeItem('antigravity_artisan_draft');
+    setHasSavedDraft(false);
+  };
 
   // STEP 1: Handle Image Selection or Preset
   const handleSelectPreset = (preset: typeof DEMO_PRESET_CRAFTS[0]) => {
@@ -333,6 +420,75 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto py-4 px-3 sm:px-6">
+
+      {/* Offline Draft Recovery Banner (T21) */}
+      {hasSavedDraft && (
+        <div className="bg-amber-50 border border-amber-300/80 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-900 flex items-center justify-center shrink-0">
+              <FileText className="w-5 h-5 text-amber-700" />
+            </div>
+            <div>
+              <span className="text-xs font-black uppercase tracking-wider text-amber-900 block">
+                Saved Offline Draft Detected
+              </span>
+              <p className="text-xs text-stone-600">
+                You have an uncommitted product draft stored safely in your device storage.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={resumeSavedDraft}
+              className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Resume Saved Draft</span>
+            </button>
+            <button
+              onClick={discardSavedDraft}
+              className="p-1.5 text-stone-400 hover:text-rose-600 rounded-lg hover:bg-rose-50"
+              title="Discard saved draft"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Connectivity & Step Header Toolbar */}
+      <div className="flex items-center justify-between mb-3 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="text-stone-500 font-semibold">Rural Network Mode:</span>
+          <button
+            onClick={() => setIsOfflineSimulated(!isOfflineSimulated)}
+            className={`px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1.5 border transition-all ${
+              isOfflineSimulated
+                ? 'bg-amber-100 text-amber-900 border-amber-300'
+                : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+            }`}
+          >
+            {isOfflineSimulated ? (
+              <>
+                <WifiOff className="w-3 h-3 text-amber-700" />
+                <span>Simulated Offline Mode (Local Rules Active)</span>
+              </>
+            ) : (
+              <>
+                <Wifi className="w-3 h-3 text-emerald-600" />
+                <span>Online (Cloud Gemini Vision Connected)</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        <button
+          onClick={onCancel}
+          className="text-stone-500 hover:text-stone-800 font-bold"
+        >
+          Cancel & Close
+        </button>
+      </div>
       
       {/* Step Navigation Pill Bar */}
       <div className="bg-white border border-stone-200 rounded-2xl p-2.5 shadow-sm mb-6 flex items-center justify-between overflow-x-auto gap-1">
@@ -978,23 +1134,50 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 mb-3">
             <button
               id="view-marketplace-btn"
-              onClick={() => publishedProduct && onFinished(publishedProduct)}
+              onClick={() => {
+                localStorage.removeItem('antigravity_artisan_draft');
+                if (publishedProduct) onFinished(publishedProduct);
+              }}
               className="flex-1 py-3.5 px-6 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold rounded-2xl shadow-md text-sm transition-all"
             >
               {t.viewInMarketplace}
             </button>
             <button
               id="return-studio-btn"
-              onClick={() => publishedProduct && onFinished(publishedProduct)}
+              onClick={() => {
+                localStorage.removeItem('antigravity_artisan_draft');
+                if (publishedProduct) onFinished(publishedProduct);
+              }}
               className="py-3.5 px-6 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold rounded-2xl text-sm transition-all"
             >
               Back to Studio Dashboard
             </button>
           </div>
+
+          {/* Physical Stall Provenance Tag Generator */}
+          {publishedProduct && (
+            <button
+              id="print-stall-tag-btn"
+              onClick={() => setShowProvenanceModal(true)}
+              className="w-full py-3 bg-stone-900 hover:bg-stone-800 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 border border-stone-700 transition-colors shadow-sm"
+            >
+              <QrCode className="w-4 h-4 text-amber-400" />
+              <span>Generate Authentic Craft Stall Tag & QR Provenance</span>
+            </button>
+          )}
         </div>
+      )}
+
+      {/* Global Stall Tag Modal */}
+      {showProvenanceModal && publishedProduct && (
+        <ProvenanceTagModal
+          product={publishedProduct}
+          language={language}
+          onClose={() => setShowProvenanceModal(false)}
+        />
       )}
 
     </div>

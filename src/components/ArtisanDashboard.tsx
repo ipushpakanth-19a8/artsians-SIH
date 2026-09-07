@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Plus, Eye, MessageSquare, TrendingUp, ShieldCheck, Share2,
-  ExternalLink, Phone, Mail, MapPin, Clock, Sparkles, Volume2, CheckCircle2
+  ExternalLink, Phone, Mail, MapPin, Clock, Sparkles, Volume2, CheckCircle2,
+  QrCode, CreditCard, Package, DollarSign
 } from 'lucide-react';
-import { LanguageCode, Product, Artisan, Enquiry } from '../types';
+import { LanguageCode, Product, Artisan, Enquiry, Order } from '../types';
 import { translations, speakText } from '../lib/i18n';
+import { ProvenanceTagModal } from './ProvenanceTagModal';
 
 interface ArtisanDashboardProps {
   artisan: Artisan;
@@ -23,6 +25,9 @@ export const ArtisanDashboard: React.FC<ArtisanDashboardProps> = ({
 
   const [products, setProducts] = useState<Product[]>([]);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [selectedProvenanceProduct, setSelectedProvenanceProduct] = useState<Product | null>(null);
+  const [activeRightTab, setActiveRightTab] = useState<'enquiries' | 'orders'>('enquiries');
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -34,6 +39,7 @@ export const ArtisanDashboard: React.FC<ArtisanDashboardProps> = ({
       if (res.ok) {
         setProducts(data.products || []);
         setEnquiries(data.recentEnquiries || []);
+        setOrders(data.orders || []);
       }
     } catch (e) {
       console.error(e);
@@ -125,7 +131,7 @@ export const ArtisanDashboard: React.FC<ArtisanDashboardProps> = ({
         </div>
 
         {/* Economic Impact Metrics Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-6 border-t border-stone-800">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mt-8 pt-6 border-t border-stone-800">
           <div className="bg-stone-900/90 rounded-2xl p-4 border border-stone-800">
             <span className="text-xs text-stone-400 font-medium block">
               {t.publishedProducts}
@@ -144,6 +150,15 @@ export const ArtisanDashboard: React.FC<ArtisanDashboardProps> = ({
             </div>
           </div>
 
+          <div className="bg-stone-900/90 rounded-2xl p-4 border border-stone-800">
+            <span className="text-xs text-stone-400 font-medium block">
+              Direct Orders (Paid)
+            </span>
+            <div className="text-2xl font-black font-mono text-emerald-400 mt-1">
+              {orders.length} <span className="text-xs font-normal text-stone-500">Sample Orders</span>
+            </div>
+          </div>
+
           <div className="bg-emerald-950/40 rounded-2xl p-4 border border-emerald-500/30">
             <span className="text-xs text-emerald-300 font-bold block flex items-center gap-1">
               <TrendingUp className="w-3.5 h-3.5" />
@@ -159,7 +174,7 @@ export const ArtisanDashboard: React.FC<ArtisanDashboardProps> = ({
         </div>
       </div>
 
-      {/* Main Section: Product Catalog & Inquiries Grid */}
+      {/* Main Section: Product Catalog & Inquiries/Orders Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left 2 Columns: Artisan's Handcrafted Listings */}
@@ -204,31 +219,26 @@ export const ArtisanDashboard: React.FC<ArtisanDashboardProps> = ({
                 return (
                   <div
                     key={product.id}
-                    className="p-4 bg-white rounded-2xl border border-stone-200 hover:border-amber-400 transition-all shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                    className="p-4 bg-white rounded-2xl border border-stone-200 shadow-sm hover:border-amber-300 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                   >
-                    <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                    <div className="flex items-center gap-3.5">
                       <img
                         src={product.enhanced_image_url || product.original_image_url}
                         alt={product.title}
-                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl border border-stone-200 shrink-0"
+                        className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0"
                       />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                            product.status === 'published' ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-100 text-stone-600'
-                          }`}>
-                            {product.status === 'published' ? 'Listed' : 'Draft'}
-                          </span>
-                          <span className="text-[11px] text-stone-500 font-medium">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-md text-[10px] font-bold uppercase">
                             {product.category}
                           </span>
+                          <span className="text-[11px] text-stone-400">
+                            {product.artisan_district}
+                          </span>
                         </div>
-                        <h3 className="font-bold text-stone-900 text-sm truncate">
+                        <h3 className="font-extrabold text-sm text-stone-900 mt-0.5 line-clamp-1">
                           {localizedTitle}
                         </h3>
-                        <p className="text-xs text-stone-500 line-clamp-1 mt-0.5">
-                          {localizedDesc}
-                        </p>
                         <div className="flex items-center gap-3 mt-1 text-xs">
                           <span className="font-extrabold text-amber-800 font-mono">
                             ₹{product.final_price?.toLocaleString()}
@@ -244,7 +254,16 @@ export const ArtisanDashboard: React.FC<ArtisanDashboardProps> = ({
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-stone-100">
+                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-stone-100">
+                      <button
+                        onClick={() => setSelectedProvenanceProduct(product)}
+                        className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold flex items-center gap-1 transition-colors"
+                        title="Generate printable stall provenance tag with QR"
+                      >
+                        <QrCode className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Stall QR</span>
+                      </button>
+
                       <button
                         onClick={() => onViewProduct(product)}
                         className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-bold flex items-center gap-1 transition-colors"
@@ -269,68 +288,146 @@ export const ArtisanDashboard: React.FC<ArtisanDashboardProps> = ({
           )}
         </div>
 
-        {/* Right 1 Column: Direct Buyer Inquiries */}
+        {/* Right 1 Column: Direct Buyer Inquiries & Paid Orders */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-extrabold text-stone-900 font-['Rozha_One',serif]">
-              {t.buyerEnquiries} ({enquiries.length})
-            </h2>
+            {/* Tab switch between Enquiries and Orders */}
+            <div className="flex bg-stone-100 p-1 rounded-xl gap-1">
+              <button
+                onClick={() => setActiveRightTab('enquiries')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                  activeRightTab === 'enquiries'
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                }`}
+              >
+                Inquiries ({enquiries.length})
+              </button>
+              <button
+                onClick={() => setActiveRightTab('orders')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                  activeRightTab === 'orders'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                }`}
+              >
+                Orders ({orders.length})
+              </button>
+            </div>
             <span className="text-[11px] text-stone-500">
-              Direct Inquiries
+              {activeRightTab === 'enquiries' ? 'Direct Leads' : '100% Direct Payouts'}
             </span>
           </div>
 
           <div className="space-y-3">
-            {enquiries.length === 0 ? (
-              <div className="p-8 text-center bg-white rounded-2xl border border-stone-200 text-xs text-stone-500">
-                No buyer messages received yet. Once your products are discovered in the marketplace, direct enquiries will arrive here.
-              </div>
-            ) : (
-              enquiries.map((enq) => (
-                <div
-                  key={enq.id}
-                  className="p-4 bg-white rounded-2xl border border-stone-200 shadow-sm space-y-2.5"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="text-xs font-bold text-stone-900 block">
-                        {enq.buyer_name}
-                      </span>
-                      <span className="text-[11px] text-stone-500 flex items-center gap-1 mt-0.5">
-                        <MapPin className="w-3 h-3 text-stone-400" />
-                        {enq.buyer_location}
-                      </span>
-                    </div>
-                    <span className="px-2 py-0.5 bg-amber-100 text-amber-900 rounded-md text-[10px] font-bold">
-                      Qty: {enq.quantity}
-                    </span>
+            {activeRightTab === 'enquiries' ? (
+              <>
+                {enquiries.length === 0 ? (
+                  <div className="p-8 text-center bg-white rounded-2xl border border-stone-200 text-xs text-stone-500">
+                    No buyer messages received yet. Once your products are discovered in the marketplace, direct enquiries will arrive here.
                   </div>
-
-                  <div className="p-2.5 bg-stone-50 rounded-xl text-xs text-stone-700 border border-stone-100 italic">
-                    "{enq.message}"
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1 text-xs">
-                    <span className="text-[11px] text-stone-400">
-                      Regarding: <strong className="text-stone-700 truncate inline-block max-w-[140px] align-bottom">{enq.product_title}</strong>
-                    </span>
-                    <a
-                      href={`https://api.whatsapp.com/send?phone=${enq.buyer_contact.replace(/[^0-9]/g, '')}&text=${encodeURIComponent(`Hello ${enq.buyer_name}, this is master craftsperson ${artisan.name} regarding your enquiry for "${enq.product_title}".`)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] flex items-center gap-1 transition-colors"
+                ) : (
+                  enquiries.map((enq) => (
+                    <div
+                      key={enq.id}
+                      className="p-4 bg-white rounded-2xl border border-stone-200 shadow-sm space-y-2.5"
                     >
-                      <Phone className="w-3 h-3" />
-                      <span>Reply WhatsApp</span>
-                    </a>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <span className="text-xs font-bold text-stone-900 block">
+                            {enq.buyer_name}
+                          </span>
+                          <span className="text-[11px] text-stone-500 flex items-center gap-1 mt-0.5">
+                            <MapPin className="w-3 h-3 text-stone-400" />
+                            {enq.buyer_location}
+                          </span>
+                        </div>
+                        <span className="px-2 py-0.5 bg-amber-100 text-amber-900 rounded-md text-[10px] font-bold">
+                          Qty: {enq.quantity}
+                        </span>
+                      </div>
+
+                      <div className="p-2.5 bg-stone-50 rounded-xl text-xs text-stone-700 border border-stone-100 italic">
+                        "{enq.message}"
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1 text-xs">
+                        <span className="text-[11px] text-stone-400">
+                          Regarding: <strong className="text-stone-700 truncate inline-block max-w-[140px] align-bottom">{enq.product_title}</strong>
+                        </span>
+                        <a
+                          href={`https://api.whatsapp.com/send?phone=${enq.buyer_contact.replace(/[^0-9]/g, '')}&text=${encodeURIComponent(`Hello ${enq.buyer_name}, this is master craftsperson ${artisan.name} regarding your enquiry for "${enq.product_title}".`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] flex items-center gap-1 transition-colors"
+                        >
+                          <Phone className="w-3 h-3" />
+                          <span>Reply WhatsApp</span>
+                        </a>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </>
+            ) : (
+              <>
+                {orders.length === 0 ? (
+                  <div className="p-8 text-center bg-white rounded-2xl border border-stone-200 text-xs text-stone-500">
+                    No direct customer orders placed yet.
                   </div>
-                </div>
-              ))
+                ) : (
+                  orders.map((ord) => (
+                    <div
+                      key={ord.id}
+                      className="p-4 bg-white rounded-2xl border border-stone-200 shadow-sm space-y-2"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <span className="text-xs font-bold text-stone-900 block">
+                            {ord.buyer_name}
+                          </span>
+                          <span className="text-[10px] text-stone-500 font-mono">
+                            {ord.payment_id}
+                          </span>
+                        </div>
+                        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md text-[10px] font-black uppercase">
+                          Paid ₹{ord.total_amount.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+
+                      <div className="p-2 bg-emerald-50/50 rounded-xl text-xs text-emerald-950 border border-emerald-100">
+                        <div className="font-bold">{ord.quantity}x {ord.product_title}</div>
+                        <div className="text-[11px] text-stone-600 mt-0.5 truncate">{ord.buyer_address}</div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] text-stone-500 pt-1">
+                        <span>Status: <b className="text-emerald-700">100% Settled</b></span>
+                        <a
+                          href={`tel:${ord.buyer_contact}`}
+                          className="text-stone-700 hover:text-stone-900 font-bold flex items-center gap-1"
+                        >
+                          <Phone className="w-3 h-3 text-amber-600" />
+                          <span>{ord.buyer_contact}</span>
+                        </a>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </>
             )}
           </div>
         </div>
 
       </div>
+
+      {/* Global Stall Tag Modal */}
+      {selectedProvenanceProduct && (
+        <ProvenanceTagModal
+          product={selectedProvenanceProduct}
+          language={language}
+          onClose={() => setSelectedProvenanceProduct(null)}
+        />
+      )}
 
     </div>
   );

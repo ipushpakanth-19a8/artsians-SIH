@@ -132,6 +132,26 @@ export interface Enquiry {
   created_at: string;
 }
 
+export interface Order {
+  id: string;
+  product_id: string;
+  product_title: string;
+  artisan_id: string;
+  artisan_name: string;
+  buyer_name: string;
+  buyer_contact: string;
+  buyer_email?: string;
+  buyer_address?: string;
+  quantity: number;
+  unit_price: number;
+  total_amount: number;
+  status: 'created' | 'paid' | 'delivered';
+  payment_id?: string;
+  payment_method: 'razorpay_test' | 'upi_direct' | 'cash_on_delivery';
+  fair_trade_verified: boolean;
+  created_at: string;
+}
+
 export interface AIProcessingResult {
   id: string;
   product_id: string;
@@ -145,3 +165,4 @@ export interface AIProcessingResult {
 }
 
 export type AuditLog = AIProcessingResult;
+

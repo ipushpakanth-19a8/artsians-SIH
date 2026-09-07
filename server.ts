@@ -96,6 +96,7 @@ async function startServer() {
     const artisanId = req.params.id;
     const products = db.products.filter(p => p.artisan_id === artisanId || artisanId === "art-01");
     const enquiries = db.enquiries.filter(e => e.artisan_id === artisanId || artisanId === "art-01");
+    const orders = db.getOrdersByArtisan(artisanId);
 
     // Calculate total extra income gained vs middleman cut
     let totalDirectRevenue = 0;
@@ -107,15 +108,22 @@ async function startServer() {
       totalMiddlemanCutSaved += Math.max(0, price - middlemanPrice);
     });
 
+    const totalOrdersPaid = orders.filter(o => o.status === 'paid');
+    const totalOrderRevenue = totalOrdersPaid.reduce((acc, o) => acc + o.total_amount, 0);
+
     res.json({
       artisanId,
       productsCount: products.length,
       publishedCount: products.filter(p => p.status === "published").length,
       draftCount: products.filter(p => p.status === "draft").length,
       enquiriesCount: enquiries.length,
+      ordersCount: orders.length,
+      paidOrdersCount: totalOrdersPaid.length,
+      totalOrderRevenue,
       totalDirectRevenue,
       totalMiddlemanCutSaved,
       products,
+      orders,
       recentEnquiries: enquiries.slice(0, 5)
     });
   });
@@ -484,6 +492,108 @@ async function startServer() {
       enquiry_id: enquiry.id,
       message: "Enquiry submitted directly to artisan",
       enquiry
+    });
+  });
+
+  // Direct Fair-Trade Orders & Checkout (Razorpay Test Mode simulation)
+  app.get("/api/v1/orders", (_req, res) => {
+    res.json(db.getOrders());
+  });
+
+  app.get("/api/v1/artisans/:id/orders", (req, res) => {
+    res.json(db.getOrdersByArtisan(req.params.id));
+  });
+
+  // Create Checkout Session / Lock Amount Server-Side
+  app.post("/api/v1/orders/checkout", (req, res) => {
+    const { product_id, quantity, buyer_name, buyer_contact, buyer_email, buyer_address, payment_method } = req.body;
+    const product = db.getProductById(product_id);
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    const qty = Math.max(1, Number(quantity) || 1);
+    // Enforce server-locked price — preventing any client-side tampering
+    const unitPrice = product.final_price || product.pricing?.target_recommended || 1500;
+    const totalAmount = unitPrice * qty;
+
+    const razorpayOrderId = `order_rp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+    res.json({
+      success: true,
+      razorpay_order_id: razorpayOrderId,
+      key_id: "rzp_test_antigravity_artisan",
+      amount: totalAmount,
+      currency: "INR",
+      product: {
+        id: product.id,
+        title: product.title,
+        unit_price: unitPrice,
+        quantity: qty
+      },
+      artisan: {
+        id: product.artisan_id,
+        name: product.artisan_name,
+        district: product.artisan_district
+      }
+    });
+  });
+
+  // Verify & Finalize Order
+  app.post("/api/v1/orders/verify", (req, res) => {
+    const {
+      product_id,
+      quantity,
+      buyer_name,
+      buyer_contact,
+      buyer_email,
+      buyer_address,
+      payment_method,
+      razorpay_payment_id
+    } = req.body;
+
+    const product = db.getProductById(product_id);
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    const qty = Math.max(1, Number(quantity) || 1);
+    const unitPrice = product.final_price || product.pricing?.target_recommended || 1500;
+    const totalAmount = unitPrice * qty;
+    const paymentId = razorpay_payment_id || `pay_test_${Date.now()}`;
+
+    const order = db.createOrder({
+      product_id: product.id,
+      product_title: product.title,
+      artisan_id: product.artisan_id,
+      artisan_name: product.artisan_name,
+      buyer_name: buyer_name || "Fair Trade Buyer",
+      buyer_contact: buyer_contact || "+91 98000 00000",
+      buyer_email: buyer_email || "buyer@handicraft.in",
+      buyer_address: buyer_address || "Bengaluru, India",
+      quantity: qty,
+      unit_price: unitPrice,
+      total_amount: totalAmount,
+      status: "paid",
+      payment_id: paymentId,
+      payment_method: (payment_method as any) || "razorpay_test",
+      fair_trade_verified: true
+    });
+
+    db.logAudit({
+      product_id: product.id,
+      feature: "pricing",
+      model_used: "fair-trade-payment-gateway",
+      latency_ms: 180,
+      status: "success",
+      raw_input_summary: `Direct Order: ${qty}x "${product.title}" @ ₹${unitPrice}`,
+      raw_response_summary: `Processed ₹${totalAmount} 100% to artisan ${product.artisan_name} with ₹0 platform commission`
+    });
+
+    res.json({
+      success: true,
+      message: "Payment captured successfully. 100% proceeds transferred to artisan.",
+      order
     });
   });
 

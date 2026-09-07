@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import {
   X, Sparkles, MapPin, ShieldCheck, Phone, Mail, Send,
-  Share2, CheckCircle2, Globe2, Tag, Eye, Heart, Volume2
+  Share2, CheckCircle2, Globe2, Tag, Eye, Heart, Volume2,
+  CreditCard, QrCode, Lock
 } from 'lucide-react';
-import { LanguageCode, Product } from '../types';
+import { LanguageCode, Product, Order } from '../types';
 import { translations, speakText } from '../lib/i18n';
+import { DirectCheckoutModal } from './DirectCheckoutModal';
+import { ProvenanceTagModal } from './ProvenanceTagModal';
 
 interface ProductDetailModalProps {
   product: Product;
@@ -23,6 +26,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   const [activeLang, setActiveLang] = useState<LanguageCode>(language);
   const [showEnhanced, setShowEnhanced] = useState(true);
+  const [activeActionTab, setActiveActionTab] = useState<'checkout' | 'enquiry'>('checkout');
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [showProvenanceTagModal, setShowProvenanceTagModal] = useState(false);
 
   // Enquiry form state
   const [buyerName, setBuyerName] = useState('');
@@ -197,91 +203,179 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
             </div>
 
-            {/* Direct Enquiry Section */}
-            <div className="pt-4 border-t border-stone-100">
-              {enquirySuccess ? (
-                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-2">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-                  <h4 className="font-extrabold text-emerald-900 text-sm">{t.enquirySentSuccess}</h4>
-                  <p className="text-xs text-emerald-700">
-                    Master artisan {product.artisan_name} will contact you on WhatsApp/Phone.
-                  </p>
-                  <a
-                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Hello ${product.artisan_name}, I am ${buyerName} and I submitted an order enquiry for "${product.title}" via Antigravity.`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block mt-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm"
-                  >
-                    Open Immediate WhatsApp Chat
-                  </a>
-                </div>
-              ) : (
-                <form onSubmit={handleSendEnquiry} className="space-y-3">
+            {/* Action Tabs: Direct Checkout vs Wholesale Enquiry */}
+            <div className="pt-4 border-t border-stone-200 space-y-3">
+              <div className="flex bg-stone-100 p-1 rounded-2xl gap-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveActionTab('checkout')}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    activeActionTab === 'checkout'
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Direct Fair-Trade Purchase</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveActionTab('enquiry')}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    activeActionTab === 'enquiry'
+                      ? 'bg-amber-600 text-white shadow-sm'
+                      : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Bespoke / Bulk Enquiry</span>
+                </button>
+              </div>
+
+              {activeActionTab === 'checkout' ? (
+                <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-3 text-left">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-stone-700">
-                      {t.sendEnquiryTitle}
+                    <div>
+                      <span className="text-xs font-black uppercase text-emerald-950 block">
+                        Direct Artisan Purchase (Razorpay Test Mode)
+                      </span>
+                      <p className="text-[11px] text-emerald-800">
+                        100% of ₹{product.final_price?.toLocaleString('en-IN')} goes to {product.artisan_name} with zero intermediary cut.
+                      </p>
+                    </div>
+                    <span className="px-2.5 py-1 bg-emerald-100 text-emerald-900 rounded-full text-[10px] font-black uppercase">
+                      Instant Payout
                     </span>
-                    <span className="text-[11px] text-stone-400">100% Direct to Artisan</span>
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <input
-                      type="text"
-                      placeholder={t.buyerName}
-                      value={buyerName}
-                      onChange={(e) => setBuyerName(e.target.value)}
-                      required
-                      className="px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-amber-500 text-stone-900"
-                    />
-                    <input
-                      type="tel"
-                      placeholder={t.buyerPhone}
-                      value={buyerContact}
-                      onChange={(e) => setBuyerContact(e.target.value)}
-                      required
-                      className="px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-amber-500 text-stone-900"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    <input
-                      type="number"
-                      min={1}
-                      max={1000}
-                      value={quantity}
-                      onChange={(e) => setQuantity(Number(e.target.value))}
-                      placeholder="Qty"
-                      className="px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-amber-500 text-stone-900"
-                    />
-                    <input
-                      type="text"
-                      value={buyerLocation}
-                      onChange={(e) => setBuyerLocation(e.target.value)}
-                      placeholder="City / Region"
-                      className="col-span-2 px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-amber-500 text-stone-900"
-                    />
-                  </div>
-
-                  <textarea
-                    rows={2}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder={t.buyerMessage}
-                    className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-1 focus:ring-amber-500 text-stone-900"
-                  />
 
                   <button
-                    id="submit-buyer-enquiry-btn"
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-3 px-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:opacity-95 text-white font-extrabold rounded-xl shadow-md text-xs sm:text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                    id="open-direct-checkout-btn"
+                    onClick={() => setShowCheckoutModal(true)}
+                    className="w-full py-3.5 px-4 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-900/20 text-xs sm:text-sm flex items-center justify-center gap-2 transition-all"
                   >
-                    <Send className="w-4 h-4" />
-                    <span>{isSubmitting ? 'Sending...' : t.submitEnquiry}</span>
+                    <Lock className="w-4 h-4" />
+                    <span>Instant Sample Checkout (₹{product.final_price?.toLocaleString('en-IN')})</span>
                   </button>
-                </form>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <button
+                      onClick={() => setShowProvenanceTagModal(true)}
+                      className="text-stone-600 hover:text-stone-900 font-bold text-xs flex items-center gap-1"
+                    >
+                      <QrCode className="w-3.5 h-3.5 text-amber-600" />
+                      <span>View Physical Stall QR Provenance Tag</span>
+                    </button>
+                    <span className="text-[10px] text-stone-500 font-semibold">Fair Trade Certified</span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {enquirySuccess ? (
+                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-2">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
+                      <h4 className="font-extrabold text-emerald-900 text-sm">{t.enquirySentSuccess}</h4>
+                      <p className="text-xs text-emerald-700">
+                        Master artisan {product.artisan_name} will contact you on WhatsApp/Phone.
+                      </p>
+                      <a
+                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Hello ${product.artisan_name}, I am ${buyerName} and I submitted an order enquiry for "${product.title}" via Antigravity.`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block mt-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm"
+                      >
+                        Open Immediate WhatsApp Chat
+                      </a>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSendEnquiry} className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-extrabold uppercase tracking-wider text-stone-700">
+                          {t.sendEnquiryTitle}
+                        </span>
+                        <span className="text-[11px] text-stone-400">100% Direct to Artisan</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          placeholder={t.buyerName}
+                          value={buyerName}
+                          onChange={(e) => setBuyerName(e.target.value)}
+                          required
+                          className="px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-amber-500 text-stone-900"
+                        />
+                        <input
+                          type="tel"
+                          placeholder={t.buyerPhone}
+                          value={buyerContact}
+                          onChange={(e) => setBuyerContact(e.target.value)}
+                          required
+                          className="px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-amber-500 text-stone-900"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          max={1000}
+                          value={quantity}
+                          onChange={(e) => setQuantity(Number(e.target.value))}
+                          placeholder="Qty"
+                          className="px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-amber-500 text-stone-900"
+                        />
+                        <input
+                          type="text"
+                          value={buyerLocation}
+                          onChange={(e) => setBuyerLocation(e.target.value)}
+                          placeholder="City / Region"
+                          className="col-span-2 px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-amber-500 text-stone-900"
+                        />
+                      </div>
+
+                      <textarea
+                        rows={2}
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder={t.buyerMessage}
+                        className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-1 focus:ring-amber-500 text-stone-900"
+                      />
+
+                      <button
+                        id="submit-buyer-enquiry-btn"
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-3 px-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:opacity-95 text-white font-extrabold rounded-xl shadow-md text-xs sm:text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                      >
+                        <Send className="w-4 h-4" />
+                        <span>{isSubmitting ? 'Sending...' : t.submitEnquiry}</span>
+                      </button>
+                    </form>
+                  )}
+                </>
               )}
             </div>
+
+            {/* Modal Elements */}
+            {showCheckoutModal && (
+              <DirectCheckoutModal
+                product={product}
+                language={language}
+                onClose={() => setShowCheckoutModal(false)}
+                onOrderSuccess={(order) => {
+                  setShowCheckoutModal(false);
+                  if (onEnquirySubmitted) onEnquirySubmitted();
+                }}
+              />
+            )}
+
+            {showProvenanceTagModal && (
+              <ProvenanceTagModal
+                product={product}
+                language={language}
+                onClose={() => setShowProvenanceTagModal(false)}
+              />
+            )}
 
           </div>
 
