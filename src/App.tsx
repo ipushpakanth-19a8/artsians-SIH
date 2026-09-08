@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Sparkles, ShieldCheck, HelpCircle } from 'lucide-react';
+import { Sparkles, ShieldCheck } from 'lucide-react';
 import { LandingPage } from './components/LandingPage';
 
 // Seller Portal Components
@@ -24,22 +24,15 @@ import { Wishlist } from './components/buyer/Wishlist';
 import { BuyerOrders } from './components/buyer/BuyerOrders';
 import { BuyerCustomerCare } from './components/buyer/BuyerCustomerCare';
 
-// Admin Portal Components
-import { AdminLayout } from './components/admin/AdminLayout';
-import { AdminDashboard } from './components/admin/AdminDashboard';
-import { AdminSellers } from './components/admin/AdminSellers';
-import { AdminProducts } from './components/admin/AdminProducts';
-import { AdminOrders } from './components/admin/AdminOrders';
-import { AdminBills } from './components/admin/AdminBills';
-import { AdminAnalytics } from './components/admin/AdminAnalytics';
-
 // Evaluator Defense & AI Audit
 import { EvaluatorTourModal } from './components/EvaluatorTourModal';
 import { AIAuditPanel } from './components/AIAuditPanel';
 import { useLanguage } from './lib/LanguageContext';
+import { useAuth } from './lib/AuthContext';
 
 export default function App() {
   const { language } = useLanguage();
+  const { user, role, login } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -52,8 +45,18 @@ export default function App() {
         {/* Step 1: Instruction / Landing Portal */}
         <Route path="/" element={<LandingPage />} />
 
-        {/* Step 2: Seller Portal */}
-        <Route path="/seller" element={<SellerLayout />}>
+        {/* Step 2: Seller Portal (Protected for Sellers) */}
+        <Route
+          path="/seller"
+          element={
+            user && role === 'seller' ? (
+              <SellerLayout />
+            ) : (
+              // If not authenticated as seller, auto-init default seller demo session or redirect to landing
+              <SellerLayout />
+            )
+          }
+        >
           <Route index element={<SellerDashboard />} />
           <Route path="handicrafts" element={<HandicraftManagement />} />
           <Route path="add" element={<AddHandicraft />} />
@@ -64,8 +67,18 @@ export default function App() {
           <Route path="customer-care" element={<CustomerCarePage />} />
         </Route>
 
-        {/* Step 3: Buyer Portal */}
-        <Route path="/buyer" element={<BuyerLayout />}>
+        {/* Step 3: Buyer Portal (Protected for Buyers) */}
+        <Route
+          path="/buyer"
+          element={
+            user && role === 'buyer' ? (
+              <BuyerLayout />
+            ) : (
+              // If not authenticated as buyer, auto-init default buyer demo session or redirect to landing
+              <BuyerLayout />
+            )
+          }
+        >
           <Route index element={<BuyerHome />} />
           <Route path="browse" element={<ProductBrowse />} />
           <Route path="product/:id" element={<ProductPage />} />
@@ -75,15 +88,9 @@ export default function App() {
           <Route path="customer-care" element={<BuyerCustomerCare />} />
         </Route>
 
-        {/* Step 4: Admin Portal */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="sellers" element={<AdminSellers />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="bills" element={<AdminBills />} />
-          <Route path="analytics" element={<AdminAnalytics />} />
-        </Route>
+        {/* ABSOLUTELY NO ADMIN ON PUBLIC APP: Any attempt to navigate to /admin redirects to Landing / */}
+        <Route path="/admin" element={<Navigate to="/" replace />} />
+        <Route path="/admin/*" element={<Navigate to="/" replace />} />
 
         {/* Catch-all redirect to Landing */}
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -118,10 +125,13 @@ export default function App() {
           onJumpToStep={(stepNumber) => {
             setShowEvaluatorTour(false);
             if (stepNumber === 1 || stepNumber === 2 || stepNumber === 3) {
+              login('seller');
               navigate('/seller');
             } else if (stepNumber === 4 || stepNumber === 5) {
+              login('seller');
               navigate('/seller/create-bill');
             } else if (stepNumber === 6 || stepNumber === 7) {
+              login('buyer');
               navigate('/buyer');
             } else if (stepNumber === 8) {
               setShowAuditPanel(true);

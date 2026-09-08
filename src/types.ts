@@ -94,7 +94,7 @@ export interface Product {
   original_image_url: string;
   enhanced_image_url: string;
   enhancement_applied?: boolean;
-  status: 'draft' | 'published';
+  status: 'draft' | 'published' | 'disabled' | 'rejected';
   cost: ProductCost;
   pricing?: PriceRecommendation;
   final_price: number;
@@ -112,15 +112,18 @@ export interface Product {
 export interface MarketPriceBenchmark {
   id: string;
   category: string;
-  material: string;
+  material?: string;
   craft_name: string;
+  craft_type?: string;
   region: string;
   price_low: number;
   price_high: number;
   average_price: number;
+  target_recommended?: number;
   typical_middleman_cut: number; // percentage, e.g. 65%
-  source: 'curated' | 'real';
-  recorded_at: string;
+  source: string;
+  recorded_at?: string;
+  last_updated?: string;
 }
 
 export interface BuyerChannel {

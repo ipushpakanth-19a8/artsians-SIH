@@ -1,7 +1,37 @@
+import crypto from 'crypto';
 import { Artisan, Product, MarketPriceBenchmark, BuyerChannel, Enquiry, AIProcessingResult, BuyerChannelMatch, Order, Bill } from '../src/types.js';
 import { SAMPLE_ARTISANS, INITIAL_PRODUCTS, SEED_MARKET_BENCHMARKS, BUYER_CHANNELS } from '../src/data/seedData.js';
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  passwordHash: string;
+  role: 'seller' | 'buyer' | 'admin';
+  status: 'active' | 'deactivated' | 'suspended';
+  craft_type?: string;
+  business_name?: string;
+  location?: string;
+  state?: string;
+  address?: string;
+  artisan_id?: string;
+  created_at: string;
+  last_login?: string;
+}
+
+const PASSWORD_SALT = 'kalatech-salt-secure-2026';
+
+export function hashPassword(password: string): string {
+  return crypto.createHmac('sha256', PASSWORD_SALT).update(password).digest('hex');
+}
+
+export function verifyPassword(password: string, hash: string): boolean {
+  return hashPassword(password) === hash;
+}
+
 class InMemoryDB {
+  users: User[] = [];
   artisans: Artisan[] = [];
   products: Product[] = [];
   benchmarks: MarketPriceBenchmark[] = [];
@@ -17,6 +47,84 @@ class InMemoryDB {
 
 
   seed() {
+    this.users = [
+      {
+        id: "usr-admin-01",
+        name: "Platform Administrator",
+        email: "admin@kalatech.gov.in",
+        phone: "9999999999",
+        passwordHash: hashPassword("Admin@123456"),
+        role: "admin",
+        status: "active",
+        created_at: new Date(Date.now() - 3600000 * 24 * 30).toISOString(),
+      },
+      {
+        id: "usr-admin-02",
+        name: "Governance Officer",
+        email: "admin@kalatech.in",
+        phone: "9988776655",
+        passwordHash: hashPassword("Admin@123456"),
+        role: "admin",
+        status: "active",
+        created_at: new Date(Date.now() - 3600000 * 24 * 30).toISOString(),
+      },
+      {
+        id: "usr-01",
+        name: "Rameshwar Rao",
+        email: "rameshwar@artisan.in",
+        phone: "9848012345",
+        passwordHash: hashPassword("Seller@123456"),
+        role: "seller",
+        status: "active",
+        craft_type: "Weaving",
+        business_name: "Pochampally Heritage Weaves",
+        location: "Bhoodan Pochampally",
+        state: "Telangana",
+        artisan_id: "art-01",
+        created_at: new Date(Date.now() - 3600000 * 24 * 20).toISOString(),
+      },
+      {
+        id: "usr-02",
+        name: "Santosh Prajapati",
+        email: "santosh@artisan.in",
+        phone: "9829033445",
+        passwordHash: hashPassword("Seller@123456"),
+        role: "seller",
+        status: "active",
+        craft_type: "Blue Pottery",
+        business_name: "Jaipur Traditional Clay Works",
+        location: "Jaipur",
+        state: "Rajasthan",
+        artisan_id: "art-03",
+        created_at: new Date(Date.now() - 3600000 * 24 * 15).toISOString(),
+      },
+      {
+        id: "usr-buyer-01",
+        name: "Anita Deshmukh",
+        email: "buyer@culturecurate.in",
+        phone: "9444077889",
+        passwordHash: hashPassword("Buyer@123456"),
+        role: "buyer",
+        status: "active",
+        location: "Bengaluru",
+        state: "Karnataka",
+        address: "Indiranagar 100ft Rd, Bengaluru - 560038",
+        created_at: new Date(Date.now() - 3600000 * 24 * 10).toISOString(),
+      },
+      {
+        id: "usr-buyer-02",
+        name: "Arjun Singhania",
+        email: "arjun@singhania.org",
+        phone: "9811033221",
+        passwordHash: hashPassword("Buyer@123456"),
+        role: "buyer",
+        status: "active",
+        location: "New Delhi",
+        state: "Delhi",
+        address: "Vasant Vihar, New Delhi - 110057",
+        created_at: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
+      }
+    ];
     this.artisans = JSON.parse(JSON.stringify(SAMPLE_ARTISANS));
     this.products = JSON.parse(JSON.stringify(INITIAL_PRODUCTS));
     this.benchmarks = JSON.parse(JSON.stringify(SEED_MARKET_BENCHMARKS));
@@ -128,6 +236,64 @@ class InMemoryDB {
     ];
   }
 
+  // User operations
+  findUserById(id: string): User | undefined {
+    return this.users.find(u => u.id === id);
+  }
+
+  findUserByEmail(email: string): User | undefined {
+    if (!email) return undefined;
+    return this.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  }
+
+  findUserByPhone(phone: string): User | undefined {
+    if (!phone) return undefined;
+    const clean = phone.replace(/[^0-9]/g, '');
+    return this.users.find(u => u.phone.replace(/[^0-9]/g, '').slice(-10) === clean.slice(-10));
+  }
+
+  findUserByEmailOrPhone(identifier: string): User | undefined {
+    if (!identifier) return undefined;
+    const clean = identifier.trim().toLowerCase();
+    const cleanDigits = identifier.replace(/[^0-9]/g, '');
+    return this.users.find(u => {
+      if (u.email.toLowerCase() === clean) return true;
+      if (cleanDigits.length >= 7 && u.phone.replace(/[^0-9]/g, '').slice(-10) === cleanDigits.slice(-10)) return true;
+      return false;
+    });
+  }
+
+  createUser(data: Omit<User, "id" | "created_at">): User {
+    const id = `usr-${Date.now().toString().slice(-6)}`;
+    const user: User = {
+      ...data,
+      id,
+      created_at: new Date().toISOString()
+    };
+    this.users.unshift(user);
+    return user;
+  }
+
+  updateUserStatus(id: string, status: 'active' | 'deactivated' | 'suspended'): User | undefined {
+    const user = this.users.find(u => u.id === id);
+    if (user) {
+      user.status = status;
+    }
+    return user;
+  }
+
+  getAllSellers(): User[] {
+    return this.users.filter(u => u.role === 'seller');
+  }
+
+  getAllBuyers(): User[] {
+    return this.users.filter(u => u.role === 'buyer');
+  }
+
+  getAllUsers(): User[] {
+    return this.users;
+  }
+
   // Artisan operations
   getArtisan(id: string): Artisan | undefined {
     return this.artisans.find(a => a.id === id);
@@ -156,8 +322,14 @@ class InMemoryDB {
   }
 
   // Product operations
-  getProducts(filters?: { category?: string; query?: string; minPrice?: number; maxPrice?: number; artisanId?: string; status?: string }): Product[] {
+  getProducts(filters?: { category?: string; query?: string; minPrice?: number; maxPrice?: number; artisanId?: string; status?: string; includeDisabled?: boolean }): Product[] {
     let list = this.products;
+
+    // By default, hide disabled products from public marketplace
+    if (!filters?.includeDisabled) {
+      list = list.filter(p => p.status !== 'disabled');
+    }
+
     if (!filters) return list;
 
     if (filters.status) {
@@ -402,6 +574,53 @@ class InMemoryDB {
 
   getBillById(id: string): Bill | undefined {
     return this.getBills().find(b => b.id === id || b.billNumber === id);
+  }
+
+  // Benchmark operations
+  getBenchmarks(): MarketPriceBenchmark[] {
+    return this.benchmarks;
+  }
+
+  getBenchmarkById(id: string): MarketPriceBenchmark | undefined {
+    return this.benchmarks.find(b => b.id === id);
+  }
+
+  updateBenchmark(id: string, updates: Partial<MarketPriceBenchmark>): MarketPriceBenchmark | undefined {
+    const b = this.benchmarks.find(item => item.id === id);
+    if (!b) return undefined;
+    Object.assign(b, {
+      ...updates,
+      last_updated: new Date().toISOString()
+    });
+    return b;
+  }
+
+  addBenchmark(data: Omit<MarketPriceBenchmark, "id" | "last_updated">): MarketPriceBenchmark {
+    const newBenchmark: MarketPriceBenchmark = {
+      ...data,
+      id: `bm-${Date.now().toString().slice(-4)}`,
+      last_updated: new Date().toISOString()
+    };
+    this.benchmarks.unshift(newBenchmark);
+    return newBenchmark;
+  }
+
+  // Product moderation
+  setProductStatus(id: string, status: 'published' | 'draft' | 'disabled' | 'rejected'): Product | undefined {
+    const prod = this.products.find(p => p.id === id);
+    if (prod) {
+      prod.status = status;
+    }
+    return prod;
+  }
+
+  // Order status
+  updateOrderStatus(id: string, status: Order['status']): Order | undefined {
+    const ord = this.orders.find(o => o.id === id);
+    if (ord) {
+      ord.status = status;
+    }
+    return ord;
   }
 
   // Audit operations

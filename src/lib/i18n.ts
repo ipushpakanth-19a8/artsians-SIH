@@ -339,6 +339,34 @@ export interface UIStrings {
   verified: string;
   home: string;
   about: string;
+
+  // ---- AUTHENTICATION ----
+  signIn: string;
+  signUp: string;
+  createAccount: string;
+  haveAccount: string;
+  noAccount: string;
+  emailOrMobile: string;
+  password: string;
+  confirmPassword: string;
+  forgotPassword: string;
+  businessName: string;
+  locationCity: string;
+  selectCraft: string;
+  sellerSignInTitle: string;
+  sellerSignUpTitle: string;
+  buyerSignInTitle: string;
+  buyerSignUpTitle: string;
+  passwordsMustMatch: string;
+  passwordMinLength: string;
+  validMobileRequired: string;
+  validEmailRequired: string;
+  nameRequired: string;
+  quickDemoLogin: string;
+  demoSeller: string;
+  demoBuyer: string;
+  enterSellerPortal: string;
+  enterBuyerPortal: string;
 }
 
 export const translations: Record<LanguageCode, UIStrings> = {
@@ -671,6 +699,34 @@ export const translations: Record<LanguageCode, UIStrings> = {
     verified: "Verified",
     home: "Home",
     about: "About",
+
+    // Authentication
+    signIn: "Sign In",
+    signUp: "Sign Up",
+    createAccount: "Create Account",
+    haveAccount: "Already have an account? Sign In",
+    noAccount: "Don't have an account? Sign Up",
+    emailOrMobile: "Email or 10-Digit Mobile",
+    password: "Password",
+    confirmPassword: "Confirm Password",
+    forgotPassword: "Forgot Password?",
+    businessName: "Business / Workshop Name",
+    locationCity: "Town / District / City",
+    selectCraft: "Select Craft Discipline",
+    sellerSignInTitle: "Artisan & Seller Sign In",
+    sellerSignUpTitle: "Register as Artisan / Seller",
+    buyerSignInTitle: "Conscious Buyer Sign In",
+    buyerSignUpTitle: "Create Buyer Account",
+    passwordsMustMatch: "Passwords do not match",
+    passwordMinLength: "Password must be at least 6 characters",
+    validMobileRequired: "Please enter a valid 10-digit mobile number",
+    validEmailRequired: "Please enter a valid email address",
+    nameRequired: "Please enter your full name",
+    quickDemoLogin: "Quick Demo Fill",
+    demoSeller: "Demo Artisan",
+    demoBuyer: "Demo Buyer",
+    enterSellerPortal: "Enter Seller Portal",
+    enterBuyerPortal: "Enter Buyer Portal",
   },
 
   hi: {
@@ -1002,6 +1058,34 @@ export const translations: Record<LanguageCode, UIStrings> = {
     verified: "सत्यापित",
     home: "होम",
     about: "परिचय",
+
+    // Authentication
+    signIn: "साइन इन करें",
+    signUp: "साइन अप करें",
+    createAccount: "खाता बनाएं",
+    haveAccount: "पहले से खाता है? साइन इन करें",
+    noAccount: "खाता नहीं है? पंजीकरण करें",
+    emailOrMobile: "ईमेल या 10 अंकों का मोबाइल",
+    password: "पासवर्ड",
+    confirmPassword: "पासवर्ड की पुष्टि करें",
+    forgotPassword: "पासवर्ड भूल गए?",
+    businessName: "व्यवसाय / कार्यशाला का नाम",
+    locationCity: "शहर / कस्बा / जिला",
+    selectCraft: "हस्तशिल्प विधा चुनें",
+    sellerSignInTitle: "कारीगर एवं विक्रेता साइन इन",
+    sellerSignUpTitle: "कारीगर / विक्रेता पंजीकरण",
+    buyerSignInTitle: "खरीदार साइन इन",
+    buyerSignUpTitle: "नया खरीदार खाता बनाएं",
+    passwordsMustMatch: "पासवर्ड मेल नहीं खाते",
+    passwordMinLength: "पासवर्ड कम से कम 6 अक्षरों का होना चाहिए",
+    validMobileRequired: "कृपया मान्य 10 अंकों का मोबाइल नंबर दर्ज करें",
+    validEmailRequired: "कृपया मान्य ईमेल पता दर्ज करें",
+    nameRequired: "कृपया अपना पूरा नाम दर्ज करें",
+    quickDemoLogin: "डेमो विवरण भरें",
+    demoSeller: "डेमो कारीगर",
+    demoBuyer: "डेमो खरीदार",
+    enterSellerPortal: "विक्रेता पोर्टल में जाएं",
+    enterBuyerPortal: "खरीदार पोर्टल में जाएं",
   },
 
   te: {
@@ -1333,6 +1417,34 @@ export const translations: Record<LanguageCode, UIStrings> = {
     verified: "ధృవీకరించబడింది",
     home: "హోమ్",
     about: "గురించి",
+
+    // Authentication
+    signIn: "సైన్ ఇన్ చేయండి",
+    signUp: "నమోదు చేసుకోండి",
+    createAccount: "ఖాతాను సృష్టించండి",
+    haveAccount: "ఇప్పటికే ఖాతా ఉందా? సైన్ ఇన్",
+    noAccount: "ఖాతా లేదా? నమోదు చేసుకోండి",
+    emailOrMobile: "ఈమెయిల్ లేదా 10 అంకెల మొబైల్",
+    password: "పాస్‌వర్డ్",
+    confirmPassword: "పాస్‌వర్డ్‌ను నిర్ధారించండి",
+    forgotPassword: "పాస్‌వర్డ్ మర్చిపోయారా?",
+    businessName: "వ్యాపారం / వర్క్‌షాప్ పేరు",
+    locationCity: "పట్టణం / నగరం / జిల్లా",
+    selectCraft: "చేతివృత్తి రకాన్ని ఎంచుకోండి",
+    sellerSignInTitle: "కళాకారుడు & విక్రేత సైన్ ఇన్",
+    sellerSignUpTitle: "కళాకారుడు / విక్రేత నమోదు",
+    buyerSignInTitle: "కొనుగోలుదారు సైన్ ఇన్",
+    buyerSignUpTitle: "కొత్త కొనుగోలుదారు ఖాతా సృష్టించండి",
+    passwordsMustMatch: "పాస్‌వర్డ్‌లు సరిపోలడం లేదు",
+    passwordMinLength: "పాస్‌వర్డ్ కనీసం 6 అక్షరాలు ఉండాలి",
+    validMobileRequired: "చెల్లుబాటు అయ్యే 10 అంకెల మొబైల్ నంబర్ నమోదు చేయండి",
+    validEmailRequired: "చెల్లుబాటు అయ్యే ఈమెయిల్ నమోదు చేయండి",
+    nameRequired: "దయచేసి మీ పూర్తి పేరు నమోదు చేయండి",
+    quickDemoLogin: "డెమో వివరాలు నింపండి",
+    demoSeller: "డెమో కళాకారుడు",
+    demoBuyer: "డెమో కొనుగోలుదారు",
+    enterSellerPortal: "విక్రేత పోర్టల్‌లోకి వెళ్ళండి",
+    enterBuyerPortal: "కొనుగోలుదారు పోర్టల్‌లోకి వెళ్ళండి",
   }
 };
 
