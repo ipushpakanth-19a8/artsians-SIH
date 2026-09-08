@@ -619,6 +619,186 @@ async function startServer() {
     res.json({ success: true, message: "Database reseeded successfully" });
   });
 
+  // ---- ENHANCED FEATURE ENDPOINTS (KALAtech V2) ----
+
+  // Product aliases & CRUD
+  app.get("/api/products", (req, res) => {
+    const { category, q, artisan_id } = req.query;
+    const products = db.getProducts({
+      category: category as string,
+      query: q as string,
+      artisanId: artisan_id as string,
+    });
+    res.json(products);
+  });
+
+  app.post("/api/products", (req, res) => {
+    const {
+      title,
+      description,
+      category,
+      material,
+      dimensions,
+      weight,
+      price,
+      image,
+      artisan_id,
+      artisan_name,
+      artisan_district,
+      artisan_state,
+      cost,
+    } = req.body;
+
+    const newProd = db.createProduct({
+      artisan_id: artisan_id || "art-01",
+      artisan_name: artisan_name || "Rameshwar Rao",
+      artisan_category: category || "Handloom",
+      artisan_district: artisan_district || "Pochampally",
+      artisan_state: artisan_state || "Telangana",
+      original_image_url: image || "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
+      enhanced_image_url: image || "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
+      category: category || "Handloom",
+      status: "published",
+      cost: cost || { material_cost: 800, labor_hours: 10, hourly_rate: 100, other_cost: 50 },
+    });
+
+    if (title) newProd.title = title;
+    if (description) newProd.description = description;
+    if (material) newProd.material = material;
+    if (dimensions) newProd.est_dimensions = dimensions;
+    if (weight) newProd.weight = weight;
+    if (price) newProd.final_price = Number(price);
+
+    res.json(newProd);
+  });
+
+  app.delete("/api/products/:id", (req, res) => {
+    const idx = db.products.findIndex((p) => p.id === req.params.id);
+    if (idx !== -1) {
+      db.products.splice(idx, 1);
+      return res.json({ success: true, message: "Product deleted" });
+    }
+    res.status(404).json({ error: "Product not found" });
+  });
+
+  // Orders CRUD
+  app.get("/api/orders", (_req, res) => {
+    res.json(db.getOrders());
+  });
+
+  app.post("/api/orders", (req, res) => {
+    const orderData = req.body;
+    const order = db.createOrder(orderData);
+    res.json(order);
+  });
+
+  app.patch("/api/orders/:id", (req, res) => {
+    const { status } = req.body;
+    const order = db.orders.find((o) => o.id === req.params.id);
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    if (status) order.status = status;
+    res.json({ success: true, order });
+  });
+
+  // Bills CRUD
+  app.get("/api/bills", (_req, res) => {
+    res.json(db.getBills());
+  });
+
+  app.get("/api/bills/:id", (req, res) => {
+    const bill = db.getBillById(req.params.id);
+    if (!bill) {
+      return res.status(404).json({ error: "Bill not found" });
+    }
+    res.json(bill);
+  });
+
+  app.post("/api/bills", (req, res) => {
+    const billData = req.body;
+    const created = db.createBill(billData);
+    res.json(created);
+  });
+
+  // Market Price Comparison Endpoint
+  app.post("/api/v1/market-prices/compare", (req, res) => {
+    const { category, currentCost, proposedPrice } = req.body;
+    const cat = (category || "Handloom").toLowerCase();
+    const benchmark = db.benchmarks.find((b) => b.category.toLowerCase().includes(cat)) || db.benchmarks[0];
+
+    const minPrice = benchmark?.price_low || Math.round((currentCost || 1000) * 1.25);
+    const avgPrice = benchmark?.average_price || Math.round((currentCost || 1000) * 1.6);
+    const maxPrice = benchmark?.price_high || Math.round((currentCost || 1000) * 2.2);
+    const recommendedPrice = Math.round((currentCost || 1000) * 1.55);
+
+    res.json({
+      minPrice,
+      averagePrice: avgPrice,
+      maxPrice,
+      recommendedPrice,
+      source: "curated",
+      lastUpdated: new Date().toISOString(),
+      category: category || "Handloom",
+      benchmarkCount: db.benchmarks.length,
+    });
+  });
+
+  // AI Customer Care Chat
+  app.post("/api/v1/customer-care/chat", (req, res) => {
+    const { message, role, language } = req.body;
+    const q = (message || "").toLowerCase();
+    const lang = language || "en";
+
+    // Multilingual smart domain replies for Indian handicraft inquiries
+    let reply = "";
+    if (q.includes("price") || q.includes("कीमत") || q.includes("ధర")) {
+      reply = lang === "hi"
+        ? "अपने हस्तशिल्प की सही कीमत निर्धारित करने के लिए विक्रेता पोर्टल में 'बिल बनाएं' पर जाएं। वहां अपनी कच्ची सामग्री, श्रम घंटे और परिवहन लागत दर्ज करें। KALAtech आपको बाज़ार तुलना के साथ उचित लाभ मार्जिन सुझाएगा।"
+        : lang === "te"
+        ? "మీ చేతివృత్తి ఉత్పత్తులకు సరైన ధర నిర్ణయించడానికి 'బిల్లు తయారు చేయండి' విభాగంలోకి వెళ్ళి ముడిసరుకు, శ్రమ మరియు రవాణా ఖర్చులను నమోదు చేయండి. AI మీకు సరసమైన మార్కెట్ ధరను సిఫార్సు చేస్తుంది."
+        : "To price your craft fairly, use the 'Create Bill' feature in your seller dashboard. Enter your raw material, artisan hours, and transport expenses. KALAtech automatically compares these with verified market benchmarks to ensure fair artisan compensation.";
+    } else if (q.includes("bill") || q.includes("बिल") || q.includes("బిల్లు") || q.includes("invoice")) {
+      reply = lang === "hi"
+        ? "KALAtech पर बिल बनाना बहुत आसान है। 'बिल बनाएं' मेनू चुनें, अपना हस्तशिल्प चुनें, लागत दर्ज करें और जनरेट बिल पर क्लिक करें। आपको एक आधिकारिक, प्रिंट करने योग्य चालान मिलेगा।"
+        : lang === "te"
+        ? "KALAtech లో అధికారిక బిల్లు సులభంగా తయారు చేయవచ్చు. 'బిల్లు తయారు చేయండి' ఎంపికను ఉపయోగించి వివరాలు నమోదు చేసి నేరుగా ప్రింట్ తీసుకోండి."
+        : "You can generate a fair-trade certified invoice in seconds via 'Create Bill'. Select your craft, input your production costs, check the AI market benchmark, and click 'Finalize Bill' to get a printable invoice.";
+    } else if (q.includes("order") || q.includes("ट्रैक") || q.includes("ఆర్డర్")) {
+      reply = lang === "hi"
+        ? "आप 'मेरे ऑर्डर' पृष्ठ पर जाकर किसी भी समय अपने ऑर्डर की स्थिति (निर्मित → भुगतान किया गया → भेजा गया → वितरित) ट्रैक कर सकते हैं।"
+        : lang === "te"
+        ? "మీరు 'నా ఆర్డర్లు' పేజీలో మీ ఆర్డర్ స్థితిని (Created → Paid → Shipped → Delivered) ప్రత్యక్షంగా ట్రాక్ చేయవచ్చు."
+        : "You can track your orders directly from 'My Orders' in your buyer portal. Each step (Created → Paid → Shipped → Delivered) updates with direct artisan transit verification.";
+    } else {
+      reply = lang === "hi"
+        ? "नमस्ते! KALAtech में आपका स्वागत है। मैं भारतीय हस्तशिल्प कारीगरों और खरीदारों की सहायता के लिए उपलब्ध AI सहायक हूं। आप मुझसे मूल्य निर्धारण, बिलिंग या ऑर्डर के बारे में कुछ भी पूछ सकते हैं।"
+        : lang === "te"
+        ? "నమస్కారం! KALAtech కు స్వాగతం. భారతీయ చేతివృత్తుల సహాయం కోసం నేను ఇక్కడ ఉన్నాను. ధరలు, బిల్లులు లేదా ఆర్డర్ల గురించి మీరు ఏదైనా అడగవచ్చు."
+        : "Welcome to KALAtech AI Support! I am here to help Indian master artisans and conscious buyers with fair pricing, bill generation, provenance certificates, and order fulfillment.";
+    }
+
+    res.json({ response: reply, status: "success" });
+  });
+
+  // Admin platform statistics
+  app.get("/api/v1/admin/stats", (_req, res) => {
+    const orders = db.getOrders();
+    const bills = db.getBills();
+    const totalVolume = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+
+    res.json({
+      totalUsers: 24,
+      totalSellers: 8,
+      totalBuyers: 16,
+      totalProducts: db.products.length,
+      totalOrders: orders.length,
+      totalSales: totalVolume,
+      totalBills: bills.length,
+      pendingOrders: orders.filter((o) => o.status === "created").length,
+    });
+  });
+
   // Vite middleware setup
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

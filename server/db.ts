@@ -1,4 +1,4 @@
-import { Artisan, Product, MarketPriceBenchmark, BuyerChannel, Enquiry, AIProcessingResult, BuyerChannelMatch, Order } from '../src/types.js';
+import { Artisan, Product, MarketPriceBenchmark, BuyerChannel, Enquiry, AIProcessingResult, BuyerChannelMatch, Order, Bill } from '../src/types.js';
 import { SAMPLE_ARTISANS, INITIAL_PRODUCTS, SEED_MARKET_BENCHMARKS, BUYER_CHANNELS } from '../src/data/seedData.js';
 
 class InMemoryDB {
@@ -8,6 +8,7 @@ class InMemoryDB {
   channels: BuyerChannel[] = [];
   enquiries: Enquiry[] = [];
   orders: Order[] = [];
+  bills: Bill[] = [];
   auditTrail: AIProcessingResult[] = [];
 
   constructor() {
@@ -355,6 +356,52 @@ class InMemoryDB {
 
   getOrders(): Order[] {
     return this.orders;
+  }
+
+  // Bill operations
+  createBill(billData: Bill): Bill {
+    this.bills.unshift(billData);
+    return billData;
+  }
+
+  getBills(): Bill[] {
+    if (this.bills.length === 0) {
+      this.bills = [
+        {
+          id: 'bill-seed-01',
+          billNumber: 'KT-INV-20260308-0101',
+          sellerId: 'art-01',
+          sellerName: 'Rameshwar Rao',
+          sellerPhone: '+91 98480 12345',
+          sellerLocation: 'Yadadri Bhoodan Pochampally, Telangana',
+          productId: 'prod-01',
+          productName: 'Pochampally Double-Ikat Silk Saree',
+          productCategory: 'Handloom',
+          quantity: 2,
+          materialCost: 2800,
+          labourCost: 3200,
+          transportationCost: 250,
+          otherCost: 150,
+          totalCost: 12800,
+          proposedPrice: 8400,
+          marketMinPrice: 7200,
+          marketAveragePrice: 8600,
+          marketMaxPrice: 11000,
+          recommendedPrice: 8500,
+          finalPrice: 8400,
+          profit: 4000,
+          profitPercentage: 31.25,
+          status: 'finalized',
+          createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
+          finalizedAt: new Date(Date.now() - 3600000 * 48).toISOString(),
+        }
+      ];
+    }
+    return this.bills;
+  }
+
+  getBillById(id: string): Bill | undefined {
+    return this.getBills().find(b => b.id === id || b.billNumber === id);
   }
 
   // Audit operations

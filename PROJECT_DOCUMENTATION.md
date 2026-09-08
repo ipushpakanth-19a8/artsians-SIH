@@ -299,4 +299,47 @@ npm start
 
 ---
 
+## 12. KALAtech V2 — Three-Portal Enterprise Architecture
+
+KALAtech has been expanded into an enterprise-grade, trilingual Indian handicraft ecosystem featuring three distinct, purpose-built portals accessible from the initial welcoming instruction screen:
+
+### 12.1 First Screen — Landing & Instruction Portal (`/`)
+- Welcoming hero screen introducing the mission with tagline and trilingual language switcher (English, Hindi, Telugu).
+- Three role-based portal launchpads:
+  1. **Seller Portal**: For weavers, potters, metalcrafters, and artisans.
+  2. **Buyer Portal**: For conscious consumers, interior designers, and corporate gifting desks.
+  3. **Admin Portal**: For platform governance, artisan cluster verification, and macro socio-economic analytics.
+- "How It Works" 4-step workflow explainer.
+
+### 12.2 Seller Portal (`/seller/*`)
+- **Responsive Sidebar Navigation** with active route indicator, language switcher, and logout.
+- **Seller Dashboard (`/seller`)**: Real-time KPI summary cards (Total Listed Crafts, Verified Listings, Direct Buyer Orders, Revenue), quick action shortcuts, and recent order stream.
+- **Handicraft Management (`/seller/handicrafts`)**: Full inventory catalog with real-time text search, category filters, and CRUD controls.
+- **Add Handicraft (`/seller/add`)**: Rich product submission wizard with image upload, cost calculations, location/origin metadata, and trilingual auto-translation.
+- **Market Price Analysis (`/seller/market-analysis`)**: Interactive Recharts comparison bar chart benchmarking artisan costs against min/avg/max market prices with trilingual AI pricing guidance.
+- **Create Bill & Invoice (`/seller/create-bill`)**: 4-step billing wizard calculating materials, labor hours, transport, and overheads to produce print-ready fair-trade invoices.
+- **Orders (`/seller/orders`)**: Order fulfillment management with live status progression (`created` → `paid` → `shipped` → `delivered`) and direct buyer call/WhatsApp linkage.
+- **Sales History (`/seller/sales`)**: Cumulative revenue ledger and fair-trade margin retention metrics.
+- **Customer Care (`/seller/customer-care`)**: Trilingual AI chat assistant for pricing, billing, and inventory guidance.
+
+### 12.3 Buyer Portal (`/buyer/*`)
+- **Buyer Navigation Bar**: Live cart & wishlist counters, search, and category pills.
+- **Buyer Home (`/buyer`)**: Hero banner, popular crafts showcase, category browse, and authenticity guarantee pillars.
+- **Product Catalog (`/buyer/browse`)**: Multi-filter catalog search with sorting (price, popularity, featured).
+- **Product Detail Page (`/buyer/product/:id`)**: Detailed artisan bio, craft specifications, digital provenance certificate modal, quantity selector, and instant checkout.
+- **Cart (`/buyer/cart`)**: Itemized cart management, delivery fee computation, and one-click direct artisan checkout.
+- **Wishlist (`/buyer/wishlist`)**: Save crafts for later with quick "Move to Cart".
+- **Buyer Orders (`/buyer/orders`)**: Real-time 4-step tracking progress bar for placed orders.
+- **Customer Care (`/buyer/customer-care`)**: Dedicated consumer assistance for craft authenticity and order tracking.
+
+### 12.4 Admin Portal (`/admin/*`)
+- **Admin Dashboard (`/admin`)**: Macro KPIs (verified artisans, catalog listings, gross sales, fair-trade payouts) and live order ledger.
+- **Sellers Directory (`/admin/sellers`)**: Directory of master artisans with GI tags, state/cluster affiliations, and contact records.
+- **Product Moderation (`/admin/products`)**: Catalog oversight and moderation tools.
+- **Orders Governance (`/admin/orders`)**: Platform-wide transaction auditing.
+- **Bills Registry (`/admin/bills`)**: Searchable repository of generated invoices with printable modal inspection.
+- **Macro Analytics (`/admin/analytics`)**: Recharts GMV growth area charts, category volume distribution, and middleman savings impact metrics.
+
+---
+
 *Authored for the KALAtech Smart India Hackathon (SIH) submission.*

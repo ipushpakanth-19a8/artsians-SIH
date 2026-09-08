@@ -1,10 +1,24 @@
 export type LanguageCode = 'en' | 'hi' | 'te';
 
+export type HandicraftCategory =
+  | 'Handloom'
+  | 'Pottery'
+  | 'Woodcraft'
+  | 'Metalcraft'
+  | 'Jewellery'
+  | 'Paintings'
+  | 'Bamboo/Cane'
+  | 'Textiles'
+  | 'Traditional Decor'
+  | 'Weaving'
+  | 'Embroidery'
+  | 'Other';
+
 export interface User {
   id: string;
   phone: string;
   name: string;
-  role: 'artisan' | 'buyer' | 'admin';
+  role: 'seller' | 'buyer' | 'admin';
   preferred_language: LanguageCode;
   created_at: string;
 }
@@ -90,6 +104,9 @@ export interface Product {
   enquiry_count: number;
   created_at: string;
   published_at?: string;
+  quantity?: number;
+  location?: string;
+  craft_origin?: string;
 }
 
 export interface MarketPriceBenchmark {
@@ -145,7 +162,7 @@ export interface Order {
   quantity: number;
   unit_price: number;
   total_amount: number;
-  status: 'created' | 'paid' | 'delivered';
+  status: 'created' | 'paid' | 'shipped' | 'delivered';
   payment_id?: string;
   payment_method: 'razorpay_test' | 'upi_direct' | 'cash_on_delivery';
   fair_trade_verified: boolean;
@@ -166,3 +183,75 @@ export interface AIProcessingResult {
 
 export type AuditLog = AIProcessingResult;
 
+// ---- New types for enhanced features ----
+
+export interface Bill {
+  id: string;
+  billNumber: string;
+  sellerId: string;
+  sellerName: string;
+  sellerPhone: string;
+  sellerLocation: string;
+  productId: string;
+  productName: string;
+  productCategory: string;
+  quantity: number;
+  materialCost: number;
+  labourCost: number;
+  transportationCost: number;
+  otherCost: number;
+  totalCost: number;
+  proposedPrice: number;
+  marketMinPrice: number;
+  marketAveragePrice: number;
+  marketMaxPrice: number;
+  recommendedPrice: number;
+  finalPrice: number;
+  profit: number;
+  profitPercentage: number;
+  status: 'draft' | 'finalized';
+  createdAt: string;
+  finalizedAt?: string;
+}
+
+export interface CartItem {
+  productId: string;
+  product: Product;
+  quantity: number;
+  addedAt: string;
+}
+
+export interface WishlistItem {
+  productId: string;
+  product: Product;
+  addedAt: string;
+}
+
+export interface CustomerCareMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
+export interface MarketPriceResult {
+  minPrice: number;
+  averagePrice: number;
+  maxPrice: number;
+  recommendedPrice: number;
+  source: 'demo' | 'real';
+  lastUpdated: string;
+  category: string;
+  benchmarkCount: number;
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  totalSellers: number;
+  totalBuyers: number;
+  totalProducts: number;
+  totalOrders: number;
+  totalSales: number;
+  totalBills: number;
+  pendingOrders: number;
+}
