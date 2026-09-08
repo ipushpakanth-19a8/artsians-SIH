@@ -1,21 +1,38 @@
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    --color-artisan-ochre: #d97706;
-    --color-artisan-terracotta: #c2410c;
-    --color-artisan-indigo: #3730a3;
-    --color-artisan-emerald: #047857;
-    --color-artisan-silk: #fafaf9;
-    --color-artisan-charcoal: #1c1917;
-  }
+@source "../index.html";
+@source "./**/*.{js,ts,jsx,tsx}";
 
-  body {
-    background-color: #fafaf9;
-    color: #1c1917;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  }
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Rozha One', Georgia, serif;
+  --font-devanagari: 'Noto Sans Devanagari', sans-serif;
+  --font-telugu: 'Noto Sans Telugu', sans-serif;
+
+  --color-artisan-ochre: #d97706;
+  --color-artisan-terracotta: #c2410c;
+  --color-artisan-indigo: #3730a3;
+  --color-artisan-emerald: #047857;
+  --color-artisan-silk: #fafaf9;
+  --color-artisan-charcoal: #1c1917;
 }
+
+:root {
+  --color-artisan-ochre: #d97706;
+  --color-artisan-terracotta: #c2410c;
+  --color-artisan-indigo: #3730a3;
+  --color-artisan-emerald: #047857;
+  --color-artisan-silk: #fafaf9;
+  --color-artisan-charcoal: #1c1917;
+}
+
+body {
+  background-color: #fafaf9;
+  color: #1c1917;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
 
 /* Glassmorphism & Modern Card Accents */
 .glass-card {
