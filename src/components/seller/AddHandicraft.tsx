@@ -76,10 +76,32 @@ export function AddHandicraft() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <button onClick={() => navigate('/seller/handicrafts')} className="flex items-center gap-1.5 text-stone-500 hover:text-stone-700 text-sm mb-4">
-        <ArrowLeft className="w-4 h-4" />{t.back}
-      </button>
-      <h1 className="text-2xl font-extrabold text-stone-900 mb-6">{t.addHandicraft}</h1>
+      <div className="flex items-center justify-between mb-4">
+        <button onClick={() => navigate('/seller/handicrafts')} className="flex items-center gap-1.5 text-stone-500 hover:text-stone-700 text-sm">
+          <ArrowLeft className="w-4 h-4" />{t.back}
+        </button>
+      </div>
+
+      {/* AI Virtual Business Manager Studio Launcher Banner */}
+      <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div>
+          <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-extrabold uppercase tracking-wider mb-1">
+            Recommended for Artisans
+          </span>
+          <h2 className="text-base font-extrabold font-['Rozha_One',serif]">KALAtech AI Virtual Business Studio</h2>
+          <p className="text-xs text-amber-100 max-w-md">
+            Photograph with hardware camera, auto-enhance with Sharp 1080p, record regional voice notes & calculate fair living-wage prices automatically.
+          </p>
+        </div>
+        <button
+          onClick={() => navigate('/')}
+          className="px-4 py-2.5 rounded-xl bg-white text-stone-900 font-extrabold text-xs shadow-md hover:bg-amber-50 shrink-0 transition-all active:scale-95"
+        >
+          Open AI Studio →
+        </button>
+      </div>
+
+      <h1 className="text-2xl font-extrabold text-stone-900 mb-6">{t.addHandicraft} (Manual Entry)</h1>
 
       <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 space-y-5">
         {/* Image Upload */}

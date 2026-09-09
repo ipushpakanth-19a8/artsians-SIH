@@ -1,21 +1,30 @@
 {
   "short_name": "KALAtech",
-  "name": "KALAtech — Artisan Market Linkage & Smart Cataloging",
+  "name": "KALAtech — Rural Artisan Direct Studio",
+  "description": "Multimodal AI-Driven Direct Market Linkage & Fair-Wage Cataloging for Marginalized Indian Artisans",
   "icons": [
     {
-      "src": "/assets/icon-192.png",
-      "type": "image/png",
-      "sizes": "192x192"
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
     },
     {
-      "src": "/assets/icon-512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "src": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=192&q=80",
+      "type": "image/jpeg",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=512&q=80",
+      "type": "image/jpeg",
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/",
-  "background_color": "#1c1917",
-  "theme_color": "#d97706",
+  "background_color": "#1C1917",
+  "theme_color": "#D97706",
   "display": "standalone",
-  "orientation": "portrait"
+  "orientation": "portrait-primary",
+  "categories": ["business", "shopping", "productivity"]
 }

@@ -30,7 +30,12 @@ export function verifyPassword(password: string, hash: string): boolean {
   return hashPassword(password) === hash;
 }
 
-class InMemoryDB {
+import fs from 'fs';
+import path from 'path';
+
+const DATA_FILE = path.join(process.cwd(), 'data_store.json');
+
+class PersistentDB {
   users: User[] = [];
   artisans: Artisan[] = [];
   products: Product[] = [];
@@ -42,7 +47,52 @@ class InMemoryDB {
   auditTrail: AIProcessingResult[] = [];
 
   constructor() {
+    this.init();
+  }
+
+  init() {
+    if (fs.existsSync(DATA_FILE)) {
+      try {
+        const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+        const data = JSON.parse(raw);
+        this.users = data.users || [];
+        this.artisans = data.artisans || [];
+        this.products = data.products || [];
+        this.benchmarks = data.benchmarks || [];
+        this.channels = data.channels || [];
+        this.enquiries = data.enquiries || [];
+        this.orders = data.orders || [];
+        this.bills = data.bills || [];
+        this.auditTrail = data.auditTrail || [];
+        if (this.users.length === 0 || this.products.length === 0) {
+          this.seed();
+        }
+        return;
+      } catch (e) {
+        console.warn('Failed to parse data_store.json, resetting to seed defaults:', e);
+      }
+    }
     this.seed();
+    this.saveToDisk();
+  }
+
+  saveToDisk() {
+    try {
+      const dump = {
+        users: this.users,
+        artisans: this.artisans,
+        products: this.products,
+        benchmarks: this.benchmarks,
+        channels: this.channels,
+        enquiries: this.enquiries,
+        orders: this.orders,
+        bills: this.bills,
+        auditTrail: this.auditTrail,
+      };
+      fs.writeFileSync(DATA_FILE, JSON.stringify(dump, null, 2), 'utf-8');
+    } catch (e) {
+      console.error('Error persisting database to disk:', e);
+    }
   }
 
 
@@ -425,6 +475,7 @@ class InMemoryDB {
       created_at: new Date().toISOString()
     };
     this.products.unshift(product);
+    this.saveToDisk();
     return product;
   }
 
@@ -432,6 +483,7 @@ class InMemoryDB {
     const p = this.products.find(item => item.id === id);
     if (!p) return undefined;
     Object.assign(p, updates);
+    this.saveToDisk();
     return p;
   }
 
@@ -631,8 +683,30 @@ class InMemoryDB {
       created_at: new Date().toISOString()
     };
     this.auditTrail.unshift(item);
+    this.saveToDisk();
+    return item;
+  }
+
+  // RFQ and B2B Enquiry Pipeline
+  addEnquiry(enquiry: Omit<Enquiry, 'id' | 'created_at'>): Enquiry {
+    const newEnquiry: Enquiry = {
+      ...enquiry,
+      id: `enq-${Date.now().toString().slice(-4)}`,
+      created_at: new Date().toISOString()
+    };
+    this.enquiries.unshift(newEnquiry);
+    this.saveToDisk();
+    return newEnquiry;
+  }
+
+  updateEnquiryStatus(id: string, status: Enquiry['status']): Enquiry | undefined {
+    const item = this.enquiries.find(e => e.id === id);
+    if (item) {
+      item.status = status;
+      this.saveToDisk();
+    }
     return item;
   }
 }
 
-export const db = new InMemoryDB();
+export const db = new PersistentDB();

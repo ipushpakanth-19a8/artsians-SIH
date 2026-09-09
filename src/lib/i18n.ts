@@ -369,7 +369,7 @@ export interface UIStrings {
   enterBuyerPortal: string;
 }
 
-export const translations: Record<LanguageCode, UIStrings> = {
+const rawTranslations: Record<'en' | 'hi' | 'te', UIStrings> = {
   en: {
     appName: "KALAtech",
     tagline: "AI Market Linkage & Smart Cataloging for Artisans",
@@ -1448,18 +1448,33 @@ export const translations: Record<LanguageCode, UIStrings> = {
   }
 };
 
+export const translations: Record<LanguageCode, UIStrings> = new Proxy(rawTranslations as any, {
+  get: (target, prop: string) => {
+    return target[prop] || target.en;
+  }
+});
+
+const REGIONAL_VOICE_TAGS: Record<LanguageCode, string> = {
+  en: 'en-IN',
+  hi: 'hi-IN',
+  te: 'te-IN',
+  ta: 'ta-IN',
+  bn: 'bn-IN',
+  mr: 'mr-IN',
+  gu: 'gu-IN',
+  kn: 'kn-IN',
+  ml: 'ml-IN',
+  or: 'or-IN',
+  pa: 'pa-IN',
+  as: 'as-IN',
+};
+
 export function speakText(text: string, lang: LanguageCode = 'en') {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   try {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    if (lang === 'hi') {
-      utterance.lang = 'hi-IN';
-    } else if (lang === 'te') {
-      utterance.lang = 'te-IN';
-    } else {
-      utterance.lang = 'en-IN';
-    }
+    utterance.lang = REGIONAL_VOICE_TAGS[lang] || 'en-IN';
     utterance.rate = 0.95;
     window.speechSynthesis.speak(utterance);
   } catch (e) {

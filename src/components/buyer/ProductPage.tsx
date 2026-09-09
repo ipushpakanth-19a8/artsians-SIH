@@ -233,6 +233,66 @@ export function ProductPage() {
               </div>
             </div>
 
+            {/* B2B Wholesale & Bulk Order Information */}
+            <div className="p-3.5 bg-amber-50/80 rounded-2xl border border-amber-200 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-extrabold text-amber-950 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                  <span>B2B Institutional & Wholesale</span>
+                </span>
+                <span className="px-2 py-0.5 bg-amber-200/70 text-amber-900 font-bold rounded text-[10px]">
+                  MOQ: {product.minimum_order_quantity || 10} units
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-stone-700">
+                <span>Wholesale Direct Rate:</span>
+                <strong className="font-mono text-emerald-800 font-extrabold text-sm">
+                  ₹{product.b2b_price ? product.b2b_price.toLocaleString() : Math.round(product.final_price * 0.82).toLocaleString()} / unit
+                </strong>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-stone-500">
+                <span>Monthly Capacity: {product.production_capacity_monthly || 50} units</span>
+                <span>Lead Time: {product.lead_time_days || 14} days</span>
+              </div>
+              <button
+                onClick={() => {
+                  fetch(`/api/v1/products/${product.id}/enquiries`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      buyer_name: 'Verified B2B Retailer / Exporter',
+                      buyer_contact: '+919876543210',
+                      buyer_email: 'procurement@lifestylehandicrafts.in',
+                      buyer_location: 'New Delhi, India',
+                      quantity: product.minimum_order_quantity || 10,
+                      message: `Inquiry for bulk order of ${product.title}. Requesting sample & GST commercial invoice terms.`
+                    })
+                  }).then(r => r.json()).then(() => {
+                    alert('B2B RFQ quotation request sent directly to artisan via KALAtech B2B Network!');
+                  }).catch(() => {
+                    alert('Enquiry submitted.');
+                  });
+                }}
+                className="w-full py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+              >
+                Submit B2B Bulk RFQ Quotation Request
+              </button>
+            </div>
+
+            {/* Seen at Exhibition Provenance Tag */}
+            {product.seen_at_exhibition && (
+              <div className="p-3 bg-stone-100 rounded-xl border border-stone-200 flex items-center justify-between text-xs">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-stone-500 block">Exhibition Provenance:</span>
+                  <span className="font-bold text-stone-800">{product.seen_at_exhibition.event_name} ({product.seen_at_exhibition.stall_number})</span>
+                  <p className="text-[11px] text-stone-500">{product.seen_at_exhibition.city}, {product.seen_at_exhibition.year}</p>
+                </div>
+                <span className="px-2.5 py-1 bg-amber-100 text-amber-900 rounded-lg text-[10px] font-bold">
+                  Seen in Person ✓
+                </span>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={handleAddToCart}

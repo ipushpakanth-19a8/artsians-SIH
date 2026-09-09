@@ -62,8 +62,8 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="font-extrabold tracking-tight text-lg text-white font-['Rozha_One',serif]">
                     KALAtech
                   </span>
-                  <span className="hidden sm:inline-block px-2 py-0.5 text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full">
-                    Artisan Market Linkage
+                  <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full tracking-wide">
+                    Mobile-First PWA (Rural Android Ready)
                   </span>
                 </div>
                 <p className="text-[11px] text-stone-400 font-medium">

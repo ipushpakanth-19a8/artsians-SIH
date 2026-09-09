@@ -145,6 +145,15 @@ export const ProvenanceTagModal: React.FC<ProvenanceTagModalProps> = ({
                 <span className="text-stone-500 font-medium">Dimensions:</span>
                 <span className="font-bold text-stone-800">{product.est_dimensions || 'Handcrafted Standard'}</span>
               </div>
+              {/* Exhibition Metadata if set */}
+              {product.seen_at_exhibition && (
+                <div className="flex justify-between items-center py-1 border-t border-amber-200/60">
+                  <span className="text-stone-500 font-medium">Exhibition Provenance:</span>
+                  <span className="font-bold text-stone-800">
+                    {product.seen_at_exhibition.event_name} ({product.seen_at_exhibition.stall_number}, {product.seen_at_exhibition.city})
+                  </span>
+                </div>
+              )}
               <div className="pt-2 border-t border-amber-200/80 flex justify-between items-center">
                 <span className="font-extrabold text-amber-900 text-xs">Direct Artisan Fair Asking Price:</span>
                 <span className="text-base font-black text-amber-950 font-['Rozha_One',serif]">
@@ -153,10 +162,13 @@ export const ProvenanceTagModal: React.FC<ProvenanceTagModalProps> = ({
               </div>
             </div>
 
-            {/* Footer Assurance Tag */}
-            <div className="text-center pt-2 text-[10px] text-stone-500 flex items-center justify-center gap-1.5 border-t border-stone-200">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Certified GI / Fair Trade Direct Handloom • KALAtech AI Linkage</span>
+            {/* B2B / Reorder QR Note */}
+            <div className="text-center pt-2 text-[10px] text-stone-500 flex flex-col items-center justify-center gap-0.5 border-t border-stone-200">
+              <div className="flex items-center gap-1 text-emerald-700 font-bold">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Scan QR for Online Re-Orders & Direct Artisan Contact</span>
+              </div>
+              <span className="text-stone-400 text-[9px]">Verified GI / Fair Trade Handloom • KALAtech AI Provenance</span>
             </div>
 
           </div>

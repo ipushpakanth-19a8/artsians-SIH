@@ -1,4 +1,38 @@
-export type LanguageCode = 'en' | 'hi' | 'te';
+export type LanguageCode =
+  | 'en'
+  | 'hi'
+  | 'te'
+  | 'ta'
+  | 'bn'
+  | 'mr'
+  | 'gu'
+  | 'kn'
+  | 'ml'
+  | 'or'
+  | 'pa'
+  | 'as';
+
+export interface RegionalLanguageConfig {
+  code: LanguageCode;
+  label: string;
+  native: string;
+  bhashiniCode?: string;
+}
+
+export const SUPPORTED_LANGUAGES: RegionalLanguageConfig[] = [
+  { code: 'en', label: 'English', native: 'English' },
+  { code: 'hi', label: 'Hindi', native: 'हिन्दी' },
+  { code: 'te', label: 'Telugu', native: 'తెలుగు' },
+  { code: 'ta', label: 'Tamil', native: 'தமிழ்' },
+  { code: 'bn', label: 'Bengali', native: 'বাংলা' },
+  { code: 'mr', label: 'Marathi', native: 'मराठी' },
+  { code: 'gu', label: 'Gujarati', native: 'ગુજરાતી' },
+  { code: 'kn', label: 'Kannada', native: 'ಕನ್ನಡ' },
+  { code: 'ml', label: 'Malayalam', native: 'മലയാളം' },
+  { code: 'or', label: 'Odia', native: 'ଓଡ଼ିଆ' },
+  { code: 'pa', label: 'Punjabi', native: 'ਪੰਜਾਬੀ' },
+  { code: 'as', label: 'Assamese', native: 'অসমীয়া' },
+];
 
 export type HandicraftCategory =
   | 'Handloom'
@@ -43,15 +77,42 @@ export interface ProductCost {
   other_cost: number;
 }
 
+export interface MarketComparableItem {
+  platform: string;
+  title: string;
+  price: number;
+  artisan_cluster?: string;
+}
+
 export interface PriceRecommendation {
   suggested_min: number;
   suggested_max: number;
   target_recommended: number;
+  b2b_recommended?: number;
+  fair_cost?: number;
+  market_low?: number;
+  market_avg?: number;
+  market_high?: number;
   rationale: string;
+  why_this_price?: {
+    simple_explanation: string;
+    labor_share_pct: number;
+    material_cost: number;
+    packaging_transport: number;
+    fair_living_wage: number;
+    market_comparables_count: number;
+  };
   comparable_average: number;
   typical_middleman_price: number;
   artisan_profit_gain: number;
   margin_percentage: number;
+  confidence_score?: number; // 0 to 1
+  craft_complexity_score?: number;
+  quality_tier?: string;
+  market_comparables?: MarketComparableItem[];
+  pricing_engine?: string;
+  fair_wage_floor?: number;
+  status?: 'success' | 'fallback';
 }
 
 export interface BuyerChannelMatch {
@@ -84,8 +145,14 @@ export interface Product {
   artisan_phone?: string;
   title: string;
   description: string;
+  short_description?: string;
+  b2b_description?: string;
+  social_caption?: string;
   category: string;
   subcategory?: string;
+  craft_technique?: string;
+  motifs?: string[];
+  colors?: string[];
   tags: string[];
   material: string;
   est_dimensions: string;
@@ -93,12 +160,35 @@ export interface Product {
   base_language: LanguageCode;
   original_image_url: string;
   enhanced_image_url: string;
+  image_variants?: {
+    square_1x1?: string;
+    portrait_9x16?: string;
+    thumbnail?: string;
+    transparent_png?: string;
+  };
   enhancement_applied?: boolean;
   status: 'draft' | 'published' | 'disabled' | 'rejected';
+  validation_status?: 'AI Generated' | 'Needs Review' | 'Verified by Artisan' | 'Published';
+  gi_status?: 'certified' | 'potential' | 'none' | 'Needs artisan confirmation';
+  gi_certificate_number?: string;
   cost: ProductCost;
   pricing?: PriceRecommendation;
   final_price: number;
-  translations: Record<LanguageCode, ProductTranslation>;
+  b2b_price?: number;
+  minimum_order_quantity?: number;
+  production_capacity_monthly?: number;
+  lead_time_days?: number;
+  customization_available?: boolean;
+  sample_available?: boolean;
+  seen_at_exhibition?: {
+    event_name: string;
+    stall_number: string;
+    city: string;
+    year: string;
+    qr_scans_count?: number;
+    repeat_orders_count?: number;
+  };
+  translations: Partial<Record<LanguageCode, ProductTranslation>>;
   market_linkage: BuyerChannelMatch[];
   views_count: number;
   enquiry_count: number;

@@ -82,5 +82,41 @@
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Automatically clean up stale Service Workers in development/localhost to prevent white screen
+      if ('serviceWorker' in navigator) {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for (var i = 0; i < registrations.length; i++) {
+              registrations[i].unregister();
+            }
+          });
+          // Also clear stale cache storage on localhost
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              names.forEach(function(name) { caches.delete(name); });
+            });
+          }
+        } else if (window.location.protocol.startsWith('http')) {
+          window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js')
+              .then(function(reg) { console.log('KALAtech PWA ServiceWorker active:', reg.scope); })
+              .catch(function(err) { console.warn('ServiceWorker registration error:', err); });
+          });
+        }
+      }
+
+      // Startup Diagnostic Watchdog: If app fails to mount within 6 seconds, show actionable guide
+      setTimeout(function() {
+        var loadingElem = document.querySelector('#root > div[style*="min-height: 100vh"]');
+        if (loadingElem) {
+          console.warn('App mount watchdog triggered - React bundle is taking longer than expected.');
+          var alertDiv = document.createElement('div');
+          alertDiv.style.cssText = 'margin-top: 24px; padding: 16px 20px; background: #fffbeb; border: 1px solid #f59e0b; border-radius: 12px; max-width: 460px; text-align: center; color: #78350f; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);';
+          alertDiv.innerHTML = '<p style="margin: 0 0 8px 0; font-weight: 700; color: #b45309;">Taking a moment to mount?</p><p style="margin: 0 0 12px 0;">If you see a blank page, your browser might be caching an old session or blocking scripts.</p><button onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload();" style="padding: 6px 14px; background: #d97706; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">↻ Clear Local Cache & Reload</button>';
+          loadingElem.appendChild(alertDiv);
+        }
+      }, 5000);
+    </script>
   </body>
 </html>
