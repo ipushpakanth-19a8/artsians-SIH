@@ -22,10 +22,10 @@ export function CustomerCare({ defaultRole = 'seller', embedded = false }: Custo
       id: 'init-1',
       role: 'assistant',
       content: language === 'hi'
-        ? 'नमस्ते! मैं KALAtech का AI ग्राहक सेवा सहायक हूं। हस्तशिल्प मूल्य निर्धारण, बिलिंग, या ऑर्डर के बारे में आप क्या जानना चाहते हैं?'
+        ? 'नमस्ते! मैं शिल्पसेतु (KALAtech) का AI ग्राहक सेवा सहायक हूं। हस्तशिल्प मूल्य निर्धारण, बिलिंग, या ऑर्डर के बारे में आप क्या जानना चाहते हैं?'
         : language === 'te'
-        ? 'నమస్కారం! నేను KALAtech AI కస్టమర్ కేర్ అసిస్టెంట్. ధర నిర్ణయం, బిల్లింగ్ లేదా ఆర్డర్ల గురించి నేను మీకు ఎలా సహాయపడగలను?'
-        : 'Hello! I am your KALAtech AI Support Assistant. How can I help you with handicraft pricing, bill generation, orders, or marketplace navigation today?',
+        ? 'నమస్కారం! నేను శిల్పసేతు (KALAtech) AI కస్టమర్ కేర్ అసిస్టెంట్. ధర నిర్ణయం, బిల్లింగ్ లేదా ఆర్డర్ల గురించి నేను మీకు ఎలా సహాయపడగలను?'
+        : 'Hello! I am your ShilpSetu AI Support Assistant (powered by KALAtech). How can I help you with handicraft pricing, bill generation, orders, or marketplace navigation today?',
       timestamp: new Date().toISOString(),
     },
   ]);

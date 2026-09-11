@@ -117,23 +117,23 @@ export interface PortalStrings {
   close: string;
 }
 
-export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
+export const PORTAL_TRANSLATIONS: Record<string, PortalStrings> = {
   en: {
     languageLabel: "Language",
     tagline: "Digital Market Linkage for Indian Artisans",
-    heroHeading: "Your Craft. Your Price. Your Market.",
-    heroSub: "KALAtech helps artisans showcase their handicrafts, understand fair pricing, and connect directly with buyers.",
-    primaryCta: "Get Started",
-    secondaryCta: "Listen to Instructions 🔊",
+    heroHeading: "Turn Your Craft Into a Digital Business.",
+    heroSub: "Create beautiful product listings, discover fair prices, reach more customers, and manage your artisan business — with AI helping you at every step.",
+    primaryCta: "Start Selling",
+    secondaryCta: "Explore Artisan Products",
     voicePlaying: "Playing instructions…",
     voiceListen: "Listen",
     voicePlay: "Play",
     voicePause: "Pause",
     voiceReplay: "Replay",
     voiceStop: "Stop",
-    welcomeAudioSpeech: "Welcome to KALAtech. Digital market linkage for Indian artisans. Your craft, your price, your market. KALAtech helps you showcase handicrafts, calculate fair profit prices, and connect directly with genuine buyers without middlemen. Click Get Started to learn how it works.",
+    welcomeAudioSpeech: "Welcome to ShilpSetu, powered by KALAtech. Digital market linkage for Indian artisans. Your craft, your price, your market. ShilpSetu helps you showcase handicrafts, calculate fair profit prices, and connect directly with genuine buyers without middlemen. Click Get Started to learn how it works.",
 
-    instructionSectionTitle: "How KALAtech Works in 3 Simple Steps",
+    instructionSectionTitle: "How ShilpSetu Works in 3 Simple Steps",
     instructionSectionSub: "Designed specially for artisans. Simple, visual, and guided by voice.",
     nextStep: "Next Step →",
     prevStep: "← Previous",
@@ -147,16 +147,16 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
     step1Speech: "Step 1: Add your craft. Simply take a photo or upload a picture of your handicraft using your smartphone camera. You do not need professional photography equipment.",
 
     step2Badge: "STEP 2",
-    step2Title: "🤖 LET KALATECH HELP",
+    step2Title: "🤖 LET SHILPSETU HELP",
     step2Desc: "AI helps create your product description and understand the craft.",
     step2Detail: "KALA Mitra writes your craft story, translates into multiple languages, and highlights GI heritage tags automatically.",
-    step2Speech: "Step 2: Let KALAtech help. Our friendly AI assistant examines your craft, identifies raw materials, creates an authentic description, and translates it into English, Hindi, and Telugu.",
+    step2Speech: "Step 2: Let ShilpSetu help. Our friendly AI assistant examines your craft, identifies raw materials, creates an authentic description, and translates it into English, Hindi, and Telugu.",
 
     step3Badge: "STEP 3",
     step3Title: "💰 SET A FAIR PRICE & SELL",
     step3Desc: "Compare market prices, create your bill and connect with buyers.",
     step3Detail: "Transparent cost-plus calculation ensures 40% to 60% higher earnings than traditional middleman deductions.",
-    step3Speech: "Step 3: Set a fair price and sell. KALAtech compares current market benchmarks, recommends fair profit margins for your labor hours, creates printed GST bills, and connects you directly with buyers via WhatsApp and online enquiry.",
+    step3Speech: "Step 3: Set a fair price and sell. ShilpSetu compares current market benchmarks, recommends fair profit margins for your labor hours, creates printed GST bills, and connects you directly with buyers via WhatsApp and online enquiry.",
 
     aiSectionTitle: "Meet KALA Mitra — Your AI Craft Assistant",
     aiSectionSub: "Friendly, fast, and built specifically for traditional Indian crafts.",
@@ -169,7 +169,7 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
     aiSamplePrice: "₹5,850 (Artisan Profit: +₹2,100 vs middleman ₹3,400)",
     aiSampleStory: "Handwoven 100% Mulberry silk woven with natural dyed tie-and-dye geometric patterns by hereditary master weavers in Yadadri district.",
 
-    roleHeading: "How do you want to use KALAtech?",
+    roleHeading: "How do you want to use ShilpSetu?",
     roleSub: "Select your profile below to continue",
     roleArtisanTitle: "I am an Artisan",
     roleArtisanBadge: "Artisan / Weaver / Potter",
@@ -192,7 +192,7 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
       "📦 Direct artisan contact & transparent dispatch",
       "⚡ Fast checkout or instant guest browsing"
     ],
-    roleSelectionSpeech: "How do you want to use KALAtech? If you make handicrafts, choose I am an Artisan. If you want to purchase authentic handicrafts, choose I am a Buyer.",
+    roleSelectionSpeech: "How do you want to use ShilpSetu? If you make handicrafts, choose I am an Artisan. If you want to purchase authentic handicrafts, choose I am a Buyer.",
 
     artisanWelcomeTitle: "Welcome, Artisan! 👋",
     artisanWelcomeSub: "Let's set up your digital stall in less than 2 minutes.",
@@ -209,13 +209,13 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
     artisanAudioHelp: "Please enter your mobile number and name. Choose your craft type such as handloom weaving or pottery, then enter the 6-digit OTP sent to your phone to access your artisan studio.",
     autoFillDemo: "Auto-fill Master Artisan Demo",
 
-    buyerWelcomeTitle: "Welcome to KALAtech 🛍️",
+    buyerWelcomeTitle: "Welcome to ShilpSetu 🛍️",
     buyerWelcomeSub: "Explore authentic Indian crafts directly from rural master artisans.",
     buyerBtnSignUp: "Create Buyer Account",
     buyerBtnSignIn: "Buyer Sign In",
     buyerBtnGuest: "Continue as Guest 🚀",
     buyerGuestSub: "Instant access to marketplace — no registration required now",
-    buyerAudioHelp: "Welcome to KALAtech marketplace. You can sign up, sign in, or click Continue as Guest to immediately browse genuine handicrafts from master artisans across India.",
+    buyerAudioHelp: "Welcome to ShilpSetu marketplace. You can sign up, sign in, or click Continue as Guest to immediately browse genuine handicrafts from master artisans across India.",
 
     backToWelcome: "← Back to Welcome",
     stepIndicator: "Step",
@@ -225,19 +225,19 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
   hi: {
     languageLabel: "भाषा",
     tagline: "भारतीय कारीगरों के लिए डिजिटल बाज़ार संपर्क",
-    heroHeading: "आपका शिल्प। आपका मूल्य। आपका बाज़ार।",
-    heroSub: "KALAtech कारीगरों को अपने हस्तशिल्प प्रदर्शित करने, उचित मूल्य समझने और सीधे खरीदारों से जुड़ने में मदद करता है।",
-    primaryCta: "शुरू करें",
-    secondaryCta: "निर्देश सुनें 🔊",
+    heroHeading: "अपनी शिल्पकला को बनाएं डिजिटल व्यवसाय",
+    heroSub: "सुंदर उत्पाद सूची बनाएं, उचित मूल्य जानें, अधिक ग्राहकों तक पहुंचें और अपना व्यवसाय बढ़ाएं — AI की सहायता से हर कदम पर।",
+    primaryCta: "बेचना शुरू करें",
+    secondaryCta: "हस्तशिल्प उत्पाद देखें",
     voicePlaying: "निर्देश सुनाए जा रहे हैं…",
     voiceListen: "सुनें",
     voicePlay: "चलाएं",
     voicePause: "रोकें",
     voiceReplay: "पुनः सुनें",
     voiceStop: "बंद करें",
-    welcomeAudioSpeech: "KALAtech में आपका स्वागत है। भारतीय कारीगरों के लिए डिजिटल बाज़ार संपर्क। आपका शिल्प, आपका मूल्य, आपका बाज़ार। KALAtech आपको अपने हस्तशिल्प प्रदर्शित करने, उचित मुनाफ़ा तय करने और बिना बिचौलियों के सीधे खरीदारों से जुड़ने में मदद करता है। यह कैसे काम करता है जानने के लिए 'शुरू करें' पर क्लिक करें।",
+    welcomeAudioSpeech: "शिल्पसेतु (KALAtech) में आपका स्वागत है। भारतीय कारीगरों के लिए डिजिटल बाज़ार संपर्क। आपका शिल्प, आपका मूल्य, आपका बाज़ार। शिल्पसेतु आपको अपने हस्तशिल्प प्रदर्शित करने, उचित मुनाफ़ा तय करने और बिना बिचौलियों के सीधे खरीदारों से जुड़ने में मदद करता है। यह कैसे काम करता है जानने के लिए 'शुरू करें' पर क्लिक करें।",
 
-    instructionSectionTitle: "KALAtech कैसे काम करता है — 3 आसान कदम",
+    instructionSectionTitle: "शिल्पसेतु कैसे काम करता है — 3 आसान कदम",
     instructionSectionSub: "कारीगरों के लिए ख़ास तौर पर तैयार। बेहद सरल, चित्रों से भरपूर और आवाज़ द्वारा मार्गदर्शित।",
     nextStep: "अगला कदम →",
     prevStep: "← पिछला",
@@ -251,16 +251,16 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
     step1Speech: "चरण 1: अपना शिल्प जोड़ें। अपने मोबाइल कैमरे से अपने हस्तशिल्प की एक साफ़ फ़ोटो लें या गैलरी से चुनें। आपको किसी महंगे कैमरे की ज़रूरत नहीं है।",
 
     step2Badge: "चरण 2",
-    step2Title: "🤖 KALATECH को मदद करने दें",
+    step2Title: "🤖 शिल्पसेतु को मदद करने दें",
     step2Desc: "AI आपके उत्पाद का विवरण बनाने और शिल्प को समझने में मदद करता है।",
     step2Detail: "कला मित्र AI आपके शिल्प की प्रामाणिक कहानी लिखता है, सामग्री पहचानता है और इसे हिंदी, अंग्रेज़ी व तेलुगु में अनुवाद करता है।",
-    step2Speech: "चरण 2: KALAtech को मदद करने दें। हमारा AI सहायक आपके शिल्प को पहचानकर उसकी सुंदर कहानी लिखता है और बाज़ार के खरीदारों के लिए आकर्षक विवरण तैयार करता है।",
+    step2Speech: "चरण 2: शिल्पसेतु को मदद करने दें। हमारा AI सहायक आपके शिल्प को पहचानकर उसकी सुंदर कहानी लिखता है और बाज़ार के खरीदारों के लिए आकर्षक विवरण तैयार करता है।",
 
     step3Badge: "चरण 3",
     step3Title: "💰 सही मूल्य तय करें और बेचें",
     step3Desc: "बाज़ार भाव की तुलना करें, अपना बिल बनाएं और खरीदारों से जुड़ें।",
     step3Detail: "मेहनत और लागत का सच्चा हिसाब, जिससे बिचौलियों की तुलना में 40% से 60% अधिक कमाई हो सके।",
-    step3Speech: "चरण 3: सही मूल्य तय करें और बेचें। KALAtech बाज़ार दरों की तुलना करके आपकी मजदूरी और लागत के आधार पर सही मूल्य बताता है, पक्का बिल बनाता है और सीधे व्हाट्सएप पर खरीदारों से जोड़ता है।",
+    step3Speech: "चरण 3: सही मूल्य तय करें और बेचें। शिल्पसेतु बाज़ार दरों की तुलना करके आपकी मजदूरी और लागत के आधार पर सही मूल्य बताता है, पक्का बिल बनाता है और सीधे व्हाट्सएप पर खरीदारों से जोड़ता है।",
 
     aiSectionTitle: "मिलिए 'कला मित्र' से — आपका AI शिल्प साथी",
     aiSectionSub: "सरल, भरोसेमंद और भारतीय पारंपरिक शिल्प कला के लिए विशेष रूप से निर्मित।",
@@ -273,7 +273,7 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
     aiSamplePrice: "₹5,850 (कारीगर मुनाफ़ा: बिचौलिए के ₹3,400 के मुकाबले +₹2,100 अधिक)",
     aiSampleStory: "यादाद्री ज़िले के मास्टर बुनकरों द्वारा प्राकृतिक रंगों व पारंपरिक ताना-बाना तकनीक से तैयार 100% शुद्ध रेशम।",
 
-    roleHeading: "आप KALAtech का उपयोग कैसे करना चाहते हैं?",
+    roleHeading: "आप शिल्पसेतु का उपयोग कैसे करना चाहते हैं?",
     roleSub: "आगे बढ़ने के लिए अपना उपयुक्त विकल्प चुनें",
     roleArtisanTitle: "मैं एक कारीगर हूँ",
     roleArtisanBadge: "कारीगर / बुनकर / कुम्हार",
@@ -296,7 +296,7 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
       "📦 कारीगर से सीधा संवाद और पारदर्शी डिलीवरी",
       "⚡ बिना पंजीकरण तुरंत 'अतिथि' के रूप में ब्राउज़ करें"
     ],
-    roleSelectionSpeech: "आप KALAtech का उपयोग कैसे करना चाहते हैं? यदि आप हस्तशिल्प बनाते हैं, तो 'मैं एक कारीगर हूँ' चुनें। यदि आप सीधे कारीगरों से हस्तशिल्प खरीदना चाहते हैं, तो 'मैं एक खरीदार हूँ' चुनें।",
+    roleSelectionSpeech: "आप शिल्पसेतु का उपयोग कैसे करना चाहते हैं? यदि आप हस्तशिल्प बनाते हैं, तो 'मैं एक कारीगर हूँ' चुनें। यदि आप सीधे कारीगरों से हस्तशिल्प खरीदना चाहते हैं, तो 'मैं एक खरीदार हूँ' चुनें।",
 
     artisanWelcomeTitle: "नमस्ते, शिल्पकार साथी! 👋",
     artisanWelcomeSub: "आइए केवल 1 मिनट में आपकी डिजिटल दुकान शुरू करें।",
@@ -313,13 +313,13 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
     artisanAudioHelp: "कृपया अपना मोबाइल नंबर और नाम दर्ज करें। अपना शिल्प जैसे बुनाई या मिट्टी कला चुनें, फिर फ़ोन पर आए 6 अंकों के ओटीपी को दर्ज करके अपने स्टूडियो में प्रवेश करें।",
     autoFillDemo: "मास्टर कारीगर डेमो भरें",
 
-    buyerWelcomeTitle: "KALAtech में आपका स्वागत है 🛍️",
+    buyerWelcomeTitle: "शिल्पसेतु में आपका स्वागत है 🛍️",
     buyerWelcomeSub: "भारत के दूर-दराज़ कारीगरों से सीधे हस्तनिर्मित उत्कृष्ट शिल्प प्राप्त करें।",
     buyerBtnSignUp: "नया खरीदार खाता बनाएं",
     buyerBtnSignIn: "खरीदार साइन इन",
     buyerBtnGuest: "अतिथि के रूप में जारी रखें 🚀",
     buyerGuestSub: "बिना किसी पंजीकरण के तुरंत बाज़ार ब्राउज़ करें",
-    buyerAudioHelp: "KALAtech बाज़ार में आपका स्वागत है। आप खाता बना सकते हैं, साइन इन कर सकते हैं या बिना किसी झंझट के तुरंत हस्तशिल्प देखने के लिए 'अतिथि के रूप में जारी रखें' पर क्लिक कर सकते हैं।",
+    buyerAudioHelp: "शिल्पसेतु बाज़ार में आपका स्वागत है। आप खाता बना सकते हैं, साइन इन कर सकते हैं या बिना किसी झंझट के तुरंत हस्तशिल्प देखने के लिए 'अतिथि के रूप में जारी रखें' पर क्लिक कर सकते हैं।",
 
     backToWelcome: "← मुख्य पृष्ठ पर लौटें",
     stepIndicator: "कदम",
@@ -329,19 +329,19 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
   te: {
     languageLabel: "భాష",
     tagline: "భారతీయ చేతివృత్తుల కళాకారుల కోసం డిజిటల్ మార్కెట్ అనుసంధానం",
-    heroHeading: "మీ కళ. మీ ధర. మీ మార్కెట్.",
-    heroSub: "కళాకారులు తమ చేతివృత్తులను ప్రదర్శించడానికి, సరసమైన ధరలను అర్థం చేసుకోవడానికి మరియు నేరుగా కొనుగోలుదారులతో కనెక్ట్ అవ్వడానికి KALAtech సహాయపడుతుంది.",
-    primaryCta: "ప్రారంభించండి",
-    secondaryCta: "సూచనలు వినండి 🔊",
+    heroHeading: "మీ చేతివృత్తిని డిజిటల్ వ్యాపారంగా మార్చుకోండి",
+    heroSub: "అందమైన ఉత్పత్తుల జాబితాను రూపొందించండి, సరసమైన ధరలను కనుగొనండి, ఎక్కువ మంది వినియోగదారులను చేరుకోండి — AI సహాయంతో ప్రతి అడుగులోనూ.",
+    primaryCta: "విక్రయించడం ప్రారంభించండి",
+    secondaryCta: "కళాఖండాలను అన్వేషించండి",
     voicePlaying: "సూచనలు వినిపిస్తున్నాయి…",
     voiceListen: "వినండి",
     voicePlay: "ప్లే",
     voicePause: "పాజ్",
     voiceReplay: "మళ్ళీ వినండి",
     voiceStop: "ఆపు",
-    welcomeAudioSpeech: "KALAtech కు స్వాగతం. భారతీయ చేతివృత్తుల కళాకారుల కోసం డిజిటల్ మార్కెట్ అనుసంధానం. మీ కళ, మీ ధర, మీ మార్కెట్. KALAtech మీ చేతివృత్తులను ప్రదర్శించడానికి, సరసమైన లాభదాయక ధరలను నిర్ణయించడానికి మరియు దళారులు లేకుండా నేరుగా కొనుగోలుదారులతో కనెక్ట్ అవ్వడానికి సహాయపడుతుంది. ఎలా పనిచేస్తుందో తెలుసుకోవడానికి 'ప్రారంభించండి' క్లిక్ చేయండి.",
+    welcomeAudioSpeech: "శిల్పసేతు (KALAtech) కు స్వాగతం. భారతీయ చేతివృత్తుల కళాకారుల కోసం డిజిటల్ మార్కెట్ అనుసంధానం. మీ కళ, మీ ధర, మీ మార్కెట్. శిల్పసేతు మీ చేతివృత్తులను ప్రదర్శించడానికి, సరసమైన లాభదాయక ధరలను నిర్ణయించడానికి మరియు దళారులు లేకుండా నేరుగా కొనుగోలుదారులతో కనెక్ట్ అవ్వడానికి సహాయపడుతుంది. ఎలా పనిచేస్తుందో తెలుసుకోవడానికి 'ప్రారంభించండి' క్లిక్ చేయండి.",
 
-    instructionSectionTitle: "KALAtech 3 సులభమైన దశల్లో ఎలా పనిచేస్తుంది",
+    instructionSectionTitle: "శిల్పసేతు 3 సులభమైన దశల్లో ఎలా పనిచేస్తుంది",
     instructionSectionSub: "చేతివృత్తుల కళాకారుల కోసం ప్రత్యేకంగా రూపొందించబడింది. బొమ్మలతో కూడినది, సులభం మరియు వాయిస్ సహాయం గలది.",
     nextStep: "తదుపరి దశ →",
     prevStep: "← మునుపటిది",
@@ -355,16 +355,16 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
     step1Speech: "దశ 1: మీ కళాఖండాన్ని జోడించండి. మీ స్మార్ట్‌ఫోన్ కెమెరాతో మీ చేతివృత్తి వస్తువు ఫోటో తీయండి లేదా గ్యాలరీ నుండి ఎంచుకోండి. ఖరీదైన కెమెరా అవసరం లేదు.",
 
     step2Badge: "దశ 2",
-    step2Title: "🤖 KALATECH సహాయం తీసుకోండి",
+    step2Title: "🤖 శిల్పసేతు సహాయం తీసుకోండి",
     step2Desc: "AI ఉత్పత్తి వివరణను రూపొందించడానికి మరియు కళను అర్థం చేసుకోవడానికి సహాయపడుతుంది.",
     step2Detail: "కళా మిత్ర AI మీ కళాఖండం కథనాన్ని రాస్తుంది, ముడి పదార్థాలను గుర్తిస్తుంది మరియు తెలుగు, హిందీ, ఇంగ్లీషులలో అనువదిస్తుంది.",
-    step2Speech: "దశ 2: KALAtech సహాయం తీసుకోండి. మా AI సహాయకుడు మీ కళను పరిశీలించి, కథనాన్ని రూపొందించి, కొనుగోలుదారుల కోసం ఆకర్షణీయమైన వివరణను సిద్ధం చేస్తుంది.",
+    step2Speech: "దశ 2: శిల్పసేతు సహాయం తీసుకోండి. మా AI సహాయకుడు మీ కళను పరిశీలించి, కథనాన్ని రూపొందించి, కొనుగోలుదారుల కోసం ఆకర్షణీయమైన వివరణను సిద్ధం చేస్తుంది.",
 
     step3Badge: "దశ 3",
     step3Title: "💰 సరసమైన ధర నిర్ణయించండి మరియు అమ్మండి",
     step3Desc: "మార్కెట్ ధరలను సరిపోల్చండి, మీ బిల్లును రూపొందించండి మరియు కొనుగోలుదారులతో కనెక్ట్ అవ్వండి.",
     step3Detail: "మీ శ్రమ మరియు ఖర్చుకు న్యాయమైన లెక్క. దళారుల కంటే 40% నుండి 60% అధిక ఆదాయం లభిస్తుంది.",
-    step3Speech: "దశ 3: సరసమైన ధర నిర్ణయించండి మరియు అమ్మండి. KALAtech ప్రస్తుత మార్కెట్ ధరలను పోల్చి, మీ శ్రమకు తగిన లాభదాయక ధరను సూచిస్తుంది, బిల్లులను తయారు చేస్తుంది మరియు వాట్సాప్ ద్వారా నేరుగా కొనుగోలుదారులతో అనుసంధానిస్తుంది.",
+    step3Speech: "దశ 3: సరసమైన ధర నిర్ణయించండి మరియు అమ్మండి. శిల్పసేతు ప్రస్తుత మార్కెట్ ధరలను పోల్చి, మీ శ్రమకు తగిన లాభదాయక ధరను సూచిస్తుంది, బిల్లులను తయారు చేస్తుంది మరియు వాట్సాప్ ద్వారా నేరుగా కొనుగోలుదారులతో అనుసంధానిస్తుంది.",
 
     aiSectionTitle: "'కళా మిత్ర'ను కలవండి — మీ AI క్రాఫ్ట్ అసిస్టెంట్",
     aiSectionSub: "స్నేహపూర్వకమైనది, వేగవంతమైనది మరియు భారతీయ చేతివృత్తుల కోసం ప్రత్యేకంగా తయారు చేయబడింది.",
@@ -377,7 +377,7 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
     aiSamplePrice: "₹5,850 (దళారి ఇచ్చే ₹3,400 కంటే కళాకారుడికి +₹2,100 ఎక్కువ లాభం)",
     aiSampleStory: "యాదాద్రి జిల్లాకు చెందిన నైపుణ్యం గల చేనేత కళాకారులు సహజ రంగులు, సాంప్రదాయ ఇక్కత్ నేతతో నేసిన 100% స్వచ్ఛమైన మల్బరీ పట్టు.",
 
-    roleHeading: "మీరు KALAtech ను ఎలా ఉపయోగించాలనుకుంటున్నారు?",
+    roleHeading: "మీరు శిల్పసేతు ను ఎలా ఉపయోగించాలనుకుంటున్నారు?",
     roleSub: "కొనసాగడానికి మీ పాత్రను ఎంచుకోండి",
     roleArtisanTitle: "నేను ఒక చేతివృత్తి కళాకారుడిని",
     roleArtisanBadge: "కళాకారుడు / చేనేత కార్మికుడు / కుమ్మరి",
@@ -400,7 +400,7 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
       "📦 కళాకారుడితో ప్రత్యక్ష సంప్రదింపులు & పారదర్శక డెలివరీ",
       "⚡ రిజిస్ట్రేషన్ లేకుండానే 'అతిథి'గా వెంటనే బ్రౌజ్ చేయండి"
     ],
-    roleSelectionSpeech: "మీరు KALAtech ను ఎలా ఉపయోగించాలనుకుంటున్నారు? మీరు చేతివృత్తుల వస్తువులను తయారుచేస్తే, 'నేను ఒక కళాకారుడిని' ఎంచుకోండి. ప్రామాణికమైన చేతివృత్తులను కొనుగోలు చేయాలనుకుంటే, 'నేను ఒక కొనుగోలుదారుని' ఎంచుకోండి.",
+    roleSelectionSpeech: "మీరు శిల్పసేతు ను ఎలా ఉపయోగించాలనుకుంటున్నారు? మీరు చేతివృత్తుల వస్తువులను తయారుచేస్తే, 'నేను ఒక కళాకారుడిని' ఎంచుకోండి. ప్రామాణికమైన చేతివృత్తులను కొనుగోలు చేయాలనుకుంటే, 'నేను ఒక కొనుగోలుదారుని' ఎంచుకోండి.",
 
     artisanWelcomeTitle: "స్వాగతం, కళాకారుడా! 👋",
     artisanWelcomeSub: "కేవలం 1 నిమిషంలో మీ డిజిటల్ దుకాణాన్ని ఏర్పాటు చేద్దాం.",
@@ -417,13 +417,13 @@ export const PORTAL_TRANSLATIONS: Record<LanguageCode, PortalStrings> = {
     artisanAudioHelp: "దయచేసి మీ మొబైల్ నంబర్ మరియు పేరు నమోదు చేయండి. మీ చేతివృత్తిని ఎంచుకుని, ఫోన్‌కు వచ్చిన 6 అంకెల ఓటీపీని నమోదు చేసి మీ స్టూడియోలోకి ప్రవేశించండి.",
     autoFillDemo: "మాస్టర్ కళాకారుడు డెమో వివరాలు నింపండి",
 
-    buyerWelcomeTitle: "KALAtech కి స్వాగతం 🛍️",
+    buyerWelcomeTitle: "శిల్పసేతు కి స్వాగతం 🛍️",
     buyerWelcomeSub: "భారతీయ గ్రామీణ కళాకారుల నుండి నేరుగా చేతివృత్తుల వస్తువులను పొందండి.",
     buyerBtnSignUp: "కొత్త ఖాతా సృష్టించండి",
     buyerBtnSignIn: "కొనుగోలుదారు సైన్ ఇన్",
     buyerBtnGuest: "అతిథిగా కొనసాగండి 🚀",
     buyerGuestSub: "ఎటువంటి నమోదు లేకుండా వెంటనే మార్కెట్‌ప్లేస్‌ను చూడండి",
-    buyerAudioHelp: "KALAtech మార్కెట్‌ప్లేస్‌కు స్వాగతం. మీరు ఖాతా సృష్టించవచ్చు, సైన్ ఇన్ చేయవచ్చు లేదా వెంటనే ఉత్పత్తులను చూడటానికి 'అతిథిగా కొనసాగండి' పై క్లిక్ చేయవచ్చు.",
+    buyerAudioHelp: "శిల్పసేతు మార్కెట్‌ప్లేస్‌కు స్వాగతం. మీరు ఖాతా సృష్టించవచ్చు, సైన్ ఇన్ చేయవచ్చు లేదా వెంటనే ఉత్పత్తులను చూడటానికి 'అతిథిగా కొనసాగండి' పై క్లిక్ చేయవచ్చు.",
 
     backToWelcome: "← స్వాగత పేజీకి తిరిగి వెళ్లండి",
     stepIndicator: "దశ",

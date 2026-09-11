@@ -34,11 +34,14 @@ export function AdminLayout() {
         <div className="p-4 border-b border-stone-800">
           <Link to="/" className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-600 to-amber-700 flex items-center justify-center text-white font-black text-sm border border-red-500/30 shadow-md">
-              KT
+              SS
             </div>
             <div>
-              <span className="font-extrabold text-white font-['Rozha_One',serif]">KALAtech</span>
-              <p className="text-[10px] text-red-400 font-semibold uppercase tracking-wider">{t.adminPortal}</p>
+              <div className="flex items-center gap-1">
+                <span className="font-extrabold text-white font-['Rozha_One',serif]">ShilpSetu</span>
+                <span className="px-1 py-0.2 bg-red-600 text-white rounded text-[8px] font-black uppercase">Admin</span>
+              </div>
+              <p className="text-[10px] text-stone-400 font-medium">KALAtech Governance</p>
             </div>
           </Link>
         </div>
@@ -97,8 +100,8 @@ export function AdminLayout() {
           <aside className="absolute left-0 top-0 bottom-0 w-72 bg-stone-950 text-stone-300 flex flex-col shadow-2xl">
             <div className="p-4 border-b border-stone-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center text-white font-bold text-xs">KT</div>
-                <span className="font-bold text-white">KALAtech Admin</span>
+                <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center text-white font-bold text-xs">SS</div>
+                <span className="font-bold text-white">ShilpSetu Admin <span className="text-red-400 text-xs font-normal">(KALAtech)</span></span>
               </div>
               <button onClick={() => setSidebarOpen(false)} className="p-1 text-stone-400"><X className="w-5 h-5" /></button>
             </div>

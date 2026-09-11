@@ -85,7 +85,7 @@ async function startServer() {
 
   // Health check
   app.get("/api/health", (_req, res) => {
-    res.json({ status: "ok", app: "KALAtech Artisan Market Linkage", timestamp: new Date().toISOString() });
+    res.json({ status: "ok", app: "ShilpSetu (KALAtech) Artisan Market Linkage", timestamp: new Date().toISOString() });
   });
 
   // ==========================================
@@ -1339,15 +1339,15 @@ async function startServer() {
     let reply = "";
     if (q.includes("price") || q.includes("कीमत") || q.includes("ధర")) {
       reply = lang === "hi"
-        ? "अपने हस्तशिल्प की सही कीमत निर्धारित करने के लिए विक्रेता पोर्टल में 'बिल बनाएं' पर जाएं। वहां अपनी कच्ची सामग्री, श्रम घंटे और परिवहन लागत दर्ज करें। KALAtech आपको बाज़ार तुलना के साथ उचित लाभ मार्जिन सुझाएगा।"
+        ? "अपने हस्तशिल्प की सही कीमत निर्धारित करने के लिए विक्रेता पोर्टल में 'बिल बनाएं' पर जाएं। वहां अपनी कच्ची सामग्री, श्रम घंटे और परिवहन लागत दर्ज करें। शिल्पसेतु (KALAtech) आपको बाज़ार तुलना के साथ उचित लाभ मार्जिन सुझाएगा।"
         : lang === "te"
-        ? "మీ చేతివృత్తి ఉత్పత్తులకు సరైన ధర నిర్ణయించడానికి 'బిల్లు తయారు చేయండి' విభాగంలోకి వెళ్ళి ముడిసరుకు, శ్రమ మరియు రవాణా ఖర్చులను నమోదు చేయండి. AI మీకు సరసమైన మార్కెట్ ధరను సిఫార్సు చేస్తుంది."
-        : "To price your craft fairly, use the 'Create Bill' feature in your seller dashboard. Enter your raw material, artisan hours, and transport expenses. KALAtech automatically compares these with verified market benchmarks to ensure fair artisan compensation.";
+        ? "మీ చేతివృత్తి ఉత్పత్తులకు సరైన ధర నిర్ణయించడానికి 'బిల్లు తయారు చేయండి' విభాగంలోకి వెళ్ళి ముడిసరుకు, శ్రమ మరియు రవాణా ఖర్చులను నమోదు చేయండి. శిల్పసేతు (KALAtech) మీకు సరసమైన మార్కెట్ ధరను సిఫార్సు చేస్తుంది."
+        : "To price your craft fairly, use the 'Create Bill' feature in your seller dashboard. Enter your raw material, artisan hours, and transport expenses. ShilpSetu (KALAtech) automatically compares these with verified market benchmarks to ensure fair artisan compensation.";
     } else if (q.includes("bill") || q.includes("बिल") || q.includes("బిల్లు") || q.includes("invoice")) {
       reply = lang === "hi"
-        ? "KALAtech पर बिल बनाना बहुत आसान है। 'बिल बनाएं' मेनू चुनें, अपना हस्तशिल्प चुनें, लागत दर्ज करें और जनरेट बिल पर क्लिक करें। आपको एक आधिकारिक, प्रिंट करने योग्य चालान मिलेगा।"
+        ? "शिल्पसेतु पर बिल बनाना बहुत आसान है। 'बिल बनाएं' मेनू चुनें, अपना हस्तशिल्प चुनें, लागत दर्ज करें और जनरेट बिल पर क्लिक करें। आपको एक आधिकारिक, प्रिंट करने योग्य चालान मिलेगा।"
         : lang === "te"
-        ? "KALAtech లో అధికారిక బిల్లు సులభంగా తయారు చేయవచ్చు. 'బిల్లు తయారు చేయండి' ఎంపికను ఉపయోగించి వివరాలు నమోదు చేసి నేరుగా ప్రింట్ తీసుకోండి."
+        ? "శిల్పసేతు లో అధికారిక బిల్లు సులభంగా తయారు చేయవచ్చు. 'బిల్లు తయారు చేయండి' ఎంపికను ఉపయోగించి వివరాలు నమోదు చేసి నేరుగా ప్రింట్ తీసుకోండి."
         : "You can generate a fair-trade certified invoice in seconds via 'Create Bill'. Select your craft, input your production costs, check the AI market benchmark, and click 'Finalize Bill' to get a printable invoice.";
     } else if (q.includes("order") || q.includes("ट्रैक") || q.includes("ఆర్డర్")) {
       reply = lang === "hi"
@@ -1357,10 +1357,10 @@ async function startServer() {
         : "You can track your orders directly from 'My Orders' in your buyer portal. Each step (Created → Paid → Shipped → Delivered) updates with direct artisan transit verification.";
     } else {
       reply = lang === "hi"
-        ? "नमस्ते! KALAtech में आपका स्वागत है। मैं भारतीय हस्तशिल्प कारीगरों और खरीदारों की सहायता के लिए उपलब्ध AI सहायक हूं। आप मुझसे मूल्य निर्धारण, बिलिंग या ऑर्डर के बारे में कुछ भी पूछ सकते हैं।"
+        ? "नमस्ते! शिल्पसेतु (KALAtech) में आपका स्वागत है। मैं भारतीय हस्तशिल्प कारीगरों और खरीदारों की सहायता के लिए उपलब्ध AI सहायक हूं। आप मुझसे मूल्य निर्धारण, बिलिंग या ऑर्डर के बारे में कुछ भी पूछ सकते हैं।"
         : lang === "te"
-        ? "నమస్కారం! KALAtech కు స్వాగతం. భారతీయ చేతివృత్తుల సహాయం కోసం నేను ఇక్కడ ఉన్నాను. ధరలు, బిల్లులు లేదా ఆర్డర్ల గురించి మీరు ఏదైనా అడగవచ్చు."
-        : "Welcome to KALAtech AI Support! I am here to help Indian master artisans and conscious buyers with fair pricing, bill generation, provenance certificates, and order fulfillment.";
+        ? "నమస్కారం! శిల్పసేతు (KALAtech) కు స్వాగతం. భారతీయ చేతివృత్తుల సహాయం కోసం నేను ఇక్కడ ఉన్నాను. ధరలు, బిల్లులు లేదా ఆర్డర్ల గురించి మీరు ఏదైనా అడగవచ్చు."
+        : "Welcome to ShilpSetu AI Support (powered by KALAtech)! I am here to help Indian master artisans and conscious buyers with fair pricing, bill generation, provenance certificates, and order fulfillment.";
     }
 
     res.json({ response: reply, status: "success" });
@@ -1780,13 +1780,13 @@ async function startServer() {
 
   // Start Main Website Listener
   app.listen(PORT, () => {
-    console.log(`✓ KALAtech Main Website & Shared API running on http://localhost:${PORT}`);
+    console.log(`✓ ShilpSetu (KALAtech) Main Website & Shared API running on http://localhost:${PORT}`);
   });
 
   // Start Dedicated Admin Website Listener (Port 5174)
   try {
     const adminServer = adminApp.listen(ADMIN_PORT, () => {
-      console.log(`✓ KALAtech Dedicated Admin Application running on http://localhost:${ADMIN_PORT}`);
+      console.log(`✓ ShilpSetu Dedicated Admin Application running on http://localhost:${ADMIN_PORT}`);
     });
     adminServer.on("error", (err: any) => {
       console.warn(`Note: Admin listener on port ${ADMIN_PORT} could not start (${err.message}). Admin app is accessible at http://localhost:${PORT}/admin.html`);

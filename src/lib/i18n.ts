@@ -371,7 +371,7 @@ export interface UIStrings {
 
 const rawTranslations: Record<'en' | 'hi' | 'te', UIStrings> = {
   en: {
-    appName: "KALAtech",
+    appName: "ShilpSetu",
     tagline: "AI Market Linkage & Smart Cataloging for Artisans",
     forArtisans: "Artisan Studio",
     forBuyers: "Buyer Marketplace",
@@ -487,7 +487,7 @@ const rawTranslations: Record<'en' | 'hi' | 'te', UIStrings> = {
 
     // Landing Page
     landingHeroTitle: "Empowering Indian Artisans, Connecting Them to Better Markets",
-    landingHeroSub: "KALAtech bridges traditional craftsmanship with modern digital markets through AI-powered cataloging, fair pricing, and direct market linkage.",
+    landingHeroSub: "ShilpSetu (powered by KALAtech) bridges traditional craftsmanship with modern digital markets through AI-powered cataloging, fair pricing, and direct market linkage.",
     choosePortal: "Choose Your Portal",
     seller: "Seller",
     buyer: "Buyer",
@@ -496,7 +496,7 @@ const rawTranslations: Record<'en' | 'hi' | 'te', UIStrings> = {
     buyerDesc: "Discover authentic handicrafts, search products, view artisan stories, compare prices, and purchase directly.",
     adminDesc: "Manage users, sellers, buyers, products, monitor orders, marketplace activity, and view analytics.",
     enterPortal: "Enter Portal",
-    howItWorks: "How KALAtech Works",
+    howItWorks: "How ShilpSetu Works",
     howItWorksSellerFlow: "Seller adds handicraft → Market-price comparison → Finalizes price → Generates bill → Product becomes available to buyers",
     howItWorksBuyerFlow: "Buyer browses handicrafts → Views details → Purchases → Tracks order",
     howItWorksAdminFlow: "Admin monitors platform → Manages users/products/orders → Reviews analytics",
@@ -684,7 +684,7 @@ const rawTranslations: Record<'en' | 'hi' | 'te', UIStrings> = {
     clearChat: "Clear Chat",
     suggestedQuestions: "Suggested Questions",
     aiThinking: "AI is thinking...",
-    welcomeMessage: "Hello! I'm KALAtech's AI assistant. How can I help you today?",
+    welcomeMessage: "Hello! I'm ShilpSetu's AI assistant (powered by KALAtech). How can I help you today?",
 
     // Common
     loading: "Loading...",
@@ -730,7 +730,7 @@ const rawTranslations: Record<'en' | 'hi' | 'te', UIStrings> = {
   },
 
   hi: {
-    appName: "KALAtech",
+    appName: "ShilpSetu",
     tagline: "कारीगरों के लिए AI बाज़ार लिंकेज एवं स्मार्ट कैटलॉगिंग",
     forArtisans: "कारीगर स्टूडियो (Artisan)",
     forBuyers: "ग्राहक बाज़ार (Buyer)",
@@ -846,7 +846,7 @@ const rawTranslations: Record<'en' | 'hi' | 'te', UIStrings> = {
 
     // Landing
     landingHeroTitle: "भारतीय कारीगरों का सशक्तिकरण, बेहतर बाज़ारों से जोड़ना",
-    landingHeroSub: "KALAtech AI-संचालित कैटलॉगिंग, उचित मूल्य निर्धारण और प्रत्यक्ष बाज़ार लिंकेज के माध्यम से पारंपरिक शिल्पकला को आधुनिक डिजिटल बाज़ारों से जोड़ता है।",
+    landingHeroSub: "शिल्पसेतु (KALAtech) AI-संचालित कैटलॉगिंग, उचित मूल्य निर्धारण और प्रत्यक्ष बाज़ार लिंकेज के माध्यम से पारंपरिक शिल्पकला को आधुनिक डिजिटल बाज़ारों से जोड़ता है।",
     choosePortal: "अपना पोर्टल चुनें",
     seller: "विक्रेता",
     buyer: "खरीदार",
@@ -855,7 +855,7 @@ const rawTranslations: Record<'en' | 'hi' | 'te', UIStrings> = {
     buyerDesc: "प्रामाणिक हस्तशिल्प खोजें, उत्पाद खोजें, कारीगर कहानियां देखें, मूल्य तुलना करें और सीधे खरीदें।",
     adminDesc: "उपयोगकर्ता, विक्रेता, खरीदार, उत्पाद प्रबंधित करें, ऑर्डर की निगरानी करें और विश्लेषण देखें।",
     enterPortal: "पोर्टल में प्रवेश करें",
-    howItWorks: "KALAtech कैसे काम करता है",
+    howItWorks: "शिल्पसेतु कैसे काम करता है",
     howItWorksSellerFlow: "विक्रेता हस्तशिल्प जोड़ता है → बाज़ार मूल्य तुलना → मूल्य निर्धारित करता है → बिल बनाता है → उत्पाद खरीदारों के लिए उपलब्ध",
     howItWorksBuyerFlow: "खरीदार हस्तशिल्प ब्राउज़ करता है → विवरण देखता है → खरीदता है → ऑर्डर ट्रैक करता है",
     howItWorksAdminFlow: "व्यवस्थापक प्लेटफ़ॉर्म की निगरानी करता है → उपयोगकर्ता/उत्पाद/ऑर्डर प्रबंधित करता है → विश्लेषण समीक्षा करता है",
@@ -1043,7 +1043,7 @@ const rawTranslations: Record<'en' | 'hi' | 'te', UIStrings> = {
     clearChat: "चैट साफ करें",
     suggestedQuestions: "सुझाए गए प्रश्न",
     aiThinking: "AI सोच रहा है...",
-    welcomeMessage: "नमस्ते! मैं KALAtech का AI सहायक हूं। आज मैं आपकी कैसे मदद कर सकता हूं?",
+    welcomeMessage: "नमस्ते! मैं शिल्पसेतु (KALAtech) का AI सहायक हूं। आज मैं आपकी कैसे मदद कर सकता हूं?",
 
     // Common
     loading: "लोड हो रहा है...",
@@ -1089,7 +1089,7 @@ const rawTranslations: Record<'en' | 'hi' | 'te', UIStrings> = {
   },
 
   te: {
-    appName: "KALAtech",
+    appName: "ShilpSetu",
     tagline: "చేతివృత్తి కళాకారుల కోసం AI మార్కెట్ లింకేజ్ & స్మార్ట్ క్యాటలాగ్",
     forArtisans: "కళాకారుల స్టూడియో (Artisan)",
     forBuyers: "కొనుగోలుదారుల మార్కెట్ (Buyer)",
@@ -1205,7 +1205,7 @@ const rawTranslations: Record<'en' | 'hi' | 'te', UIStrings> = {
 
     // Landing
     landingHeroTitle: "భారతీయ కళాకారులను బలపరచడం, మెరుగైన మార్కెట్లకు అనుసంధానం",
-    landingHeroSub: "KALAtech AI-ఆధారిత క్యాటలాగింగ్, సరసమైన ధర నిర్ణయం మరియు ప్రత్యక్ష మార్కెట్ లింకేజ్ ద్వారా సాంప్రదాయ చేతివృత్తిని ఆధునిక డిజిటల్ మార్కెట్లతో అనుసంధానం చేస్తుంది.",
+    landingHeroSub: "శిల్పసేతు (KALAtech) AI-ఆధారిత క్యాటలాగింగ్, సరసమైన ధర నిర్ణయం మరియు ప్రత్యక్ష మార్కెట్ లింకేజ్ ద్వారా సాంప్రదాయ చేతివృత్తిని ఆధునిక డిజిటల్ మార్కెట్లతో అనుసంధానం చేస్తుంది.",
     choosePortal: "మీ పోర్టల్ ఎంచుకోండి",
     seller: "విక్రేత",
     buyer: "కొనుగోలుదారు",
@@ -1214,7 +1214,7 @@ const rawTranslations: Record<'en' | 'hi' | 'te', UIStrings> = {
     buyerDesc: "ప్రామాణిక చేతివృత్తులను కనుగొనండి, ఉత్పత్తులను వెతకండి, కళాకారుల కథలు చూడండి, ధరలు పోల్చండి మరియు నేరుగా కొనుగోలు చేయండి.",
     adminDesc: "వినియోగదారులు, విక్రేతలు, కొనుగోలుదారులు, ఉత్పత్తులను నిర్వహించండి, ఆర్డర్లను పర్యవేక్షించండి మరియు విశ్లేషణలు చూడండి.",
     enterPortal: "పోర్టల్‌లోకి ప్రవేశించండి",
-    howItWorks: "KALAtech ఎలా పని చేస్తుంది",
+    howItWorks: "శిల్పసేతు ఎలా పని చేస్తుంది",
     howItWorksSellerFlow: "విక్రేత చేతివృత్తిని జోడిస్తారు → మార్కెట్ ధర పోలిక → ధరను ఖరారు చేస్తారు → బిల్లు తయారు చేస్తారు → ఉత్పత్తి కొనుగోలుదారులకు అందుబాటులో ఉంటుంది",
     howItWorksBuyerFlow: "కొనుగోలుదారు చేతివృత్తులను బ్రౌజ్ చేస్తారు → వివరాలు చూస్తారు → కొనుగోలు చేస్తారు → ఆర్డర్ ట్రాక్ చేస్తారు",
     howItWorksAdminFlow: "అడ్మిన్ ప్లాట్‌ఫారమ్‌ను పర్యవేక్షిస్తారు → వినియోగదారులు/ఉత్పత్తులు/ఆర్డర్లను నిర్వహిస్తారు → విశ్లేషణలను సమీక్షిస్తారు",
@@ -1402,7 +1402,7 @@ const rawTranslations: Record<'en' | 'hi' | 'te', UIStrings> = {
     clearChat: "చాట్ క్లియర్ చేయండి",
     suggestedQuestions: "సూచించిన ప్రశ్నలు",
     aiThinking: "AI ఆలోచిస్తోంది...",
-    welcomeMessage: "హలో! నేను KALAtech AI సహాయకుడిని. ఈ రోజు మీకు ఎలా సహాయం చేయగలను?",
+    welcomeMessage: "హలో! నేను శిల్పసేతు (KALAtech) AI సహాయకుడిని. ఈ రోజు మీకు ఎలా సహాయం చేయగలను?",
 
     // Common
     loading: "లోడ్ అవుతోంది...",

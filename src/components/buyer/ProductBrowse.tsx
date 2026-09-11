@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Search, Filter, Heart, ShoppingCart, ShieldCheck, MapPin, X } from 'lucide-react';
+import {
+  Search, Filter, Heart, ShoppingCart, ShieldCheck, MapPin,
+  X, Sparkles, CheckCircle2, ArrowUpDown
+} from 'lucide-react';
 import { useLanguage } from '../../lib/LanguageContext';
 import { translations } from '../../lib/i18n';
 import { Product } from '../../types';
@@ -16,20 +19,21 @@ export function ProductBrowse() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'All');
+  const [selectedState, setSelectedState] = useState<string>('All');
+  const [maxPrice, setMaxPrice] = useState<number>(10000);
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc'>('featured');
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
 
   const categories = [
-    'All',
-    'Handloom',
-    'Pottery',
-    'Woodcraft',
-    'Metalcraft',
-    'Jewellery',
-    'Paintings',
-    'Bamboo/Cane',
-    'Textiles',
-    'Weaving',
+    'All', 'Handloom', 'Pottery', 'Woodcraft', 'Metalcraft',
+    'Jewellery', 'Paintings', 'Bamboo/Cane', 'Textiles', 'Weaving'
+  ];
+
+  const naturalQueries = [
+    { label: '🎁 Handmade gifts under ₹1500', query: 'gifts under 1500', maxP: 1500 },
+    { label: '🏺 Natural Terracotta Pottery', query: 'pottery', cat: 'Pottery' },
+    { label: '🧵 Pure Silk & Cotton Handloom', query: 'saree handloom', cat: 'Handloom' },
+    { label: '🪵 Non-Toxic Wooden Toys', query: 'woodcraft toy', cat: 'Woodcraft' },
   ];
 
   useEffect(() => {
@@ -63,29 +67,30 @@ export function ProductBrowse() {
     } catch {}
   };
 
-  const addToCart = (e: React.MouseEvent, prod: Product) => {
-    e.stopPropagation();
-    try {
-      const cart = JSON.parse(localStorage.getItem('kalatech_cart') || '[]');
-      const existing = cart.find((item: any) => item.productId === prod.id);
-      if (existing) {
-        existing.quantity += 1;
-      } else {
-        cart.push({ productId: prod.id, product: prod, quantity: 1, addedAt: new Date().toISOString() });
-      }
-      localStorage.setItem('kalatech_cart', JSON.stringify(cart));
-      window.dispatchEvent(new Event('cart-updated'));
-    } catch {}
+  const handleNaturalSearch = (item: typeof naturalQueries[0]) => {
+    if (item.cat) setSelectedCategory(item.cat);
+    if (item.maxP) setMaxPrice(item.maxP);
+    setSearchQuery(item.query);
   };
 
   const filteredProducts = products
     .filter((p) => {
+      const price = p.final_price || 0;
+      if (price > maxPrice) return false;
+
       const matchCat = selectedCategory === 'All' || p.category.toLowerCase() === selectedCategory.toLowerCase();
+      const matchState = selectedState === 'All' || (p.artisan_state && p.artisan_state.toLowerCase() === selectedState.toLowerCase());
+
+      // Parse natural language keywords
+      const q = searchQuery.toLowerCase().replace(/under\s*\d+/g, '').replace(/gifts/g, '').trim();
       const matchSearch =
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.artisan_name?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchCat && matchSearch;
+        !q ||
+        p.title.toLowerCase().includes(q) ||
+        p.description?.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.artisan_name?.toLowerCase().includes(q);
+
+      return matchCat && matchState && matchSearch;
     })
     .sort((a, b) => {
       if (sortBy === 'price-asc') return (a.final_price || 0) - (b.final_price || 0);
@@ -94,24 +99,52 @@ export function ProductBrowse() {
     });
 
   return (
-    <div className="space-y-6">
-      {/* Top Search & Filter Bar */}
-      <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+      {/* Top Banner & Natural Language Bar */}
+      <div className="bg-white p-6 sm:p-7 rounded-3xl border border-[#eadfd4] shadow-xs space-y-4">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fdf2e9] text-[#9c4124] text-xs font-black uppercase tracking-wider mb-2 border border-[#f8d7c2]">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Direct Artisan Marketplace</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#262220] font-['Rozha_One',serif]">
+            Discover Living Indian Craft Heritage
+          </h1>
+          <p className="text-xs text-stone-600 mt-0.5">
+            Handcrafted with patience and cultural reverence. 100% direct artisan payments.
+          </p>
+        </div>
+
+        {/* Natural Language Prompt Suggestions */}
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <span className="text-xs font-bold text-stone-500">Popular queries:</span>
+          {naturalQueries.map((nq, i) => (
+            <button
+              key={i}
+              onClick={() => handleNaturalSearch(nq)}
+              className="px-3 py-1.5 rounded-xl bg-[#faf7f2] hover:bg-[#fdf2e9] border border-[#eadfd4] hover:border-[#9c4124] text-xs font-bold text-stone-700 hover:text-[#9c4124] transition-all cursor-pointer"
+            >
+              {nq.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search & Sort Controls */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
           {/* Search Box */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-stone-400" />
+            <Search className="w-4 h-4 absolute left-3.5 top-3 text-stone-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search handcrafted sarees, terracotta pots, brass statues..."
-              className="w-full pl-9 pr-8 py-2 border border-stone-300 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none bg-stone-50"
+              placeholder='Search crafts or type natural requests e.g. "handmade gifts under 1500"...'
+              className="w-full pl-10 pr-8 py-2.5 bg-[#faf7f2] border border-[#eadfd4] rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-[#9c4124] focus:outline-none"
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-2.5 text-stone-400 hover:text-stone-600"
+                onClick={() => { setSearchQuery(''); setMaxPrice(10000); }}
+                className="absolute right-3 top-3 text-stone-400 hover:text-stone-600 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -120,11 +153,11 @@ export function ProductBrowse() {
 
           {/* Sort Select */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-stone-500 whitespace-nowrap">{t.sort}:</span>
+            <span className="text-xs font-bold text-stone-500 whitespace-nowrap">Sort:</span>
             <select
               value={sortBy}
               onChange={(e: any) => setSortBy(e.target.value)}
-              className="px-3 py-2 border border-stone-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-amber-500 focus:outline-none bg-white text-stone-700"
+              className="px-3 py-2 border border-[#eadfd4] rounded-xl text-xs font-bold bg-[#faf7f2] text-stone-800 focus:outline-none"
             >
               <option value="featured">Featured Artisans</option>
               <option value="price-asc">Price: Low to High</option>
@@ -133,16 +166,16 @@ export function ProductBrowse() {
           </div>
         </div>
 
-        {/* Categories Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        {/* Category Filter Chips */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar pt-2 border-t border-[#eadfd4]">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 selectedCategory === cat
-                  ? 'bg-amber-600 text-white shadow-xs'
-                  : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  ? 'bg-[#9c4124] text-white shadow-xs'
+                  : 'bg-[#faf7f2] text-stone-600 hover:bg-[#f5efeb] border border-[#eadfd4]'
               }`}
             >
               {cat}
@@ -153,27 +186,34 @@ export function ProductBrowse() {
 
       {/* Products Grid */}
       {loading ? (
-        <div className="p-16 text-center text-stone-500">Loading catalog...</div>
+        <div className="p-16 text-center text-stone-500">
+          <div className="w-8 h-8 border-2 border-stone-300 border-t-[#9c4124] rounded-full animate-spin mx-auto mb-2" />
+          <span>Loading verified artisan collection...</span>
+        </div>
       ) : filteredProducts.length === 0 ? (
-        <div className="p-16 text-center bg-white rounded-2xl border border-stone-200">
-          <Filter className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-stone-800">No handicraft products match your search</h3>
-          <p className="text-xs text-stone-500 mt-1">Try selecting another category or clearing your search term.</p>
+        <div className="p-16 text-center bg-white rounded-3xl border border-[#eadfd4] space-y-3">
+          <Filter className="w-12 h-12 text-stone-300 mx-auto mb-2" />
+          <h3 className="text-base font-bold text-stone-800">No handicraft products found</h3>
+          <p className="text-xs text-stone-500 max-w-sm mx-auto">
+            Try adjusting your search keywords or resetting your price filters.
+          </p>
           <button
             onClick={() => {
               setSearchQuery('');
               setSelectedCategory('All');
+              setMaxPrice(10000);
             }}
-            className="mt-4 px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-bold"
+            className="artisan-btn-primary py-2 px-4 text-xs cursor-pointer inline-block"
           >
             Reset Filters
           </button>
         </div>
       ) : (
-        <div>
-          <p className="text-xs font-semibold text-stone-500 mb-4">
-            Showing {filteredProducts.length} authentic handicraft listings
-          </p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between text-xs text-stone-500 font-semibold px-1">
+            <span>Showing {filteredProducts.length} authentic handicraft listings</span>
+            <span>Zero middleman markups</span>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredProducts.map((prod) => {
@@ -184,9 +224,9 @@ export function ProductBrowse() {
                 <div
                   key={prod.id}
                   onClick={() => navigate(`/buyer/product/${prod.id}`)}
-                  className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col group cursor-pointer"
+                  className="bg-white rounded-3xl border border-[#eadfd4] overflow-hidden shadow-xs hover:border-[#c85a32] hover:shadow-md transition-all flex flex-col group cursor-pointer"
                 >
-                  <div className="relative aspect-square bg-stone-100 overflow-hidden">
+                  <div className="relative aspect-square bg-[#faf7f2] overflow-hidden">
                     {img ? (
                       <img
                         src={img}
@@ -201,7 +241,7 @@ export function ProductBrowse() {
 
                     <button
                       onClick={(e) => toggleWishlist(e, prod)}
-                      className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur transition-all ${
+                      className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all ${
                         inWishlist
                           ? 'bg-red-50 text-red-600 shadow-md'
                           : 'bg-white/80 text-stone-600 hover:text-red-500 hover:bg-white'
@@ -210,45 +250,45 @@ export function ProductBrowse() {
                       <Heart className={`w-4 h-4 ${inWishlist ? 'fill-red-500' : ''}`} />
                     </button>
 
-                    <span className="absolute bottom-3 left-3 px-2 py-0.5 rounded-full bg-stone-900/80 backdrop-blur text-[10px] font-bold text-amber-300 flex items-center gap-1">
+                    <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded-full bg-stone-900/80 backdrop-blur text-[10px] font-bold text-amber-300 flex items-center gap-1 shadow-sm">
                       <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                      Fair Trade
+                      100% Handmade
                     </span>
                   </div>
 
-                  <div className="p-4 flex-1 flex flex-col justify-between">
+                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                     <div>
-                      <div className="flex items-center justify-between text-[11px] text-stone-500 mb-1">
-                        <span className="font-semibold text-amber-800">{prod.category}</span>
-                        <span className="flex items-center gap-0.5">
-                          <MapPin className="w-2.5 h-2.5 text-stone-400" /> {prod.artisan_district || prod.artisan_state || 'India'}
+                      <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-[#9c4124] uppercase mb-1">
+                        <span>{prod.category}</span>
+                        <span>•</span>
+                        <span className="text-stone-500 flex items-center gap-0.5">
+                          <MapPin className="w-3 h-3 text-stone-400" />
+                          {prod.artisan_district || 'India'}
                         </span>
                       </div>
 
-                      <h3 className="font-bold text-stone-900 text-sm line-clamp-1 group-hover:text-amber-700 transition-colors">
-                        {prod.translations?.[language]?.title || prod.title}
+                      <h3 className="font-extrabold text-sm text-[#262220] leading-snug line-clamp-2 group-hover:text-[#9c4124] transition-colors">
+                        {prod.title}
                       </h3>
 
-                      <p className="text-xs text-stone-500 mt-1 line-clamp-2">
-                        {prod.translations?.[language]?.description || prod.description}
+                      {/* Artisan Attribution */}
+                      <p className="text-[11px] text-stone-500 mt-1 flex items-center gap-1">
+                        <span>By</span>
+                        <strong className="text-stone-800 font-semibold">{prod.artisan_name || 'Village Master Artisan'}</strong>
                       </p>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between">
+                    <div className="pt-2 border-t border-[#eadfd4] flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] text-stone-400 uppercase font-bold">Artisan Price</span>
-                        <p className="text-base font-black text-stone-900">
-                          {formatINR(prod.final_price || 2500)}
-                        </p>
+                        <span className="text-[10px] text-stone-500 font-semibold uppercase block">Direct Price</span>
+                        <span className="text-base font-black text-[#262220]">
+                          {formatINR(prod.final_price || 1850)}
+                        </span>
                       </div>
 
-                      <button
-                        onClick={(e) => addToCart(e, prod)}
-                        className="p-2.5 bg-stone-900 hover:bg-amber-600 text-white rounded-xl transition-colors shadow-xs"
-                        title={t.addToCart}
-                      >
-                        <ShoppingCart className="w-4 h-4" />
-                      </button>
+                      <span className="text-xs font-extrabold text-[#9c4124] group-hover:underline">
+                        View Craft →
+                      </span>
                     </div>
                   </div>
                 </div>

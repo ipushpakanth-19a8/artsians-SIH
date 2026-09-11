@@ -60,12 +60,17 @@ export function BuyerLayout() {
             </button>
             <Link to="/buyer" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-600 to-orange-700 flex items-center justify-center text-amber-100 font-black text-sm border border-amber-500/30 shadow-sm">
-                KT
+                SS
               </div>
               <div>
-                <span className="font-extrabold text-stone-900 font-['Rozha_One',serif] text-lg leading-none block">
-                  KALAtech
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-extrabold text-stone-900 font-['Rozha_One',serif] text-lg leading-none block">
+                    ShilpSetu
+                  </span>
+                  <span className="px-1.5 py-0.5 text-[9px] font-bold bg-amber-500/20 text-amber-800 border border-amber-500/30 rounded tracking-wide uppercase">
+                    KALAtech
+                  </span>
+                </div>
                 <span className="text-[10px] text-amber-700 font-bold tracking-wider uppercase">
                   Artisan Marketplace
                 </span>
@@ -234,12 +239,13 @@ export function BuyerLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-amber-600 flex items-center justify-center text-white font-bold text-xs">
-              KT
+              SS
             </div>
-            <span className="text-white font-bold font-['Rozha_One',serif]">KALAtech</span>
+            <span className="text-white font-bold font-['Rozha_One',serif]">ShilpSetu</span>
+            <span className="text-amber-400 text-[11px] font-semibold">(KALAtech)</span>
             <span>— Empowering Indian Artisans, Fair Trade Direct to Buyers</span>
           </div>
-          <p>© 2026 KALAtech. Built with pride for Indian Handicrafts.</p>
+          <p>© 2026 ShilpSetu (KALAtech). Built with pride for Indian Handicrafts.</p>
         </div>
       </footer>
     </div>

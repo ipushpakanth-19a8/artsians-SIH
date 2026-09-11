@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Sparkles, ShoppingBag, ArrowRight, Flame, Scissors, Trees, Palette, CheckCircle2 } from 'lucide-react';
+import { Camera, Sparkles, Tag, DollarSign, ShoppingBag, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { LanguageCode } from '../../types';
 
 interface CraftJourneyDiagramProps {
@@ -9,53 +9,85 @@ interface CraftJourneyDiagramProps {
 export const CraftJourneyDiagram: React.FC<CraftJourneyDiagramProps> = ({ language }) => {
   const steps = [
     {
-      id: 'artisan',
-      titleEn: '1. Rural Artisan',
-      titleHi: '१. ग्रामीण कारीगर',
-      titleTe: '1. చేతివృత్తి కళాకారుడు',
-      descEn: 'Master of heritage craft traditions',
-      descHi: 'पुश्तैनी शिल्पकला के विशेषज्ञ',
-      descTe: 'సాంప్రదాయ కళా నైపుణ్యం',
-      icon: User,
-      bgColor: 'bg-amber-900/40 text-amber-300 border-amber-500/40',
-      badge: 'Loom & Clay',
+      id: 'photo',
+      stepNum: '1',
+      titleEn: 'Photo',
+      titleHi: 'फ़ोटो',
+      titleTe: 'ఫోటో',
+      descEn: 'Take phone photo of your craft',
+      descHi: 'फ़ोन से शिल्प की सामान्य फ़ोटो लें',
+      descTe: 'ఫోన్ కెమెరాతో ఫోటో తీయండి',
+      icon: Camera,
+      badgeEn: 'Phone Camera',
+      badgeHi: 'मोबाइल कैमरा',
+      badgeTe: 'ఫోన్ కెమెరా',
+      color: 'bg-amber-50 text-amber-900 border-amber-200',
+      iconColor: 'text-amber-700 bg-amber-100',
     },
     {
-      id: 'craft',
-      titleEn: '2. Authentic Craft',
-      titleHi: '२. प्रामाणिक हस्तशिल्प',
-      titleTe: '2. ప్రామాణిక కళాఖండం',
-      descEn: 'Handloom, terracotta, woodcraft',
-      descHi: 'हथकरघा, टेराकोटा, काष्ठ शिल्प',
-      descTe: 'చేనేత, మట్టిపాత్రలు, చెక్కబొమ్మలు',
-      icon: Flame,
-      bgColor: 'bg-orange-950/40 text-orange-300 border-orange-500/40',
-      badge: '100% Handmade',
-    },
-    {
-      id: 'ai',
-      titleEn: '3. KALAtech AI',
-      titleHi: '३. KALAtech AI',
-      titleTe: '3. KALAtech AI',
-      descEn: 'Smart pricing & multilingual story',
-      descHi: 'सही मूल्य निर्धारण एवं बहुभाषी कथा',
-      descTe: 'సరసమైన ధర & బహుభాషా కథనం',
+      id: 'enhance',
+      stepNum: '2',
+      titleEn: 'AI Enhance',
+      titleHi: 'AI सुधार',
+      titleTe: 'AI మెరుగుదల',
+      descEn: 'Cleans background & lighting',
+      descHi: 'पृष्ठभूमि व रोशनी अपने-आप साफ़',
+      descTe: 'లైటింగ్ & బ్యాక్‌గ్రౌండ్ సరిచేస్తుంది',
       icon: Sparkles,
-      bgColor: 'bg-indigo-950/50 text-amber-300 border-amber-400/50 ring-2 ring-amber-500/30',
-      badge: 'Cost-Plus Fair AI',
+      badgeEn: 'Studio Finish',
+      badgeHi: 'स्टूडियो फ़िनिश',
+      badgeTe: 'స్టూడియో ఫినిష్',
+      color: 'bg-orange-50 text-orange-950 border-orange-200 ring-2 ring-orange-400/40',
+      iconColor: 'text-orange-700 bg-orange-100',
       highlight: true,
     },
     {
-      id: 'buyer',
-      titleEn: '4. Direct Buyer',
-      titleHi: '४. सीधा खरीदार',
-      titleTe: '4. ప్రత్యక్ష కొనుగోలుదారు',
-      descEn: 'Zero middleman commissions',
-      descHi: 'बिचौलियों के बिना सीधी बिक्री',
-      descTe: 'దళారులు లేని ప్రత్యక్ష విక్రయం',
+      id: 'listing',
+      stepNum: '3',
+      titleEn: 'Product Listing',
+      titleHi: 'उत्पाद सूची',
+      titleTe: 'ఉత్పత్తి జాబితా',
+      descEn: 'AI writes craft story & details',
+      descHi: 'विरासत कथा व विवरण तैयार',
+      descTe: 'కళా కథనం & వివరాలు సిద్ధం',
+      icon: Tag,
+      badgeEn: 'Multilingual',
+      badgeHi: 'बहुभाषी',
+      badgeTe: 'బహుభాషా',
+      color: 'bg-stone-50 text-stone-900 border-stone-200',
+      iconColor: 'text-stone-700 bg-stone-100',
+    },
+    {
+      id: 'price',
+      stepNum: '4',
+      titleEn: 'Fair Price',
+      titleHi: 'उचित मूल्य',
+      titleTe: 'సరసమైన ధర',
+      descEn: 'Living wage + material cost',
+      descHi: 'मेहनत व लागत का सच्चा हिसाब',
+      descTe: 'సరసమైన శ్రమ వేతనం & వ్యయం',
+      icon: DollarSign,
+      badgeEn: 'Cost-Plus AI',
+      badgeHi: 'लागत-जोड़ AI',
+      badgeTe: 'కాస్ట్-ప్లస్ AI',
+      color: 'bg-emerald-50 text-emerald-950 border-emerald-200',
+      iconColor: 'text-emerald-700 bg-emerald-100',
+    },
+    {
+      id: 'customer',
+      stepNum: '5',
+      titleEn: 'Customer',
+      titleHi: 'सीधा ग्राहक',
+      titleTe: 'కొనుగోలుదారు',
+      descEn: 'Direct order, zero middleman',
+      descHi: 'सीधा ऑर्डर, 0% कमीशन',
+      descTe: 'నేరుగా ఆర్డర్, దళారులు లేరు',
       icon: ShoppingBag,
-      bgColor: 'bg-emerald-950/40 text-emerald-300 border-emerald-500/40',
-      badge: 'Fair Trade',
+      badgeEn: 'Direct Sales',
+      badgeHi: 'सीधी बिक्री',
+      badgeTe: 'నేరుగా అమ్మకాలు',
+      color: 'bg-stone-50 text-stone-900 border-stone-200',
+      iconColor: 'text-stone-800 bg-stone-100',
     },
   ];
 
@@ -71,62 +103,72 @@ export const CraftJourneyDiagram: React.FC<CraftJourneyDiagramProps> = ({ langua
     return s.descEn;
   };
 
-  return (
-    <div className="w-full bg-stone-900/80 rounded-3xl p-4 sm:p-6 border border-amber-900/40 shadow-xl backdrop-blur-xs relative overflow-hidden">
-      {/* Subtle traditional Indian geometric pattern watermark */}
-      <div
-        className="absolute inset-0 opacity-5 pointer-events-none"
-        style={{
-          backgroundImage:
-            'radial-gradient(#f59e0b 1px, transparent 1px), radial-gradient(#d97706 1px, #1c1917 1px)',
-          backgroundSize: '24px 24px',
-          backgroundPosition: '0 0, 12px 12px',
-        }}
-      />
+  const getBadge = (s: (typeof steps)[0]) => {
+    if (language === 'hi') return s.badgeHi;
+    if (language === 'te') return s.badgeTe;
+    return s.badgeEn;
+  };
 
-      {/* Top Heritage Badge */}
-      <div className="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-stone-800/80">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
-          <span className="text-xs font-bold uppercase tracking-wider text-amber-300/90">
-            Heritage Craft Flow • शिल्प विकास यात्रा
+  return (
+    <div className="w-full bg-white rounded-3xl p-5 sm:p-7 border border-[#eadfd4] shadow-sm relative overflow-hidden text-left">
+      {/* Top Banner Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-[#eadfd4]">
+        <div className="flex items-center gap-2.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#c85a32] animate-pulse" />
+          <span className="text-xs font-bold uppercase tracking-wider text-[#9c4124]">
+            {language === 'hi'
+              ? 'आसान डिजिटल यात्रा • 5 कदम'
+              : language === 'te'
+              ? 'సులభమైన డిజిటల్ ప్రయాణం • 5 దశలు'
+              : 'Simple 5-Step Artisan Journey'}
           </span>
         </div>
-        <span className="text-[11px] font-semibold text-stone-400 bg-stone-800/80 px-2.5 py-1 rounded-full border border-stone-700/60">
-          Artisan → Handicraft → AI → Buyer
-        </span>
+        <div className="inline-flex items-center gap-1.5 text-xs text-stone-600 font-semibold bg-[#faf7f2] px-3 py-1 rounded-full border border-[#eadfd4]">
+          <span>Photo</span>
+          <span className="text-stone-400">→</span>
+          <span className="text-[#9c4124] font-bold">AI Enhancement</span>
+          <span className="text-stone-400">→</span>
+          <span>Listing</span>
+          <span className="text-stone-400">→</span>
+          <span className="text-emerald-700 font-bold">Price</span>
+          <span className="text-stone-400">→</span>
+          <span>Customer</span>
+        </div>
       </div>
 
-      {/* 4-Step Diagram Flow */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 relative z-10">
+      {/* 5 Step Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 relative">
         {steps.map((step, idx) => (
           <div
             key={step.id}
-            className={`relative rounded-2xl p-3.5 sm:p-4 border transition-all flex flex-col justify-between ${
-              step.bgColor
-            } ${step.highlight ? 'shadow-lg shadow-amber-500/10' : ''}`}
+            className={`relative rounded-2xl p-4 border transition-all flex flex-col justify-between ${step.color} ${
+              step.highlight ? 'shadow-md shadow-orange-900/5' : ''
+            }`}
           >
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-stone-900/80 border border-white/10 flex items-center justify-center">
-                  <step.icon className={`w-5 h-5 ${step.highlight ? 'text-amber-400 animate-pulse' : ''}`} />
+              <div className="flex items-center justify-between mb-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black ${step.iconColor}`}>
+                  <step.icon className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-stone-900/60 border border-white/10 text-stone-300">
-                  {step.badge}
+                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/80 border border-stone-200/80 text-stone-700">
+                  {getBadge(step)}
                 </span>
               </div>
 
-              <h4 className="font-bold text-sm sm:text-base text-stone-100 mb-1 leading-snug">
-                {getTitle(step)}
-              </h4>
-              <p className="text-[11px] sm:text-xs text-stone-300/80 leading-relaxed">
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-xs font-extrabold text-[#9c4124]">{step.stepNum}.</span>
+                <h4 className="font-extrabold text-sm sm:text-base text-stone-900 leading-snug">
+                  {getTitle(step)}
+                </h4>
+              </div>
+              <p className="text-xs text-stone-600 leading-relaxed">
                 {getDesc(step)}
               </p>
             </div>
 
-            {/* Connective arrow on desktop between columns */}
+            {/* Desktop Connective indicator */}
             {idx < steps.length - 1 && (
-              <div className="hidden md:flex absolute -right-2.5 top-1/2 -translate-y-1/2 z-20 w-5 h-5 rounded-full bg-amber-500 text-stone-950 items-center justify-center text-xs font-black shadow-md">
+              <div className="hidden lg:flex absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 w-5 h-5 rounded-full bg-white text-stone-400 border border-[#eadfd4] items-center justify-center text-[10px] font-bold shadow-xs">
                 →
               </div>
             )}
@@ -134,25 +176,19 @@ export const CraftJourneyDiagram: React.FC<CraftJourneyDiagramProps> = ({ langua
         ))}
       </div>
 
-      {/* Craft Types Micro-Badges */}
-      <div className="mt-4 pt-3 border-t border-stone-800/80 flex flex-wrap items-center justify-center sm:justify-between gap-2 text-xs text-stone-400">
-        <span className="text-[11px] text-amber-200/80 font-medium">
-          Supported Traditional Indian Clusters:
+      {/* Reassurance Footer */}
+      <div className="mt-5 pt-3.5 border-t border-[#eadfd4] flex flex-wrap items-center justify-between gap-3 text-xs text-stone-600">
+        <span className="font-medium flex items-center gap-1.5 text-stone-700">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          {language === 'hi'
+            ? 'बिना किसी तकनीकी ज्ञान के 2 मिनट में अपनी दुकान शुरू करें'
+            : language === 'te'
+            ? 'ఎటువంటి సాంకేతిక పరిజ్ఞానం లేకుండా 2 నిమిషాల్లో ప్రారంభించండి'
+            : 'Start selling in less than 2 minutes without technical complexity'}
         </span>
-        <div className="flex flex-wrap gap-1.5">
-          <span className="px-2 py-0.5 rounded-md bg-stone-800 text-stone-300 text-[11px] border border-stone-700/60 flex items-center gap-1">
-            <Scissors className="w-3 h-3 text-amber-400" /> Handloom Weaving
-          </span>
-          <span className="px-2 py-0.5 rounded-md bg-stone-800 text-stone-300 text-[11px] border border-stone-700/60 flex items-center gap-1">
-            <Flame className="w-3 h-3 text-orange-400" /> Terracotta Pottery
-          </span>
-          <span className="px-2 py-0.5 rounded-md bg-stone-800 text-stone-300 text-[11px] border border-stone-700/60 flex items-center gap-1">
-            <Trees className="w-3 h-3 text-emerald-400" /> Woodcraft
-          </span>
-          <span className="px-2 py-0.5 rounded-md bg-stone-800 text-stone-300 text-[11px] border border-stone-700/60 flex items-center gap-1">
-            <Palette className="w-3 h-3 text-indigo-400" /> Tribal Folk Art
-          </span>
-        </div>
+        <span className="text-[11px] text-stone-500 font-semibold bg-[#faf7f2] px-2.5 py-1 rounded-lg border border-[#eadfd4]">
+          Zero Commission • 100% Direct UPI Settlement
+        </span>
       </div>
     </div>
   );

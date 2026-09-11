@@ -75,19 +75,18 @@ export function BuyerHome() {
 
   return (
     <div className="space-y-12">
-      {/* Hero Banner with Rich Indian Handicraft Aesthetic */}
-      <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-900 via-orange-950 to-stone-900 text-white shadow-xl border border-amber-800/40 p-8 sm:p-12 lg:p-16">
-        {/* Decorative background glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-72 h-72 bg-orange-600/10 rounded-full blur-2xl pointer-events-none" />
+      {/* Hero Banner with Rich Warm Indian Handicraft Aesthetic */}
+      <section className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#9c4124] via-[#853218] to-[#6d2511] text-white shadow-lg border border-[#eadfd4] p-8 sm:p-12 lg:p-14">
+        {/* Decorative background craft pattern */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 max-w-2xl space-y-5">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 text-xs font-bold tracking-wide">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            {t.fairTradeArtisans}
+        <div className="relative z-10 max-w-2xl space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-amber-200 text-xs font-extrabold tracking-wide">
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span>Direct Artisan Marketplace • 0% Middleman Cuts</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black font-['Rozha_One',serif] leading-tight text-amber-100">
+          <h1 className="text-3xl sm:text-5xl font-black font-['Rozha_One',serif] leading-tight text-white">
             {language === 'hi'
               ? 'सीधे भारतीय कारीगरों से खरीदें, विरासत को सहेजें'
               : language === 'te'
@@ -95,7 +94,7 @@ export function BuyerHome() {
               : 'Authentic Indian Crafts, Straight From The Artisan’s Hands'}
           </h1>
 
-          <p className="text-stone-300 text-sm sm:text-base leading-relaxed">
+          <p className="text-amber-100/90 text-sm sm:text-base leading-relaxed font-medium">
             {language === 'hi'
               ? 'बिचौलियों के बिना उचित मूल्य पर प्रामाणिक हथकरघा, मिट्टी के बर्तन, धातु शिल्प और पारंपरिक कला की खोज करें।'
               : language === 'te'
@@ -106,14 +105,14 @@ export function BuyerHome() {
           <div className="pt-2 flex flex-wrap items-center gap-3">
             <Link
               to="/buyer/browse"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-stone-950 font-extrabold rounded-xl shadow-lg transition-all text-sm"
+              className="inline-flex items-center gap-2 px-6 py-3.5 bg-white hover:bg-[#faf7f2] text-[#9c4124] font-extrabold rounded-2xl shadow-md transition-all text-sm"
             >
-              <span>{t.products}</span>
+              <span>Explore Artisan Products</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               to="/buyer/orders"
-              className="px-5 py-3 bg-stone-800/80 hover:bg-stone-700 text-stone-200 font-semibold rounded-xl border border-stone-700 transition-all text-sm"
+              className="px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl border border-white/20 transition-all text-sm"
             >
               {t.orderTracking}
             </Link>
@@ -254,7 +253,7 @@ export function BuyerHome() {
       {/* Trust & Heritage Pillars */}
       <section className="bg-stone-100 rounded-3xl p-8 sm:p-10 border border-stone-200">
         <h2 className="text-xl font-bold text-stone-900 font-['Rozha_One',serif] text-center mb-8">
-          The KALAtech Fair-Trade Guarantee
+          The ShilpSetu (KALAtech) Fair-Trade Guarantee
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">

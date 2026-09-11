@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Sparkles, ShieldCheck } from 'lucide-react';
 import { LandingPage } from './components/LandingPage';
 
 // Seller Portal Components
@@ -24,11 +23,17 @@ import { Wishlist } from './components/buyer/Wishlist';
 import { BuyerOrders } from './components/buyer/BuyerOrders';
 import { BuyerCustomerCare } from './components/buyer/BuyerCustomerCare';
 
-// Evaluator Defense & AI Audit
-import { EvaluatorTourModal } from './components/EvaluatorTourModal';
-import { AIAuditPanel } from './components/AIAuditPanel';
 import { useLanguage } from './lib/LanguageContext';
 import { useAuth } from './lib/AuthContext';
+
+// Artisan Journey Game-Style Tutorial Components
+import { TutorialProvider } from './components/tutorial/TutorialContext';
+import { GameHUD } from './components/tutorial/GameHUD';
+import { TutorialOverlay } from './components/tutorial/TutorialOverlay';
+import { WelcomeJourneyModal } from './components/tutorial/WelcomeJourneyModal';
+import { RewardCelebrationModal } from './components/tutorial/RewardCelebrationModal';
+import { CompletionJourneyModal } from './components/tutorial/CompletionJourneyModal';
+import { ReturningArtisanBanner } from './components/tutorial/ReturningArtisanBanner';
 
 export default function App() {
   const { language } = useLanguage();
@@ -36,12 +41,17 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [showEvaluatorTour, setShowEvaluatorTour] = useState(false);
-  const [showAuditPanel, setShowAuditPanel] = useState(false);
-
   return (
-    <div className="min-h-screen bg-stone-50 font-sans relative">
-      <Routes>
+    <TutorialProvider>
+      <div className="min-h-screen bg-stone-50 font-sans relative">
+        <GameHUD />
+        <TutorialOverlay />
+        <WelcomeJourneyModal />
+        <RewardCelebrationModal />
+        <CompletionJourneyModal />
+        <ReturningArtisanBanner />
+
+        <Routes>
         {/* Step 1: Instruction / Landing Portal */}
         <Route path="/" element={<LandingPage />} />
 
@@ -95,71 +105,7 @@ export default function App() {
         {/* Catch-all redirect to Landing */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-
-      {/* Floating Evaluator Tour & AI Audit Trigger (Preserved for SIH Evaluation Defense) */}
-      <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 print:hidden">
-        <button
-          onClick={() => setShowAuditPanel(true)}
-          className="flex items-center gap-1.5 px-3 py-2 bg-stone-900/90 hover:bg-stone-900 text-amber-300 border border-amber-500/30 rounded-full shadow-lg text-xs font-bold backdrop-blur transition-all hover:scale-105"
-          title="Open AI Audit Log"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          <span className="hidden sm:inline">AI Defense Logs</span>
-        </button>
-
-        <button
-          onClick={() => setShowEvaluatorTour(true)}
-          className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-full shadow-lg text-xs font-black transition-all hover:scale-105"
-          title="Start SIH Evaluator Defense Guided Tour"
-        >
-          <ShieldCheck className="w-4 h-4" />
-          <span>SIH Tour</span>
-        </button>
-      </div>
-
-      {/* Evaluator Tour Modal */}
-      {showEvaluatorTour && (
-        <EvaluatorTourModal
-          isOpen={showEvaluatorTour}
-          onClose={() => setShowEvaluatorTour(false)}
-          onJumpToStep={(stepNumber) => {
-            setShowEvaluatorTour(false);
-            if (stepNumber === 1 || stepNumber === 2 || stepNumber === 3) {
-              login('seller');
-              navigate('/seller');
-            } else if (stepNumber === 4 || stepNumber === 5) {
-              login('seller');
-              navigate('/seller/create-bill');
-            } else if (stepNumber === 6 || stepNumber === 7) {
-              login('buyer');
-              navigate('/buyer');
-            } else if (stepNumber === 8) {
-              setShowAuditPanel(true);
-            }
-          }}
-        />
-      )}
-
-      {/* AI Audit Panel Modal */}
-      {showAuditPanel && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-          <div className="relative bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <div className="flex justify-between items-center pb-3 mb-4 border-b border-stone-200">
-              <h3 className="font-bold text-stone-900 text-base flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-amber-600" />
-                SIH Evaluator Defense — Live AI Audit & Governance Log
-              </h3>
-              <button
-                onClick={() => setShowAuditPanel(false)}
-                className="px-3 py-1 bg-stone-100 hover:bg-stone-200 rounded-lg text-stone-700 text-xs font-bold"
-              >
-                Close ✕
-              </button>
-            </div>
-            <AIAuditPanel />
-          </div>
-        </div>
-      )}
     </div>
+    </TutorialProvider>
   );
 }

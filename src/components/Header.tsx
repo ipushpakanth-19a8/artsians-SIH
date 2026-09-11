@@ -12,7 +12,7 @@ interface HeaderProps {
   setIsMobileFrame: (val: boolean) => void;
   isSpeaking: boolean;
   setIsSpeaking: (val: boolean) => void;
-  onOpenEvaluatorTour: () => void;
+  onOpenEvaluatorTour?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -39,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
         : currentRole === 'buyer'
         ? `${t.browseCatalog}. ${t.searchCrafts}`
         : currentRole === 'mobile-design'
-        ? "KALAtech Native Mobile App Design with offline-first vernacular voice architecture."
+        ? "ShilpSetu Native Mobile App Design by KALAtech with offline-first vernacular voice architecture."
         : `${t.evaluatorDefense}. AI audit trail and pricing benchmarks.`;
       speakText(speech, language);
       setTimeout(() => setIsSpeaking(false), 8000);
@@ -55,11 +55,14 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-3 w-full md:w-auto justify-between">
             <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setRole('artisan')}>
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-600 to-orange-700 flex items-center justify-center shadow-lg shadow-orange-950/40 text-amber-100 font-black text-xl border border-amber-500/30">
-                KT
+                SS
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-extrabold tracking-tight text-lg text-white font-['Rozha_One',serif]">
+                    ShilpSetu
+                  </span>
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-md tracking-wide uppercase">
                     KALAtech
                   </span>
                   <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full tracking-wide">
@@ -72,17 +75,8 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
 
-            {/* Action Buttons: Judge 5-Min Tour & Audio Guide */}
+            {/* Action Buttons: Audio Guide */}
             <div className="flex items-center gap-2">
-              <button
-                id="header-evaluator-tour-btn"
-                onClick={onOpenEvaluatorTour}
-                className="px-3 py-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-stone-950 font-black rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-orange-950/40 border border-amber-400 transition-transform active:scale-95"
-                title="Interactive 5-Minute Hackathon Demo Script (Section 15)"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-stone-950" />
-                <span className="tracking-tight">Judge 5-Min Tour</span>
-              </button>
 
               {/* Quick Audio Guide Button */}
               <button

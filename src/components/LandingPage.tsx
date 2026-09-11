@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Volume2, Sparkles, ChevronDown, CheckCircle2, ShieldCheck, Heart } from 'lucide-react';
+import { ArrowRight, Volume2, Sparkles, ChevronDown, CheckCircle2, ShieldCheck, Heart, ShoppingBag } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
 import { useAuth } from '../lib/AuthContext';
 import { LanguageCode } from '../types';
@@ -65,8 +65,8 @@ export function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafaf9] text-stone-900 selection:bg-amber-500 selection:text-stone-950 font-sans pb-24 sm:pb-12">
-      {/* 1. Header with KALAtech branding, tagline, and prominent language switcher */}
+    <div className="min-h-screen bg-[#faf7f2] text-[#262220] selection:bg-[#c85a32] selection:text-white font-sans pb-24 sm:pb-12">
+      {/* 1. Header with ShilpSetu (KALAtech) branding and language switcher */}
       <PortalHeader
         language={language}
         onSelectLanguage={handleSelectLanguage}
@@ -86,69 +86,56 @@ export function LandingPage() {
         currentLabel={voice.currentText ? voice.currentText.slice(0, 48) + '...' : undefined}
       />
 
-      {/* User already signed in shortcut banner */}
-      {user && (
-        <div className="bg-amber-100/90 border-b border-amber-300 px-4 py-2 text-center text-xs font-bold text-amber-950 flex items-center justify-center gap-2">
-          <span>Active Session: {user.name} ({role === 'seller' ? 'Artisan' : 'Buyer'})</span>
-          <button
-            onClick={() => navigate(role === 'seller' ? '/seller' : '/buyer')}
-            className="px-2.5 py-0.5 rounded-md bg-amber-600 text-white hover:bg-amber-700 transition-all ml-1 shadow-xs"
-          >
-            Go to {role === 'seller' ? 'Artisan Studio' : 'Marketplace'} →
-          </button>
-        </div>
-      )}
-
       {/* ================================================== */}
-      {/* 1. LANDING / WELCOME SCREEN HERO */}
+      {/* 1. WARM HERO SECTION */}
       {/* ================================================== */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-stone-900 via-stone-900 to-amber-950/90 text-stone-100 pt-10 sm:pt-16 pb-14 sm:pb-20 border-b border-amber-900/40">
-        {/* Subtle decorative Indian craft motifs */}
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage:
-              'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23f59e0b\' fill-opacity=\'0.5\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-          }}
-        />
-
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#faf7f2] via-[#f7f1ea] to-[#faf7f2] pt-8 sm:pt-14 pb-12 sm:pb-16 border-b border-[#eadfd4]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 relative z-10 text-center">
-          {/* SIH / National Innovation Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-black mb-6 tracking-wide shadow-lg shadow-amber-950/50">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>Smart India Hackathon • Indian Artisan Ecosystem</span>
+          {/* Subtle Craft Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fdf2e9] border border-[#f8d7c2] text-[#9c4124] text-xs font-extrabold uppercase tracking-wider mb-4 shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-[#c85a32]" />
+            <span>Digital Business Assistant for Indian Artisans</span>
           </div>
 
           {/* Large Hero Heading */}
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-amber-50 mb-4 tracking-tight leading-[1.15] font-['Rozha_One',serif] max-w-4xl mx-auto">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-[#262220] mb-4 tracking-tight leading-[1.15] font-['Rozha_One',serif] max-w-4xl mx-auto">
             {t.heroHeading}
           </h1>
 
           {/* Supporting Text */}
-          <p className="text-base sm:text-xl text-amber-100/90 font-medium max-w-2xl mx-auto mb-8 leading-relaxed">
+          <p className="text-base sm:text-lg text-stone-600 font-medium max-w-2xl mx-auto mb-8 leading-relaxed">
             {t.heroSub}
           </p>
 
-          {/* Primary CTA & Secondary Voice CTA */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto mb-12">
+          {/* Action CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-lg mx-auto mb-10">
             <button
-              onClick={handleStartTutorial}
-              className="w-full sm:w-auto min-h-[54px] px-8 py-4 rounded-2xl font-black text-lg text-stone-950 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 shadow-xl shadow-amber-500/25 transition-all flex items-center justify-center gap-3 active:scale-98"
+              onClick={() => setArtisanModalOpen(true)}
+              className="w-full sm:w-auto min-h-[52px] px-8 py-3.5 rounded-2xl font-black text-base text-white bg-[#9c4124] hover:bg-[#83341b] shadow-md shadow-[#9c4124]/20 transition-all flex items-center justify-center gap-2.5 active:scale-98 cursor-pointer"
             >
               <span>{t.primaryCta}</span>
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4.5 h-4.5" />
+            </button>
+
+            <button
+              onClick={() => navigate('/buyer')}
+              className="w-full sm:w-auto min-h-[52px] px-6 py-3.5 rounded-2xl font-bold text-base text-[#262220] bg-white hover:bg-[#f5efeb] border border-[#eadfd4] shadow-xs transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
+            >
+              <ShoppingBag className="w-4.5 h-4.5 text-[#9c4124]" />
+              <span>{t.secondaryCta}</span>
             </button>
 
             <button
               onClick={handleListenWelcome}
-              className="w-full sm:w-auto min-h-[54px] px-6 py-4 rounded-2xl font-bold text-base text-amber-200 bg-stone-800/90 hover:bg-stone-800 border-2 border-amber-500/40 hover:border-amber-400 shadow-lg transition-all flex items-center justify-center gap-2.5 active:scale-98"
+              className="w-full sm:w-auto min-h-[52px] px-4 py-3.5 rounded-2xl font-bold text-xs text-[#9c4124] bg-[#fdf2e9] hover:bg-[#fae5d3] border border-[#f8d7c2] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              title="Listen to Instructions in Audio"
             >
-              <Volume2 className="w-5 h-5 text-amber-400" />
-              <span>{t.secondaryCta}</span>
+              <Volume2 className="w-4 h-4 text-[#9c4124]" />
+              <span>{t.voiceListen} 🔊</span>
             </button>
           </div>
 
-          {/* Hero Visual: Subtle Artisan → Handicraft → AI → Buyer Illustration */}
+          {/* Visual 5-Step Demonstration */}
           <div className="w-full max-w-4xl mx-auto">
             <CraftJourneyDiagram language={language} />
           </div>
@@ -161,13 +148,13 @@ export function LandingPage() {
       <section
         ref={tutorialRef}
         id="tutorial-section"
-        className="py-14 sm:py-20 px-4 sm:px-6 max-w-5xl mx-auto"
+        className="py-12 sm:py-16 px-4 sm:px-6 max-w-5xl mx-auto"
       >
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-950 text-xs font-black uppercase tracking-wider mb-2 border border-amber-200">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fdf2e9] text-[#9c4124] text-xs font-black uppercase tracking-wider mb-2 border border-[#f8d7c2]">
             <span>Visual Guidance</span>
           </div>
-          <h2 className="text-2xl sm:text-4xl font-black text-stone-900 mb-2 font-['Rozha_One',serif]">
+          <h2 className="text-2xl sm:text-4xl font-black text-[#262220] mb-2 font-['Rozha_One',serif]">
             {t.instructionSectionTitle}
           </h2>
           <p className="text-sm sm:text-base text-stone-600 font-medium max-w-md mx-auto">
@@ -194,12 +181,12 @@ export function LandingPage() {
       </section>
 
       {/* ================================================== */}
-      {/* 4. ROLE SELECTION (ARTISAN VS BUYER ONLY — ZERO ADMIN) */}
+      {/* 4. ROLE SELECTION (ARTISAN VS BUYER ONLY) */}
       {/* ================================================== */}
       <section
         ref={roleRef}
         id="role-section"
-        className="py-14 sm:py-20 px-4 sm:px-6 bg-gradient-to-b from-stone-100/70 via-amber-50/40 to-stone-50 border-t border-stone-200"
+        className="py-14 sm:py-20 px-4 sm:px-6 bg-[#f7f2ec] border-t border-[#eadfd4]"
       >
         <RoleSelector
           language={language}
@@ -214,20 +201,20 @@ export function LandingPage() {
       {/* 5. ETHICAL COMMITMENT & TRUST ASSURANCE */}
       {/* ================================================== */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm text-center">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-sm text-center">
           <div className="flex items-center justify-center gap-2 mb-3">
-            <ShieldCheck className="w-6 h-6 text-emerald-600" />
-            <span className="text-base font-black text-stone-900">
+            <ShieldCheck className="w-6 h-6 text-emerald-700" />
+            <span className="text-base font-black text-[#262220]">
               National Artisan Welfare & Fair Market Promise
             </span>
           </div>
           <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-2xl mx-auto mb-4">
-            KALAtech is designed to protect traditional Indian artisans from predatory middleman cuts. All price suggestions follow ethical labor compensation and verifiable Geographical Indication (GI) heritage standards.
+            ShilpSetu (powered by KALAtech) is designed to protect traditional Indian artisans from predatory middleman cuts. All price suggestions follow ethical labor compensation and verifiable Geographical Indication (GI) heritage standards.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-bold text-stone-700">
-            <span className="px-3 py-1 bg-amber-50 border border-amber-200 rounded-full">✓ 0% Platform Commission on Craft Direct Sales</span>
-            <span className="px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full">✓ Direct UPI & Bank Settlement</span>
-            <span className="px-3 py-1 bg-indigo-50 border border-indigo-200 rounded-full">✓ Multilingual Audio Voice Support</span>
+            <span className="px-3 py-1 bg-[#fdf2e9] border border-[#f8d7c2] text-[#9c4124] rounded-full">✓ 0% Platform Commission on Craft Direct Sales</span>
+            <span className="px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full">✓ Direct UPI & Bank Settlement</span>
+            <span className="px-3 py-1 bg-stone-100 border border-stone-200 text-stone-700 rounded-full">✓ Multilingual Audio Voice Support</span>
           </div>
         </div>
       </section>
@@ -235,24 +222,25 @@ export function LandingPage() {
       {/* ================================================== */}
       {/* FOOTER */}
       {/* ================================================== */}
-      <footer className="bg-stone-900 text-stone-400 py-10 px-4 border-t border-stone-800 text-center text-xs">
+      <footer className="bg-white text-stone-600 py-10 px-4 border-t border-[#eadfd4] text-center text-xs">
         <div className="max-w-3xl mx-auto space-y-3">
           <div className="flex items-center justify-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-700 flex items-center justify-center text-white font-black text-sm">
-              KT
+            <div className="w-8 h-8 rounded-xl bg-[#9c4124] flex items-center justify-center text-white font-black text-sm">
+              SS
             </div>
-            <span className="font-extrabold text-white text-base font-['Rozha_One',serif]">
-              KALAtech
+            <span className="font-extrabold text-[#262220] text-base font-['Rozha_One',serif]">
+              ShilpSetu
             </span>
-            <span className="text-amber-400 text-xs">कलाTech</span>
+            <span className="text-[#9c4124] text-xs">शिल्पसेतु</span>
+            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[#fdf2e9] text-[#9c4124] border border-[#f8d7c2] rounded uppercase">KALAtech</span>
           </div>
-          <p className="text-stone-300 font-medium">
+          <p className="text-stone-700 font-medium">
             {t.tagline}
           </p>
           <p className="text-[11px] text-stone-500">
             Engineered for low-digital-literacy artisans • Web Speech API Audio Enabled • English • हिन्दी • తెలుగు
           </p>
-          <p className="text-[11px] text-stone-600 pt-2 border-t border-stone-800/80">
+          <p className="text-[11px] text-stone-400 pt-2 border-t border-stone-100">
             Smart India Hackathon • Made with reverence for India's living cultural craft heritage.
           </p>
         </div>
@@ -261,22 +249,20 @@ export function LandingPage() {
       {/* ================================================== */}
       {/* MOBILE STICKY BOTTOM ACTION BAR */}
       {/* ================================================== */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-stone-900/95 backdrop-blur-md border-t border-amber-500/30 p-2.5 sm:hidden flex items-center justify-between gap-2 shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#eadfd4] p-2.5 sm:hidden flex items-center justify-between gap-2 shadow-lg">
         <button
           onClick={handleListenWelcome}
-          className="min-h-[46px] px-3.5 rounded-xl bg-stone-800 border border-amber-500/30 text-amber-300 font-bold text-xs flex items-center gap-1.5 shrink-0"
+          className="min-h-[46px] px-3.5 rounded-xl bg-[#fdf2e9] border border-[#f8d7c2] text-[#9c4124] font-bold text-xs flex items-center gap-1.5 shrink-0"
         >
-          <Volume2 className="w-4 h-4 text-amber-400" />
+          <Volume2 className="w-4 h-4 text-[#9c4124]" />
           <span>{t.voiceListen}</span>
         </button>
 
         <button
-          onClick={() => {
-            roleRef.current?.scrollIntoView({ behavior: 'smooth' });
-          }}
-          className="min-h-[46px] flex-1 py-2 px-4 rounded-xl font-black text-sm text-stone-950 bg-gradient-to-r from-amber-400 to-orange-500 shadow-md flex items-center justify-center gap-2"
+          onClick={() => setArtisanModalOpen(true)}
+          className="min-h-[46px] flex-1 py-2 px-4 rounded-xl font-black text-sm text-white bg-[#9c4124] shadow-sm flex items-center justify-center gap-2"
         >
-          <span>Choose Role →</span>
+          <span>{t.primaryCta} →</span>
         </button>
       </div>
 

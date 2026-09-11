@@ -52,9 +52,9 @@ export function AdminLogin() {
             <ShieldCheck className="w-8 h-8" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-['Rozha_One',serif] tracking-tight">
-            KALAtech <span className="text-red-500 font-sans text-xl font-bold">Admin</span>
+            ShilpSetu <span className="text-red-500 font-sans text-xl font-bold">Admin</span>
           </h1>
-          <p className="text-slate-400 text-xs mt-1">Platform Governance & Enterprise Cluster Management</p>
+          <p className="text-slate-400 text-xs mt-1">KALAtech Platform Governance & Enterprise Cluster Management</p>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-950/60 border border-red-800/40 rounded-full text-red-400 text-[11px] font-semibold mt-3">
             <Lock className="w-3 h-3" />
             Restricted Access • Authorized Personnel Only
@@ -141,7 +141,7 @@ export function AdminLogin() {
 
         {/* Security Notice */}
         <div className="mt-6 text-center text-slate-500 text-xs">
-          <p>Protected by KALAtech Role-Based Access Control (RBAC).</p>
+          <p>Protected by ShilpSetu (KALAtech) Role-Based Access Control (RBAC).</p>
           <p className="mt-0.5 text-slate-600">All administrative sessions are logged for audit compliance.</p>
         </div>
       </div>

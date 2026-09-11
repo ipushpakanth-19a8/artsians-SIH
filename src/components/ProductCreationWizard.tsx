@@ -1432,6 +1432,7 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
                     </div>
                   </div>
                 )}
+              </div>
 
               {/* Set Custom or Apply Final Price */}
               <div className="mt-4 pt-3 border-t border-stone-800">

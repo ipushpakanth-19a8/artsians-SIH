@@ -10,29 +10,108 @@
   --font-telugu: 'Noto Sans Telugu', sans-serif;
 
   --color-artisan-ochre: #d97706;
-  --color-artisan-terracotta: #c2410c;
+  --color-artisan-terracotta: #c85a32;
+  --color-artisan-clay: #9c4124;
   --color-artisan-indigo: #3730a3;
-  --color-artisan-emerald: #047857;
-  --color-artisan-silk: #fafaf9;
-  --color-artisan-charcoal: #1c1917;
+  --color-artisan-emerald: #2e7d32;
+  --color-artisan-silk: #faf7f2;
+  --color-artisan-sand: #f5efeb;
+  --color-artisan-border: #eadfd4;
+  --color-artisan-charcoal: #262220;
 }
 
 :root {
   --color-artisan-ochre: #d97706;
-  --color-artisan-terracotta: #c2410c;
+  --color-artisan-terracotta: #c85a32;
+  --color-artisan-clay: #9c4124;
   --color-artisan-indigo: #3730a3;
-  --color-artisan-emerald: #047857;
-  --color-artisan-silk: #fafaf9;
-  --color-artisan-charcoal: #1c1917;
+  --color-artisan-emerald: #2e7d32;
+  --color-artisan-silk: #faf7f2;
+  --color-artisan-sand: #f5efeb;
+  --color-artisan-border: #eadfd4;
+  --color-artisan-charcoal: #262220;
 }
 
 body {
-  background-color: #fafaf9;
-  color: #1c1917;
+  background-color: #faf7f2;
+  color: #262220;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
+/* Artisan UI Design System Utility Classes */
+.artisan-card {
+  background-color: #ffffff;
+  border: 1px solid #eadfd4;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(38, 34, 32, 0.05), 0 1px 2px -1px rgba(38, 34, 32, 0.05);
+}
+
+.artisan-card-warm {
+  background-color: #fdfbf7;
+  border: 1px solid #eadfd4;
+  border-radius: 1rem;
+}
+
+.artisan-card-interactive {
+  background-color: #ffffff;
+  border: 1px solid #eadfd4;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(38, 34, 32, 0.05);
+  transition: all 0.2s ease-in-out;
+}
+.artisan-card-interactive:hover {
+  border-color: #c85a32;
+  box-shadow: 0 4px 12px -2px rgba(200, 90, 50, 0.12);
+  transform: translateY(-2px);
+}
+
+.artisan-btn-primary {
+  background-color: #9c4124;
+  color: #ffffff;
+  font-weight: 700;
+  border-radius: 0.875rem;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 2px 6px rgba(156, 65, 36, 0.25);
+  transition: all 0.15s ease-in-out;
+}
+.artisan-btn-primary:hover {
+  background-color: #83341b;
+}
+.artisan-btn-primary:active {
+  transform: scale(0.98);
+}
+
+.artisan-btn-secondary {
+  background-color: #ffffff;
+  color: #262220;
+  border: 1px solid #eadfd4;
+  font-weight: 600;
+  border-radius: 0.875rem;
+  padding: 0.75rem 1.25rem;
+  transition: all 0.15s ease-in-out;
+}
+.artisan-btn-secondary:hover {
+  background-color: #f5efeb;
+  border-color: #d8c7b8;
+}
+
+.artisan-listen-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  background-color: #fdf2e9;
+  border: 1px solid #f8d7c2;
+  color: #9c4124;
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all 0.15s ease-in-out;
+}
+.artisan-listen-btn:hover {
+  background-color: #fae5d3;
+}
 
 /* Glassmorphism & Modern Card Accents */
 .glass-card {

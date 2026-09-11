@@ -20,9 +20,10 @@ export function BillPreview({ bill }: BillPreviewProps) {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-600 to-orange-700 flex items-center justify-center text-amber-100 font-black text-sm">
-              KT
+              SS
             </div>
-            <span className="text-2xl font-black text-stone-900 font-['Rozha_One',serif]">KALAtech</span>
+            <span className="text-2xl font-black text-stone-900 font-['Rozha_One',serif]">ShilpSetu</span>
+            <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-900 rounded border border-amber-300 uppercase">KALAtech</span>
           </div>
           <p className="text-xs text-stone-500 font-medium tracking-wide">
             Official Indian Handicraft Artisan Valuation & Invoice
@@ -172,7 +173,7 @@ export function BillPreview({ bill }: BillPreviewProps) {
           <Award className="w-8 h-8 text-amber-600" />
           <div>
             <p className="font-bold text-stone-800">Verified Handicraft Origin</p>
-            <p>Protected by KALAtech Fair Pricing & Provenance protocol.</p>
+            <p>Protected by ShilpSetu (KALAtech) Fair Pricing & Provenance protocol.</p>
           </div>
         </div>
 

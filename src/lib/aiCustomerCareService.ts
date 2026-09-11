@@ -31,36 +31,36 @@ export async function sendChatMessage(
 function getLocalFallbackResponse(message: string, role: string, lang: LanguageCode): string {
   const q = message.toLowerCase();
 
-  const responses: Record<LanguageCode, Record<string, string>> = {
+  const responses: Record<string, Record<string, string>> = {
     en: {
-      price: "To price your handicraft fairly, go to 'Create Bill' in the seller portal. Enter your material, labour, and transportation costs. KALAtech will compare with market benchmarks and suggest a fair price range.",
+      price: "To price your handicraft fairly, go to 'Create Bill' in the seller portal. Enter your material, labour, and transportation costs. ShilpSetu (KALAtech) will compare with market benchmarks and suggest a fair price range.",
       bill: "To create a bill, navigate to 'Create Bill' from the seller dashboard. Select your product, enter cost details, review the market price comparison, and finalize your invoice.",
       market: "The Market Price Analysis feature compares your proposed price with curated market benchmarks. It shows minimum, average, and maximum market prices for similar handicrafts.",
       listing: "To improve your product listing, use high-quality photos, provide detailed descriptions of materials and techniques, and highlight the cultural heritage of your craft.",
       buy: "To buy a handicraft, browse the marketplace, select a product you like, add it to your cart, and proceed to checkout. You can pay via UPI, card, or cash on delivery.",
       track: "You can track your order from 'My Orders' in the buyer dashboard. Orders go through stages: Created → Paid → Shipped → Delivered.",
-      return: "For returns, please contact the seller directly through the 'Contact Seller' button on the product page. KALAtech facilitates direct artisan-to-buyer communication.",
-      default: "Thank you for reaching out! I'm KALAtech's AI assistant. I can help you with pricing, billing, product listings, marketplace navigation, and more. Please ask me a specific question!",
+      return: "For returns, please contact the seller directly through the 'Contact Seller' button on the product page. ShilpSetu facilitates direct artisan-to-buyer communication.",
+      default: "Thank you for reaching out! I'm ShilpSetu's AI assistant (powered by KALAtech). I can help you with pricing, billing, product listings, marketplace navigation, and more. Please ask me a specific question!",
     },
     hi: {
-      price: "अपने हस्तशिल्प की उचित कीमत के लिए, विक्रेता पोर्टल में 'बिल बनाएं' पर जाएं। अपनी सामग्री, श्रम और परिवहन लागत दर्ज करें। KALAtech बाज़ार बेंचमार्क से तुलना करके उचित मूल्य सुझाएगा।",
+      price: "अपने हस्तशिल्प की उचित कीमत के लिए, विक्रेता पोर्टल में 'बिल बनाएं' पर जाएं। अपनी सामग्री, श्रम और परिवहन लागत दर्ज करें। शिल्पसेतु (KALAtech) बाज़ार बेंचमार्क से तुलना करके उचित मूल्य सुझाएगा।",
       bill: "बिल बनाने के लिए, विक्रेता डैशबोर्ड से 'बिल बनाएं' पर जाएं। अपना उत्पाद चुनें, लागत विवरण दर्ज करें, बाज़ार मूल्य तुलना देखें और चालान को अंतिम रूप दें।",
       market: "बाज़ार मूल्य विश्लेषण आपके प्रस्तावित मूल्य की बाज़ार बेंचमार्क से तुलना करता है। यह समान हस्तशिल्प के न्यूनतम, औसत और अधिकतम बाज़ार मूल्य दिखाता है।",
       listing: "अपने उत्पाद की सूची को बेहतर बनाने के लिए, उच्च गुणवत्ता वाली तस्वीरों का उपयोग करें और सामग्री और तकनीकों का विस्तृत विवरण दें।",
       buy: "हस्तशिल्प खरीदने के लिए, बाज़ार ब्राउज़ करें, अपना पसंदीदा उत्पाद चुनें, कार्ट में जोड़ें और चेकआउट पर जाएं।",
       track: "आप खरीदार डैशबोर्ड में 'मेरे ऑर्डर' से अपना ऑर्डर ट्रैक कर सकते हैं।",
       return: "वापसी के लिए, कृपया उत्पाद पृष्ठ पर 'विक्रेता से संपर्क करें' बटन के माध्यम से विक्रेता से सीधे संपर्क करें।",
-      default: "संपर्क करने के लिए धन्यवाद! मैं KALAtech का AI सहायक हूं। मैं मूल्य निर्धारण, बिलिंग, उत्पाद सूची और बाज़ार नेविगेशन में आपकी मदद कर सकता हूं।",
+      default: "संपर्क करने के लिए धन्यवाद! मैं शिल्पसेतु (KALAtech) का AI सहायक हूं। मैं मूल्य निर्धारण, बिलिंग, उत्पाद सूची और बाज़ार नेविगेशन में आपकी मदद कर सकता हूं।",
     },
     te: {
-      price: "మీ చేతివృత్తికి సరసమైన ధర నిర్ణయించడానికి, విక్రేత పోర్టల్‌లో 'బిల్లు తయారు చేయండి'కి వెళ్లండి. మీ ముడిసరుకు, శ్రమ మరియు రవాణా ఖర్చులను నమోదు చేయండి.",
+      price: "మీ చేతివృత్తికి సరసమైన ధర నిర్ణయించడానికి, విక్రేత పోర్టల్‌లో 'బిల్లు తయారు చేయండి'కి వెళ్లండి. మీ ముడిసరుకు, శ్రమ మరియు రవాణా ఖర్చులను నమోదు చేయండి. శిల్పసేతు (KALAtech) తగిన ధరను సూచిస్తుంది.",
       bill: "బిల్లు తయారు చేయడానికి, విక్రేత డాష్‌బోర్డ్ నుండి 'బిల్లు తయారు చేయండి'కి నావిగేట్ చేయండి. మీ ఉత్పత్తిని ఎంచుకోండి, ఖర్చు వివరాలను నమోదు చేయండి.",
       market: "మార్కెట్ ధర విశ్లేషణ మీ ప్రతిపాదిత ధరను మార్కెట్ బెంచ్‌మార్క్‌లతో పోల్చుతుంది.",
       listing: "మీ ఉత్పత్తి జాబితాను మెరుగుపరచడానికి, నాణ్యమైన ఫోటోలు ఉపయోగించండి మరియు ముడిసరుకు మరియు తయారీ పద్ధతుల గురించి వివరంగా రాయండి.",
       buy: "చేతివృత్తి కొనుగోలు చేయడానికి, మార్కెట్‌ప్లేస్ బ్రౌజ్ చేయండి, మీకు నచ్చిన ఉత్పత్తిని ఎంచుకోండి, కార్ట్‌కు జోడించండి.",
       track: "మీరు కొనుగోలుదారు డాష్‌బోర్డ్‌లో 'నా ఆర్డర్లు' నుండి మీ ఆర్డర్‌ను ట్రాక్ చేయవచ్చు.",
       return: "రిటర్న్‌ల కోసం, దయచేసి ఉత్పత్తి పేజీలో 'విక్రేతను సంప్రదించండి' బటన్ ద్వారా విక్రేతను నేరుగా సంప్రదించండి.",
-      default: "సంప్రదించినందుకు ధన్యవాదాలు! నేను KALAtech AI సహాయకుడిని. ధర నిర్ణయం, బిల్లింగ్, ఉత్పత్తి జాబితాలు మరియు మార్కెట్ నావిగేషన్‌లో మీకు సహాయం చేయగలను.",
+      default: "సంప్రదించినందుకు ధన్యవాదాలు! నేను శిల్పసేతు (KALAtech) AI సహాయకుడిని. ధర నిర్ణయం, బిల్లింగ్, ఉత్పత్తి జాబితాలు మరియు మార్కెట్ నావిగేషన్‌లో మీకు సహాయం చేయగలను.",
     },
   };
 
@@ -78,7 +78,7 @@ function getLocalFallbackResponse(message: string, role: string, lang: LanguageC
 }
 
 export function getSuggestedQuestions(role: string, lang: LanguageCode): string[] {
-  const questions: Record<LanguageCode, Record<string, string[]>> = {
+  const questions: Record<string, Record<string, string[]>> = {
     en: {
       seller: [
         "How should I price my handicraft?",
