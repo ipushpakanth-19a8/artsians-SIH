@@ -9,6 +9,7 @@ import { useAuth } from '../../lib/AuthContext';
 import { translations } from '../../lib/i18n';
 import { LanguageCode } from '../../types';
 import { useTutorial } from '../tutorial/TutorialContext';
+import { triggerHaptic, setupHardwareBackButton } from '../../lib/nativeBridge';
 
 export function SellerLayout() {
   const { language, setLanguage } = useLanguage();
@@ -19,6 +20,17 @@ export function SellerLayout() {
   const t = translations[language];
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const cleanup = setupHardwareBackButton(() => {
+      if (sidebarOpen) {
+        setSidebarOpen(false);
+        return true;
+      }
+      return false;
+    });
+    return () => cleanup();
+  }, [sidebarOpen]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -258,13 +270,14 @@ export function SellerLayout() {
         {/* MOBILE-FIRST BOTTOM NAVIGATION BAR (Prominent + Add) */}
         {/* ================================================== */}
         <nav
-          className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#eadfd4] px-2 py-1.5 lg:hidden flex items-center justify-around shadow-lg"
+          className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#eadfd4] px-2 pt-1.5 pb-safe lg:hidden flex items-center justify-around shadow-lg"
           aria-label="Mobile Navigation"
         >
           {/* 1. Home */}
           <NavLink
             to="/seller"
             end
+            onClick={() => triggerHaptic('light')}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
                 isActive ? 'text-[#9c4124] font-bold' : 'text-stone-500 font-medium'
@@ -278,6 +291,7 @@ export function SellerLayout() {
           {/* 2. Products */}
           <NavLink
             to="/seller/handicrafts"
+            onClick={() => triggerHaptic('light')}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
                 isActive ? 'text-[#9c4124] font-bold' : 'text-stone-500 font-medium'
@@ -291,6 +305,7 @@ export function SellerLayout() {
           {/* 3. Elevated + ADD Button */}
           <NavLink
             to="/seller/add"
+            onClick={() => triggerHaptic('medium')}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center -mt-5 relative group`
             }
@@ -307,6 +322,7 @@ export function SellerLayout() {
           {/* 4. Orders */}
           <NavLink
             to="/seller/orders"
+            onClick={() => triggerHaptic('light')}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
                 isActive ? 'text-[#9c4124] font-bold' : 'text-stone-500 font-medium'

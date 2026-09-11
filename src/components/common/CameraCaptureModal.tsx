@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Camera, RefreshCw, X, Check, AlertCircle, Sparkles, SwitchCamera } from 'lucide-react';
+import { Camera, RefreshCw, X, Check, AlertCircle, Sparkles, SwitchCamera, Image as ImageIcon } from 'lucide-react';
+import { isNativePlatform, takeNativePhoto, pickNativeGalleryPhoto, triggerHaptic } from '../../lib/nativeBridge';
 
 interface CameraCaptureModalProps {
   isOpen: boolean;
@@ -101,10 +102,34 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
     const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
     setCapturedImage(dataUrl);
     stopStream();
+    triggerHaptic('medium');
+  };
+
+  // Native hardware camera
+  const handleNativeCamera = async () => {
+    triggerHaptic('light');
+    const dataUrl = await takeNativePhoto();
+    if (dataUrl) {
+      setCapturedImage(dataUrl);
+      stopStream();
+      triggerHaptic('success');
+    }
+  };
+
+  // Native device gallery picker
+  const handleNativeGallery = async () => {
+    triggerHaptic('light');
+    const dataUrl = await pickNativeGalleryPhoto();
+    if (dataUrl) {
+      setCapturedImage(dataUrl);
+      stopStream();
+      triggerHaptic('success');
+    }
   };
 
   // Retake photo
   const handleRetake = () => {
+    triggerHaptic('light');
     setCapturedImage(null);
     startCamera(cameraFacing);
   };
@@ -112,6 +137,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
   // Confirm and return photo
   const handleConfirm = () => {
     if (capturedImage) {
+      triggerHaptic('success');
       onCapture(capturedImage);
       onClose();
     }
@@ -246,17 +272,40 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
               </button>
             </>
           ) : (
-            <div className="w-full flex items-center justify-center">
+            <div className="w-full flex items-center justify-between gap-3">
+              {/* Native Gallery Button */}
+              <button
+                type="button"
+                onClick={handleNativeGallery}
+                className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-bold transition-all shadow-sm"
+                title="Select from Photo Library"
+              >
+                <ImageIcon className="w-4 h-4 text-amber-400" />
+                <span className="hidden xs:inline">Gallery</span>
+              </button>
+
+              {/* Shutter Button */}
               <button
                 type="button"
                 onClick={takeSnapshot}
                 disabled={isInitializing || !!error}
-                className="w-16 h-16 rounded-full bg-white hover:scale-105 active:scale-95 transition-transform flex items-center justify-center shadow-lg border-4 border-amber-500 disabled:opacity-40"
+                className="w-16 h-16 rounded-full bg-white hover:scale-105 active:scale-95 transition-transform flex items-center justify-center shadow-lg border-4 border-amber-500 disabled:opacity-40 shrink-0"
                 title="Capture Craft Photo"
               >
                 <div className="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center">
                   <Camera className="w-6 h-6 text-stone-950" />
                 </div>
+              </button>
+
+              {/* Native Camera App Launch */}
+              <button
+                type="button"
+                onClick={handleNativeCamera}
+                className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-bold transition-all shadow-sm"
+                title="Use Native Device Camera App"
+              >
+                <Camera className="w-4 h-4 text-amber-400" />
+                <span className="hidden xs:inline">Native HD</span>
               </button>
             </div>
           )}

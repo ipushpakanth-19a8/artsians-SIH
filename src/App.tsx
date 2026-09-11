@@ -34,6 +34,8 @@ import { WelcomeJourneyModal } from './components/tutorial/WelcomeJourneyModal';
 import { RewardCelebrationModal } from './components/tutorial/RewardCelebrationModal';
 import { CompletionJourneyModal } from './components/tutorial/CompletionJourneyModal';
 import { ReturningArtisanBanner } from './components/tutorial/ReturningArtisanBanner';
+import { OfflineBanner } from './components/common/OfflineBanner';
+import { initNativeAppChrome } from './lib/nativeBridge';
 
 export default function App() {
   const { language } = useLanguage();
@@ -41,9 +43,14 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    initNativeAppChrome();
+  }, []);
+
   return (
     <TutorialProvider>
       <div className="min-h-screen bg-stone-50 font-sans relative">
+        <OfflineBanner />
         <GameHUD />
         <TutorialOverlay />
         <WelcomeJourneyModal />

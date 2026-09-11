@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ShilpSetu KALAtech</string>
+    <string name="title_activity_main">ShilpSetu KALAtech</string>
+    <string name="package_name">com.kalatech.shilpsetu</string>
+    <string name="custom_url_scheme">com.kalatech.shilpsetu</string>
+</resources>

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Artisan } from '../types';
+import { resolveApiUrl, secureStorage } from './nativeBridge';
 
 export type UserRole = 'seller' | 'buyer' | null;
 
@@ -100,19 +101,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   });
 
+  // Check native secureStorage on boot
+  useEffect(() => {
+    secureStorage.getItem('kalatech_token').then((savedToken) => {
+      if (savedToken && !token) setToken(savedToken);
+    });
+    secureStorage.getItem('kalatech_auth').then((savedAuth) => {
+      if (savedAuth && !user) {
+        try {
+          const parsed = JSON.parse(savedAuth);
+          if (parsed.role !== 'admin') setUser(parsed);
+        } catch {}
+      }
+    });
+  }, []);
+
   const role = user?.role ?? null;
 
   const saveAuth = (newUser: AuthUser, newToken?: string) => {
     setUser(newUser);
     if (newToken) {
       setToken(newToken);
-      try {
-        localStorage.setItem('kalatech_token', newToken);
-      } catch {}
+      secureStorage.setItem('kalatech_token', newToken);
     }
-    try {
-      localStorage.setItem('kalatech_auth', JSON.stringify(newUser));
-    } catch {}
+    secureStorage.setItem('kalatech_auth', JSON.stringify(newUser));
   };
 
   // Synchronous demo/fallback login
@@ -137,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Real Seller Login via Backend API
   const loginSeller = async (identifier: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const res = await fetch('/api/auth/seller/login', {
+      const res = await fetch(resolveApiUrl('/api/auth/seller/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier, password }),
@@ -171,7 +183,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     state?: string;
   }): Promise<{ success: boolean; error?: string }> => {
     try {
-      const res = await fetch('/api/auth/seller/signup', {
+      const res = await fetch(resolveApiUrl('/api/auth/seller/signup'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -195,7 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Real Buyer Login via Backend API
   const loginBuyer = async (identifier: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const res = await fetch('/api/auth/buyer/login', {
+      const res = await fetch(resolveApiUrl('/api/auth/buyer/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier, password }),
@@ -227,7 +239,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     address?: string;
   }): Promise<{ success: boolean; error?: string }> => {
     try {
-      const res = await fetch('/api/auth/buyer/signup', {
+      const res = await fetch(resolveApiUrl('/api/auth/buyer/signup'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -250,11 +262,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     setToken(null);
-    try {
-      localStorage.removeItem('kalatech_auth');
-      localStorage.removeItem('kalatech_token');
-      fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
-    } catch {}
+    secureStorage.removeItem('kalatech_auth');
+    secureStorage.removeItem('kalatech_token');
+    fetch(resolveApiUrl('/api/auth/logout'), { method: 'POST' }).catch(() => {});
   };
 
   return (

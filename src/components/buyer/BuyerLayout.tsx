@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
-import { ShoppingBag, Heart, ShoppingCart, Search, Globe, LogOut, Package, User, Headphones, Menu, X, ArrowLeft } from 'lucide-react';
+import { ShoppingBag, Heart, ShoppingCart, Search, Globe, LogOut, Package, User, Headphones, Menu, X, ArrowLeft, Home } from 'lucide-react';
 import { useLanguage } from '../../lib/LanguageContext';
 import { useAuth } from '../../lib/AuthContext';
 import { translations } from '../../lib/i18n';
 import { LanguageCode } from '../../types';
+import { triggerHaptic, setupHardwareBackButton } from '../../lib/nativeBridge';
 
 export function BuyerLayout() {
   const { language, setLanguage } = useLanguage();
@@ -15,6 +16,17 @@ export function BuyerLayout() {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const cleanup = setupHardwareBackButton(() => {
+      if (mobileMenuOpen) {
+        setMobileMenuOpen(false);
+        return true;
+      }
+      return false;
+    });
+    return () => cleanup();
+  }, [mobileMenuOpen]);
 
   const updateCounts = () => {
     try {
@@ -230,9 +242,102 @@ export function BuyerLayout() {
       </header>
 
       {/* Main Outlet */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-8">
         <Outlet />
       </main>
+
+      {/* ================================================== */}
+      {/* MOBILE-FIRST BUYER BOTTOM NAVIGATION BAR */}
+      {/* ================================================== */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-stone-200 px-2 pt-1.5 pb-safe lg:hidden flex items-center justify-around shadow-lg"
+        aria-label="Buyer Mobile Navigation"
+      >
+        {/* 1. Home */}
+        <NavLink
+          to="/buyer"
+          end
+          onClick={() => triggerHaptic('light')}
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+              isActive ? 'text-amber-700 font-bold' : 'text-stone-500 font-medium'
+            }`
+          }
+        >
+          <Home className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px]">{language === 'hi' ? 'होम' : language === 'te' ? 'హోమ్' : 'Home'}</span>
+        </NavLink>
+
+        {/* 2. Browse */}
+        <NavLink
+          to="/buyer/browse"
+          onClick={() => triggerHaptic('light')}
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+              isActive ? 'text-amber-700 font-bold' : 'text-stone-500 font-medium'
+            }`
+          }
+        >
+          <Search className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px]">{language === 'hi' ? 'शिल्प खोजें' : language === 'te' ? 'బ్రౌజ్' : 'Browse'}</span>
+        </NavLink>
+
+        {/* 3. Wishlist */}
+        <NavLink
+          to="/buyer/wishlist"
+          onClick={() => triggerHaptic('light')}
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative ${
+              isActive ? 'text-amber-700 font-bold' : 'text-stone-500 font-medium'
+            }`
+          }
+        >
+          <div className="relative">
+            <Heart className="w-5 h-5 mb-0.5" />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -right-2 w-3.5 h-3.5 bg-rose-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                {wishlistCount}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px]">{language === 'hi' ? 'पसंदीदा' : language === 'te' ? 'కోరికలు' : 'Wishlist'}</span>
+        </NavLink>
+
+        {/* 4. Cart */}
+        <NavLink
+          to="/buyer/cart"
+          onClick={() => triggerHaptic('light')}
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative ${
+              isActive ? 'text-amber-700 font-bold' : 'text-stone-500 font-medium'
+            }`
+          }
+        >
+          <div className="relative">
+            <ShoppingCart className="w-5 h-5 mb-0.5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-2 w-3.5 h-3.5 bg-amber-600 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px]">{language === 'hi' ? 'कार्ट' : language === 'te' ? 'కార్ట్' : 'Cart'}</span>
+        </NavLink>
+
+        {/* 5. Orders */}
+        <NavLink
+          to="/buyer/orders"
+          onClick={() => triggerHaptic('light')}
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+              isActive ? 'text-amber-700 font-bold' : 'text-stone-500 font-medium'
+            }`
+          }
+        >
+          <Package className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px]">{language === 'hi' ? 'ऑर्डर्स' : language === 'te' ? 'ఆర్డర్లు' : 'Orders'}</span>
+        </NavLink>
+      </nav>
 
       {/* Footer */}
       <footer className="bg-stone-900 text-stone-400 py-10 border-t border-stone-800 text-xs">
