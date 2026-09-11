@@ -13,12 +13,13 @@
 ## 📑 Table of Contents (Sequential Order)
 1. [The Problem We Solve](#1-the-problem-we-solve)
 2. [Sequential 5-Step System Architecture](#2-sequential-5-step-system-architecture)
-3. [Sequential Codebase Directory Map](#3-sequential-codebase-directory-map)
-4. [Dual-Portal Architecture & Ports](#4-dual-portal-architecture--ports)
-5. [Quick Start & Setup Instructions](#5-quick-start--setup-instructions)
-6. [Step-by-Step Demonstration Guide](#6-step-by-step-demonstration-guide)
-7. [Genuine AI vs. Rule-Based Fallback Matrix](#7-genuine-ai-vs-rule-based-fallback-matrix)
-8. [Documentation Library](#8-documentation-library)
+3. [🎮 "Artisan Journey" Interactive Game Tutorial](#3-artisan-journey-interactive-game-tutorial)
+4. [Sequential Codebase Directory Map](#4-sequential-codebase-directory-map)
+5. [Dual-Portal Architecture & Ports](#5-dual-portal-architecture--ports)
+6. [Quick Start & Setup Instructions](#6-quick-start--setup-instructions)
+7. [Step-by-Step Demonstration Guide](#7-step-by-step-demonstration-guide)
+8. [Genuine AI vs. Rule-Based Fallback Matrix](#8-genuine-ai-vs-rule-based-fallback-matrix)
+9. [Documentation Library](#9-documentation-library)
 
 ---
 
@@ -75,7 +76,42 @@ Regional Voice      Studio Lighting      Multilingual Story  Living-Wage Margin 
 
 ---
 
-## 3. Sequential Codebase Directory Map
+## 3. 🎮 "Artisan Journey" Interactive Game Tutorial
+
+Designed specifically for first-time rural artisans and craftspeople with low digital literacy, the **Artisan Journey (शिल्प यात्रा / శిల్ప యాత్ర)** transforms standard onboarding into a rewarding, mission-based game guided by **Artisan Saathi (कला साथी)**.
+
+Instead of passive slides, artisans complete live missions directly on the actual interface:
+
+```
+[ Welcome Modal ] ──> [ Spotlight Cutout ] ──> [ Real UI Interaction ] ──> [ +Points & Badges ] ──> [ Graduation ]
+Trilingual Voice      SVG Dynamic Mask         Camera / AI / Pricing        Level Celebrations        Master Artisan
+```
+
+### The 9 Real-World Missions
+
+| Level | Mission Title | Objective & Real UI Target | Reward |
+|---|---|---|---|
+| **Level 1** | 👋 Meet Your Digital Shop | Inspect the live seller dashboard snapshot cards | +50 Pts |
+| **Level 2** | 📸 Add Your First Product | Click the prominent **+ Add New Product** action button | +100 Pts · 🏅 *First Product* |
+| **Level 3** | 🖼️ Select or Snap Craft Photo | Choose a preset sample craft or upload raw camera capture | +75 Pts |
+| **Level 4** | ✨ Make Photo Better | Launch AI studio lighting, auto-white-balance, & 1080p crop | +150 Pts · 🎨 *Photo Pro* |
+| **Level 5** | ✍️ Tell Your Craft Story | Use Multimodal AI to generate trilingual cultural heritage & GI story | +150 Pts · 📜 *Storyteller* |
+| **Level 6** | 💰 Find a Fair Price | Calculate cost-plus fair price with living-wage guarantee | +100 Pts · ⚖️ *Smart Seller* |
+| **Level 7** | 🛍️ Publish to Marketplace | Click **Publish Product** to push live to buyers & GeM/ONDC | +200 Pts · 🚀 *Digital Seller* |
+| **Level 8** | 📦 See Customer Orders | View live orders, update dispatch status, and download packing slips | +100 Pts · 📦 *Order Ready* |
+| **Level 9** | 📈 Celebrate Your Growth | Review earnings analytics, middleman savings, and graduate | +250 Pts · 🏆 *Artisan Star* |
+
+### Gamification & Low-Literacy Accommodations
+- **SVG Spotlight Cutout**: An interactive mask dims the screen and creates a glowing cutout over the exact target button, keeping focus razor-sharp.
+- **🤝 Artisan Saathi Dialogue Card**: Positioned dynamically above or below the target with friendly instructions in English, Hindi, or Telugu.
+- **🔊 Multilingual Voice Narration**: Click the *Listen* button on any step to hear spoken instructions in the artisan's mother tongue via Web Speech synthesis.
+- **Floating Game HUD**: Displays current level (`Level X/9`), progress bar, XP point counter pill, pause/resume, and skip options.
+- **⚡ SIH Judge Fast-Track Demo**: Click **"🎮 Try 2-Minute Demo"** on the welcome modal to jump directly into Level 3 with sample craft data pre-loaded for instant evaluation.
+- **Micro-Actions & Badges**: Earn badges (*First Product, Photo Pro, Storyteller, Smart Seller, Digital Seller, Order Ready, Artisan Star*) saved permanently in `localStorage`.
+
+---
+
+## 4. Sequential Codebase Directory Map
 
 ```
 artsians-SIH/
@@ -89,22 +125,26 @@ artsians-SIH/
 │
 ├── src/                            # Frontend Application (React 19 + TypeScript)
 │   ├── main.tsx                    # React client entry with RootErrorBoundary
-│   ├── App.tsx                     # Main router (Landing, Seller, Buyer portals)
+│   ├── App.tsx                     # Main router with TutorialProvider wrapper
 │   ├── types.ts                    # TypeScript schemas (Product, Order, Pricing)
 │   │
-│   ├── admin/                      # Dedicated Admin Governance Website (Port 5174)
-│   │   ├── adminMain.tsx           # Admin mounting entry
-│   │   ├── AdminApp.tsx            # Admin governance layout & views
-│   │   └── AdminAuthContext.tsx    # Admin authentication & role management
-│   │
 │   ├── components/
-│   │   ├── LandingPage.tsx         # Multilingual onboarding and feature portal
+│   │   ├── tutorial/               # 🎮 Artisan Journey Gamification Engine
+│   │   │   ├── TutorialContext.tsx           # 9-mission state machine, points, badges, TTS
+│   │   │   ├── TutorialOverlay.tsx           # Dynamic SVG spotlight cutout & Saathi card
+│   │   │   ├── GameHUD.tsx                   # Top floating level & XP pill status bar
+│   │   │   ├── WelcomeJourneyModal.tsx       # First-visit welcome with 2-min demo button
+│   │   │   ├── RewardCelebrationModal.tsx    # Milestone reward animation & badge unlocks
+│   │   │   ├── CompletionJourneyModal.tsx    # Graduation celebration & 7-skill checklist
+│   │   │   ├── ReturningArtisanBanner.tsx    # Bottom-right resume journey toast
+│   │   │   ├── DailyMiniMissionsCard.tsx     # Dashboard daily micro-tasks card
+│   │   │   └── ContextualHelp.tsx            # "👀 Show Me" buttons & tooltips
 │   │   │
-│   │   ├── common/                 # Reusable Multimodal & Resilience Components
-│   │   │   ├── CameraCaptureModal.tsx        # getUserMedia hardware camera
-│   │   │   ├── AudioVoiceNoteRecorder.tsx    # MediaRecorder regional voice notes
-│   │   │   ├── GovernmentMarketplaceModal.tsx# GeM & ONDC export integration
-│   │   │   └── RootErrorBoundary.tsx         # Client error recovery screen
+│   │   ├── common/                 # Reusable Low-Literacy UI Elements
+│   │   │   ├── AudioVoiceNoteRecorder.tsx    # Multilingual voice recorder
+│   │   │   ├── CameraCaptureModal.tsx        # Mobile camera capture interface
+│   │   │   ├── GovernmentMarketplaceModal.tsx# GeM / ONDC JSON export engine
+│   │   │   └── SihStoryDemoModal.tsx         # SIH evaluation story showcase
 │   │   │
 │   │   ├── portal/                 # Landing Page Modular Sections
 │   │   │   ├── PortalHeader.tsx              # Multilingual switcher & branding
@@ -115,19 +155,20 @@ artsians-SIH/
 │   │   │   └── RoleSelector.tsx              # Artisan vs. Buyer selector
 │   │   │
 │   │   ├── seller/                 # Artisan Virtual Business Studio
-│   │   │   ├── SellerDashboard.tsx           # Voice-prompted 7 primary action cards
-│   │   │   ├── AddHandicraft.tsx             # Studio wizard with camera/audio
+│   │   │   ├── SellerDashboard.tsx           # Voice-prompted 7 primary action cards + Daily Missions
+│   │   │   ├── AddHandicraft.tsx             # Studio wizard with camera/audio & tutorial hooks
 │   │   │   ├── HandicraftManagement.tsx      # Inventory, variants & GeM export
 │   │   │   ├── MarketPriceAnalysis.tsx       # Live price positioning vs comps
 │   │   │   ├── CreateBill.tsx                # Fair bill generator & printer
-│   │   │   ├── SellerOrders.tsx              # Order management & tracking
+│   │   │   ├── SellerOrders.tsx              # Order management & dispatch tracking
+│   │   │   ├── SalesHistory.tsx              # Income analytics & middleman savings
 │   │   │   └── CustomerCarePage.tsx          # Multilingual AI support assistant
 │   │   │
 │   │   └── buyer/                  # Ethical Handicraft Marketplace
 │   │       ├── BuyerLayout.tsx               # Marketplace navigation & cart
 │   │       ├── BuyerHome.tsx                 # Verified artisan showcases
 │   │       ├── ProductBrowse.tsx             # Filtering by craft, state, GI tag
-│   │       ├── ProductPage.tsx               # Storytelling, artisan card, B2B RFQ
+│   │       ├── ProductPage.tsx             # Storytelling, artisan card, B2B RFQ
 │   │       ├── Cart.tsx                      # Transparent breakdown & checkout
 │   │       └── BuyerOrders.tsx               # Shipment tracking & provenance cert
 │   │
@@ -144,18 +185,18 @@ artsians-SIH/
 
 ---
 
-## 4. Dual-Portal Architecture & Ports
+## 5. Dual-Portal Architecture & Ports
 
 KALAtech runs **two completely decoupled applications** connected to the same unified backend and persistent database:
 
-| Application | Port | Target Audience | Purpose |
-|---|---|---|---|
-| **KALAtech Main Portal** | `http://localhost:3000` | Artisans & Buyers | Mobile-first craft studio, catalog generator, voice assistant, and buyer marketplace. |
-| **KALAtech Admin Governance** | `http://localhost:5174` | Government / Evaluators | Oversight portal for product moderation, seller verification, live pricing benchmarks, and AI audit governance. |
+| Application | Local Port | Production URL | Target Audience | Purpose |
+|---|---|---|---|---|
+| **KALAtech Main Portal** | `http://localhost:3000` | [artsians-sih-1.onrender.com](https://artsians-sih-1.onrender.com/) | Artisans & Buyers | Mobile-first craft studio, catalog generator, voice assistant, and buyer marketplace. |
+| **KALAtech Admin Governance** | `http://localhost:5174` | Local Dedicated Port | Government / Evaluators | Oversight portal for product moderation, seller verification, live pricing benchmarks, and AI audit governance. |
 
 ---
 
-## 5. Quick Start & Setup Instructions
+## 6. Quick Start & Setup Instructions
 
 ### Prerequisites
 - **Node.js**: v18.0.0 or later installed
@@ -177,38 +218,43 @@ npm run dev
 ```
 
 ### Step 4: Open in Browser
-- Open **[http://localhost:3000](http://localhost:3000)** for the Artisan & Buyer Portal.
-- Open **[http://localhost:5174](http://localhost:5174)** for the Admin Governance Portal.
+- **Live Cloud Deployment**: **[https://artsians-sih-1.onrender.com](https://artsians-sih-1.onrender.com)**
+- **Local Artisan & Buyer Portal**: **[http://localhost:3000](http://localhost:3000)**
+- **Admin Governance Portal**: **[http://localhost:5174](http://localhost:5174)**
 
 ---
 
-## 6. Step-by-Step Demonstration Guide
+## 7. Step-by-Step Demonstration Guide
 
 For an evaluator, judge, or demo audience, walk through the system in this sequential order:
 
-1. **Landing & Voice Onboarding** (`http://localhost:3000`):
+1. **Interactive Artisan Journey Onboarding** (`http://localhost:3000/seller`):
+   - First-time visit automatically triggers the **Artisan Journey** onboarding modal.
+   - Click **"🎮 Try 2-Minute Demo"** for a fast-track jump into Level 3 with pre-filled sample craft data.
+   - Observe the SVG spotlight mask, Artisan Saathi guidance card, and multilingual audio narration.
+2. **Landing & Voice Onboarding** (`http://localhost:3000`):
    - Switch language between **English**, **हिंदी**, and **తెలుగు**.
-   - Click the **Listen** audio button to hear the regional voice guidance.
-2. **Launch Artisan Studio** (`http://localhost:3000/seller`):
-   - Review the low-literacy icon-first action cards with audio assistance.
-3. **Capture & Enhance Craft Product** (`http://localhost:3000/seller/add`):
-   - Open camera capture or upload a craft photo.
+   - Click the **Listen** audio button to hear regional voice guidance.
+3. **Launch Artisan Studio** (`http://localhost:3000/seller`):
+   - Review the low-literacy icon-first action cards with audio assistance and Daily Mini-Missions (+10 Pts).
+4. **Capture & Enhance Craft Product** (`http://localhost:3000/seller/add`):
+   - Open camera capture or select a sample craft.
    - Run AI image enhancement to observe Sharp auto white-balance, 1080p square crop, and studio lighting.
-4. **Generate AI Catalog & Fair Pricing**:
+5. **Generate AI Catalog & Fair Pricing**:
    - Record a voice note or provide basic details.
    - View the generated storytelling description, GI verification, and cost-plus price recommendation.
-5. **Publish & Export to GeM / ONDC**:
+6. **Publish & Export to GeM / ONDC**:
    - Save the product to the live inventory.
    - Click **Export for GeM/ONDC** to inspect the government-compliant JSON metadata payload.
-6. **Buyer Experience & Authenticity Tracing** (`http://localhost:3000/buyer`):
+7. **Buyer Experience & Authenticity Tracing** (`http://localhost:3000/buyer`):
    - Browse products with direct artisan pricing (no middleman retail markups).
    - View an item to inspect the cultural provenance and direct artisan contact buttons.
-7. **Admin Platform Oversight** (`http://localhost:5174`):
+8. **Admin Platform Oversight** (`http://localhost:5174`):
    - Inspect pending product approvals, manage market price benchmarks, and view live order fulfillment logs.
 
 ---
 
-## 7. Genuine AI vs. Rule-Based Fallback Matrix
+## 8. Genuine AI vs. Rule-Based Fallback Matrix
 
 KALAtech guarantees that every feature functions cleanly both **online with live AI** and **offline/fallback mode**:
 
@@ -221,7 +267,7 @@ KALAtech guarantees that every feature functions cleanly both **online with live
 
 ---
 
-## 8. Documentation Library
+## 9. Documentation Library
 
 For deeper technical deep dives, consult the dedicated guides:
 - 🏗️ **[ARCHITECTURE.md](ARCHITECTURE.md)** — Architectural design, ER diagrams, and security model.
