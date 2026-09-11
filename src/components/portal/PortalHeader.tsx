@@ -3,6 +3,7 @@ import { Volume2, Sparkles } from 'lucide-react';
 import { LanguageCode } from '../../types';
 import { PORTAL_TRANSLATIONS } from '../../lib/portalI18n';
 import { SihStoryDemoModal } from '../common/SihStoryDemoModal';
+import { useTutorial } from '../tutorial/TutorialContext';
 
 interface PortalHeaderProps {
   language: LanguageCode;
@@ -19,6 +20,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
 }) => {
   const t = PORTAL_TRANSLATIONS[language];
   const [showStoryModal, setShowStoryModal] = useState(false);
+  const { openWelcomeModal } = useTutorial();
 
   return (
     <>
@@ -49,6 +51,19 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
 
           {/* Actions & Language Selector */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Artisan Journey Game Tutorial Trigger */}
+            <button
+              onClick={() => openWelcomeModal()}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 border border-amber-300/80 text-amber-950 text-xs font-black transition-all shadow-2xs cursor-pointer active:scale-95"
+              title="Start the interactive Artisan Journey game tutorial"
+            >
+              <span className="text-sm">🌱</span>
+              <span className="hidden sm:inline">Artisan Journey</span>
+              <span className="bg-amber-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                9 Levels
+              </span>
+            </button>
+
             {/* 1-Min Connected Story Demo Trigger */}
             <button
               onClick={() => setShowStoryModal(true)}

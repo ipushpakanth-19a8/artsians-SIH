@@ -210,6 +210,7 @@ interface TutorialContextType {
   unlockedBadges: string[];
   activeTarget: string | null;
   showWelcomeModal: boolean;
+  openWelcomeModal: () => void;
   showRewardModal: { title: string; points: number; badge?: any } | null;
   showCompletionModal: boolean;
   returningBanner: boolean;
@@ -273,6 +274,18 @@ export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     } catch {}
   }, []);
+
+  // Listen for navigation into /seller: if user has no saved journey and is not in journey, show welcome
+  useEffect(() => {
+    if (location.pathname.startsWith('/seller')) {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved && !isActive && !showWelcomeModal) {
+          setShowWelcomeModal(true);
+        }
+      } catch {}
+    }
+  }, [location.pathname, isActive, showWelcomeModal]);
 
   // Persist state updates
   useEffect(() => {
@@ -413,6 +426,7 @@ export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         unlockedBadges,
         activeTarget,
         showWelcomeModal,
+        openWelcomeModal: () => setShowWelcomeModal(true),
         showRewardModal,
         showCompletionModal,
         returningBanner,

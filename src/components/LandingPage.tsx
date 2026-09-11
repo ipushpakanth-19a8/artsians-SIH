@@ -16,11 +16,13 @@ import { AIProcessingDemo } from './portal/AIProcessingDemo';
 import { RoleSelector } from './portal/RoleSelector';
 import { ArtisanOnboardingModal } from './portal/ArtisanOnboardingModal';
 import { BuyerOnboardingModal } from './portal/BuyerOnboardingModal';
+import { useTutorial } from './tutorial/TutorialContext';
 
 export function LandingPage() {
   const { language, setLanguage } = useLanguage();
   const { user, role } = useAuth();
   const navigate = useNavigate();
+  const { startJourney, startDemoJourney, openWelcomeModal } = useTutorial();
   const t = PORTAL_TRANSLATIONS[language];
 
   // Voice Assistant Hook
@@ -103,9 +105,31 @@ export function LandingPage() {
           </h1>
 
           {/* Supporting Text */}
-          <p className="text-base sm:text-lg text-stone-600 font-medium max-w-2xl mx-auto mb-8 leading-relaxed">
+          <p className="text-base sm:text-lg text-stone-600 font-medium max-w-2xl mx-auto mb-6 leading-relaxed">
             {t.heroSub}
           </p>
+
+          {/* Artisan Journey Interactive Game Banner */}
+          <div className="flex flex-wrap items-center justify-center gap-2.5 max-w-xl mx-auto mb-7">
+            <button
+              onClick={() => openWelcomeModal()}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 border border-amber-300 text-amber-950 text-xs sm:text-sm font-black transition-all shadow-2xs cursor-pointer active:scale-98"
+            >
+              <span className="text-base">🌱</span>
+              <span>Start Artisan Journey Game</span>
+              <span className="bg-[#9c4124] text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                9 Levels
+              </span>
+            </button>
+            <button
+              onClick={() => startDemoJourney()}
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-white hover:bg-stone-50 border border-amber-300 text-[#9c4124] text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-98"
+              title="Fast-track to Level 3 for SIH judges & evaluators"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#9c4124]" />
+              <span>⚡ Try 2-Min Demo (Judges)</span>
+            </button>
+          </div>
 
           {/* Action CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-lg mx-auto mb-10">
