@@ -10,11 +10,11 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "mobile:sync": "vite build && npx cap sync",
+    "mobile:sync": "npm run build && npx cap sync",
     "mobile:open:android": "npx cap open android",
     "mobile:open:ios": "npx cap open ios",
-    "mobile:build:android": "vite build && npx cap sync android && cd android && gradlew assembleRelease",
-    "mobile:bundle:android": "vite build && npx cap sync android && cd android && gradlew bundleRelease"
+    "mobile:build:android": "npm run build && npx cap sync android && cd android && gradlew assembleRelease",
+    "mobile:bundle:android": "npm run build && npx cap sync android && cd android && gradlew bundleRelease"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.1",
