@@ -25,7 +25,7 @@ export interface UseVoiceFormAssistantOptions {
 }
 
 // Convert spoken number words across EN, HI, TE to digits
-function normalizeSpokenDigits(input: string): string {
+export function normalizeSpokenDigits(input: string): string {
   const digitWords: Record<string, string> = {
     // English
     zero: '0', oh: '0', one: '1', two: '2', three: '3', four: '4', five: '5',

@@ -27,22 +27,22 @@ const LANGUAGES: LanguageOption[] = [
     nativeName: 'English',
     spokenKeywords: ['english', 'one', 'first', 'angrezi', 'angreji', 'inglish'],
     description: 'Explore verified Indian handicrafts with English voice assistance and navigation.',
-    flag: '🇮🇳',
-  },
-  {
-    code: 'hi',
-    name: 'Hindi',
-    nativeName: 'हिन्दी',
-    spokenKeywords: ['hindi', 'two', 'second', 'hindee', 'हिंदी', 'हिन्दी', 'do'],
-    description: 'भारतीय हस्तशिल्प और कारीगरों की संपूर्ण जानकारी और आवाज़ गाइड हिन्दी में।',
-    flag: '🇮🇳',
+    flag: '🇬🇧',
   },
   {
     code: 'te',
     name: 'Telugu',
     nativeName: 'తెలుగు',
-    spokenKeywords: ['telugu', 'three', 'third', 'telgu', 'తెలుగు', 'moodu'],
+    spokenKeywords: ['telugu', 'three', 'third', 'telgu', 'తెలుగు', 'moodu', 'two'],
     description: 'కళాకారుల హస్తకళలు మరియు ఆర్డర్లను తెలుగు వాయిస్ సహాయంతో చూడండి.',
+    flag: 'తెలుగు',
+  },
+  {
+    code: 'hi',
+    name: 'Hindi',
+    nativeName: 'हिंदी',
+    spokenKeywords: ['hindi', 'two', 'second', 'hindee', 'हिंदी', 'हिन्दी', 'do'],
+    description: 'भारतीय हस्तशिल्प और कारीगरों की संपूर्ण जानकारी और आवाज़ गाइड हिन्दी में।',
     flag: '🇮🇳',
   },
 ];
@@ -65,9 +65,9 @@ export const LanguageSelectionModal: React.FC<LanguageSelectionModalProps> = ({
 
   // Text spoken automatically asking the user which language they want
   const automaticVoiceQuestion = [
-    { lang: 'en-IN', text: 'Which language do you want to choose: English, Hindi, or Telugu?' },
-    { lang: 'hi-IN', text: 'आप कौन सी भाषा चुनना चाहते हैं: अंग्रेजी, हिंदी या तेलुगु?' },
-    { lang: 'te-IN', text: 'మీరు ఏ భాషను ఎంచుకోవాలనుకుంటున్నారు: ఇంగ్లీష్, హిందీ లేదా తెలుగు?' },
+    { lang: 'en-IN', text: 'Welcome to KALAtech. Please choose your language. You can say English, Telugu, or Hindi.' },
+    { lang: 'hi-IN', text: 'KALAtech में आपका स्वागत है। कृपया अपनी भाषा चुनें। आप अंग्रेजी, तेलुगु या हिंदी बोल सकते हैं।' },
+    { lang: 'te-IN', text: 'KALAtech కు స్వాగతం. దయచేసి మీ భాషను ఎంచుకోండి. మీరు ఇంగ్లీష్, తెలుగు లేదా హిందీ అని చెప్పవచ్చు.' },
   ];
 
   // Speak multi-lingual question automatically without user having to tap any voice button
@@ -79,58 +79,35 @@ export const LanguageSelectionModal: React.FC<LanguageSelectionModalProps> = ({
       window.speechSynthesis.resume();
     }
 
-    setIsSpeaking(true);
+    // Speak exact welcome prompt in simple default language
+    const welcomeText = 'Welcome to KALAtech. Please choose your language. You can say English, Telugu, or Hindi.';
+    const utterance = new SpeechSynthesisUtterance(welcomeText);
+    utterance.lang = 'en-IN';
+    utterance.rate = 0.95;
+    utterance.pitch = 1.05;
 
-    // Speak English question first, then Hindi question
-    const utteranceEn = new SpeechSynthesisUtterance(automaticVoiceQuestion[0].text);
-    utteranceEn.lang = 'en-IN';
-    utteranceEn.rate = 0.95;
-    utteranceEn.pitch = 1.05;
+    utterance.onstart = () => setIsSpeaking(true);
 
-    const utteranceHi = new SpeechSynthesisUtterance(automaticVoiceQuestion[1].text);
-    utteranceHi.lang = 'hi-IN';
-    utteranceHi.rate = 0.93;
-    utteranceHi.pitch = 1.05;
-
-    utteranceEn.onstart = () => setIsSpeaking(true);
-
-    utteranceEn.onend = () => {
-      // Chain to Hindi translation
-      try {
-        window.speechSynthesis.speak(utteranceHi);
-      } catch {
-        setIsSpeaking(false);
-      }
-    };
-
-    utteranceEn.onerror = () => {
-      // If error or blocked, try speaking Hindi directly
-      try {
-        window.speechSynthesis.speak(utteranceHi);
-      } catch {
-        setIsSpeaking(false);
-      }
-    };
-
-    utteranceHi.onend = () => {
+    utterance.onend = () => {
       setIsSpeaking(false);
       startListeningForChoice();
     };
 
-    utteranceHi.onerror = () => {
+    utterance.onerror = () => {
       setIsSpeaking(false);
       startListeningForChoice();
     };
 
     try {
-      window.speechSynthesis.speak(utteranceEn);
+      window.speechSynthesis.speak(utterance);
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
       }
     } catch {
       setIsSpeaking(false);
+      startListeningForChoice();
     }
-  }, []);
+  }, [startListeningForChoice]);
 
   // Confirm and proceed with selected language
   const handleConfirm = useCallback((langCode: LanguageCode) => {
@@ -269,7 +246,7 @@ export const LanguageSelectionModal: React.FC<LanguageSelectionModalProps> = ({
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black text-stone-900 font-['Rozha_One',serif]">
-            {title || 'Which Language Do You Want? / भाषा चुनें'}
+            {title || '🌐 Choose Your Language'}
           </h2>
           <p className="text-xs text-stone-500 mt-1 font-medium">
             {subtitle || 'Speaking out loud automatically • You can speak or tap your choice'}

@@ -17,6 +17,7 @@ import { RoleSelector } from './portal/RoleSelector';
 import { ArtisanOnboardingModal } from './portal/ArtisanOnboardingModal';
 import { BuyerAuthModal } from './auth/BuyerAuthModal';
 import { SellerAuthModal } from './auth/SellerAuthModal';
+import { LanguageSelectionModal } from './common/LanguageSelectionModal';
 import { useTutorial } from './tutorial/TutorialContext';
 
 export function LandingPage() {
@@ -28,6 +29,15 @@ export function LandingPage() {
 
   // Voice Assistant Hook
   const voice = useVoiceAssistant(language);
+
+  // Automatic Language Selection for first-time visits
+  const [showLanguageModal, setShowLanguageModal] = useState<boolean>(() => {
+    try {
+      return !localStorage.getItem('kalatech_language_chosen') && !localStorage.getItem('kalatech_auth');
+    } catch {
+      return true;
+    }
+  });
 
   // Active step in the 3-step tutorial
   const [instructionStep, setInstructionStep] = useState(0);
@@ -41,6 +51,18 @@ export function LandingPage() {
   const tutorialRef = useRef<HTMLDivElement>(null);
   const roleRef = useRef<HTMLDivElement>(null);
   const aiRef = useRef<HTMLDivElement>(null);
+
+  // Auto-transition to artisan login when language is selected
+  const handleLanguageChosen = (lang: LanguageCode) => {
+    setLanguage(lang);
+    try {
+      localStorage.setItem('kalatech_language_chosen', 'true');
+      localStorage.setItem('kalatech_language', lang);
+    } catch {}
+    setShowLanguageModal(false);
+    // Immediately open voice-first artisan login
+    setArtisanModalOpen(true);
+  };
 
   // Change voice language when user changes interface language
   const handleSelectLanguage = (lang: LanguageCode) => {
@@ -297,6 +319,18 @@ export function LandingPage() {
           <span>{t.primaryCta} →</span>
         </button>
       </div>
+
+      {/* ================================================== */}
+      {/* AUTOMATIC VOICE LANGUAGE SELECTION MODAL */}
+      {/* ================================================== */}
+      {showLanguageModal && (
+        <LanguageSelectionModal
+          isOpen={showLanguageModal}
+          onClose={() => setShowLanguageModal(false)}
+          onSelectLanguage={handleLanguageChosen}
+          title="🌐 Choose Your Language"
+        />
+      )}
 
       {/* ================================================== */}
       {/* ARTISAN ONBOARDING MODAL */}

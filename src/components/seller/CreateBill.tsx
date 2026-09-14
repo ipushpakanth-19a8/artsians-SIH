@@ -584,6 +584,7 @@ export function CreateBill() {
               pricing={fairPricing}
               selectedLanguage={language}
               onApprovePrice={(approved) => setFinalPrice(approved)}
+              autoExplain={true}
             />
           ) : isCalculatingFairPrice ? (
             <div className="p-6 bg-amber-50/70 border border-amber-200 rounded-2xl flex items-center justify-center gap-3 text-amber-800 font-bold text-sm">

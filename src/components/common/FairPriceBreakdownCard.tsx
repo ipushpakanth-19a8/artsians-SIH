@@ -13,6 +13,8 @@ interface FairPriceBreakdownCardProps {
   initialApprovedPrice?: number;
   readOnly?: boolean;
   className?: string;
+  selectedLanguage?: LanguageCode;
+  autoExplain?: boolean;
 }
 
 export const FairPriceBreakdownCard: React.FC<FairPriceBreakdownCardProps> = ({
@@ -20,7 +22,9 @@ export const FairPriceBreakdownCard: React.FC<FairPriceBreakdownCardProps> = ({
   onApprovePrice,
   initialApprovedPrice,
   readOnly = false,
-  className = ''
+  className = '',
+  selectedLanguage,
+  autoExplain = false
 }) => {
   const { language } = useLanguage();
 
@@ -58,6 +62,19 @@ export const FairPriceBreakdownCard: React.FC<FairPriceBreakdownCardProps> = ({
       }
     };
   }, []);
+
+  // Auto-trigger voice explanation when autoExplain is true (billing page opens)
+  const hasAutoExplainedRef = useRef(false);
+  useEffect(() => {
+    if (autoExplain && !hasAutoExplainedRef.current && pricing.recommendedFairPrice > 0) {
+      hasAutoExplainedRef.current = true;
+      // Small delay to ensure UI is rendered before speaking
+      const timer = setTimeout(() => {
+        handleExplainFairPrice();
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [autoExplain, pricing.recommendedFairPrice]);
 
   // Get localized explanation text
   const getExplanationText = (lang: LanguageCode): string => {

@@ -165,7 +165,10 @@ export class PricingService {
       te: {
         speechText: rawExplanation.telugu,
         voiceCommands: ['ధరను వివరించండి', 'ఈ ధరను ఆమోదించండి', 'ధరను మార్చండి']
-      }
+      },
+      english: rawExplanation.english,
+      hindi: rawExplanation.hindi,
+      telugu: rawExplanation.telugu
     };
 
     const breakdown = {

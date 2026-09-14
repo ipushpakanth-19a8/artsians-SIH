@@ -907,20 +907,21 @@ async function startServer() {
 
     const t = transcript.toLowerCase();
 
-    // 1. Material cost extraction: e.g. "material cost is 800", "spent 800 rupees on material", etc.
-    let materialCost = 0;
-    const matMatch = t.match(/(?:material|materials|raw material|spent|cost|लागत|सामग्री|ఖర్చు)[\s\w:]*?(\d+)/i) ||
-                     t.match(/(\d+)\s*(?:rs\.?|rupees|inr|₹|रुपये|రూపాయలు)/i);
-    if (matMatch) {
-      materialCost = parseInt(matMatch[1], 10);
-    }
-
-    // 2. Labor hours extraction: e.g. "took me 15 hours", "15 hours of work"
+    // 1. Labor hours extraction: e.g. "spent around 15 hours", "15 hours of work", "took 15 hours"
     let laborHours = 0;
-    const hoursMatch = t.match(/(\d+)\s*(?:hours|hrs|घंटे|గంటలు)/i) ||
-                       t.match(/(?:took|worked)\s*(?:me\s*)?(\d+)/i);
+    const hoursMatch = t.match(/(\d+)\s*(?:hours|hrs|hour|घंटे|घंटा|గంటలు|గంట)/i) ||
+                       t.match(/(?:spent|took|worked)\s*(?:around|approx|about)?\s*(\d+)\s*(?:hours|hrs)?/i);
     if (hoursMatch) {
       laborHours = parseInt(hoursMatch[1], 10);
+    }
+
+    // 2. Material cost extraction: e.g. "material cost was 800 rupees", "cost 800", "800 rupees for material", etc.
+    let materialCost = 0;
+    const matCostExplicit = t.match(/(?:material cost|cost of material|raw material cost|material|materials|सामग्री लागत|ఖర్చు)[\s\w:]*?(?:was|is)?[\s\w:]*?(\d+)/i) ||
+                            t.match(/(?:rs\.?|rupees|inr|₹|रुपये|రూపాయలు)[\s:]*?(\d+)/i) ||
+                            t.match(/(\d+)\s*(?:rs\.?|rupees|inr|₹|रुपये|రూపాయలు)/i);
+    if (matCostExplicit) {
+      materialCost = parseInt(matCostExplicit[1], 10);
     }
 
     // 3. Craft / Product type extraction
@@ -974,7 +975,7 @@ async function startServer() {
       చెక్క: "Natural Wood",
       brass: "Cast Brass",
       पीतल: "Cast Brass",
-      पित्तడి: "Cast Brass",
+      पित్తడి: "Cast Brass",
       "bell metal": "Bell Metal Bronze",
       धोकरा: "Lost-Wax Bell Metal"
     };
@@ -985,7 +986,31 @@ async function startServer() {
       }
     }
 
-    // 5. Quantity extraction: default 1
+    // 5. Region extraction
+    let region = "Telangana";
+    const regionKeywords: Record<string, string> = {
+      telangana: "Telangana",
+      andhra: "Andhra Pradesh",
+      pochampally: "Pochampally",
+      kashmir: "Kashmir",
+      rajasthan: "Rajasthan",
+      gujarat: "Gujarat",
+      odisha: "Odisha",
+      bengal: "West Bengal",
+      karnataka: "Karnataka",
+      channapatna: "Channapatna",
+      varanasi: "Varanasi",
+      bihar: "Bihar",
+      madhya: "Madhya Pradesh"
+    };
+    for (const [kw, name] of Object.entries(regionKeywords)) {
+      if (t.includes(kw)) {
+        region = name;
+        break;
+      }
+    }
+
+    // 6. Quantity extraction: default 1
     let quantity = 1;
     const qtyMatch = t.match(/(\d+)\s*(?:pieces|units|items|नग|పీసులు)/i);
     if (qtyMatch) {
@@ -995,6 +1020,7 @@ async function startServer() {
     res.json({
       productType,
       material,
+      region,
       materialCost,
       laborHours,
       fairHourlyWage: 100,
