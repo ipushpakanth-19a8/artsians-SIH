@@ -5,12 +5,12 @@ export interface VoiceAssistantState {
   isPlaying: boolean;
   isPaused: boolean;
   currentText: string | null;
-  speak: (text: string, lang?: LanguageCode) => void;
+  speak: (text: string, lang?: LanguageCode, onEnd?: () => void) => void;
   pause: () => void;
   resume: () => void;
   replay: () => void;
   stop: () => void;
-  toggle: (text: string, lang?: LanguageCode) => void;
+  toggle: (text: string, lang?: LanguageCode, onEnd?: () => void) => void;
 }
 
 export function useVoiceAssistant(defaultLang: LanguageCode = 'en'): VoiceAssistantState {
@@ -20,6 +20,7 @@ export function useVoiceAssistant(defaultLang: LanguageCode = 'en'): VoiceAssist
 
   const lastTextRef = useRef<string | null>(null);
   const lastLangRef = useRef<LanguageCode>(defaultLang);
+  const onEndCallbackRef = useRef<(() => void) | undefined>(undefined);
 
   // Stop speech when unmounting
   useEffect(() => {
@@ -36,24 +37,31 @@ export function useVoiceAssistant(defaultLang: LanguageCode = 'en'): VoiceAssist
     }
     setIsPlaying(false);
     setIsPaused(false);
+    onEndCallbackRef.current = undefined;
   }, []);
 
   const speak = useCallback(
-    (text: string, lang: LanguageCode = defaultLang) => {
+    (text: string, lang: LanguageCode = defaultLang, onEnd?: () => void) => {
       if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+        onEnd?.();
         return;
       }
 
       window.speechSynthesis.cancel();
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
 
       if (!text || text.trim() === '') {
         setIsPlaying(false);
         setIsPaused(false);
+        onEnd?.();
         return;
       }
 
       lastTextRef.current = text;
       lastLangRef.current = lang;
+      onEndCallbackRef.current = onEnd;
       setCurrentText(text);
 
       const utterance = new SpeechSynthesisUtterance(text);
@@ -78,6 +86,11 @@ export function useVoiceAssistant(defaultLang: LanguageCode = 'en'): VoiceAssist
       utterance.onend = () => {
         setIsPlaying(false);
         setIsPaused(false);
+        if (onEndCallbackRef.current) {
+          const cb = onEndCallbackRef.current;
+          onEndCallbackRef.current = undefined;
+          cb();
+        }
       };
 
       utterance.onerror = (e) => {
@@ -97,9 +110,13 @@ export function useVoiceAssistant(defaultLang: LanguageCode = 'en'): VoiceAssist
 
       try {
         window.speechSynthesis.speak(utterance);
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
       } catch (err) {
         console.error('Failed to trigger speech synthesis:', err);
         setIsPlaying(false);
+        onEnd?.();
       }
     },
     [defaultLang]

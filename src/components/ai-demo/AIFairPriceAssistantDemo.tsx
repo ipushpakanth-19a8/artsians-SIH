@@ -55,7 +55,7 @@ export const AIFairPriceAssistantDemo: React.FC<{ language?: LanguageCode }> = (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {DEMO_PRESET_CRAFTS.map((craft) => (
             <button
-              key={craft.id}
+              key={craft.name}
               onClick={() => {
                 setSelectedCraft(craft);
                 setMaterialCost(craft.cost.material_cost);
@@ -64,7 +64,7 @@ export const AIFairPriceAssistantDemo: React.FC<{ language?: LanguageCode }> = (
                 setPricingResult(null);
               }}
               className={`p-3 rounded-2xl border text-left flex items-center gap-3 transition-all ${
-                selectedCraft.id === craft.id
+                selectedCraft.name === craft.name
                   ? 'border-amber-600 bg-amber-50/50 shadow-sm'
                   : 'border-stone-200 hover:border-stone-300 bg-stone-50/50'
               }`}

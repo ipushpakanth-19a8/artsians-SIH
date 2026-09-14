@@ -200,11 +200,12 @@ KALAtech runs **two completely decoupled applications** connected to the same un
 
 ### Prerequisites
 - **Node.js**: v18.0.0 or later installed
+- **PostgreSQL**: v14+ (Local service or hosted e.g. Neon, Supabase, Render)
 - **Terminal**: PowerShell (Windows) or Bash (macOS/Linux)
 
 ### Step 1: Clone or Navigate to the Workspace
 ```powershell
-cd c:\Users\pushp\OneDrive\Desktop\artsians-SIH
+cd artsians-SIH
 ```
 
 ### Step 2: Install Dependencies
@@ -212,12 +213,37 @@ cd c:\Users\pushp\OneDrive\Desktop\artsians-SIH
 npm install
 ```
 
-### Step 3: Run the Development Server
+### Step 3: Configure Environment Variables
+Create or update your `.env` file (copied from `.env.example`):
+```env
+DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/kalatech?schema=public"
+GEMINI_API_KEY="your_gemini_api_key"
+PORT=3000
+ADMIN_PORT=5174
+APP_URL="http://localhost:3000"
+```
+
+### Step 4: Synchronize PostgreSQL Schema via Prisma
+```powershell
+# Generate Prisma Client types
+npx prisma generate
+
+# Push normalized relational schema to PostgreSQL
+npx prisma db push
+```
+
+### Step 5: Migrate & Seed Existing JSON Data into PostgreSQL
+```powershell
+# Executes prisma/seed.ts to safely migrate all JSON store records into PostgreSQL
+npm run prisma:seed
+```
+
+### Step 6: Run the Development Server
 ```powershell
 npm run dev
 ```
 
-### Step 4: Open in Browser
+### Step 7: Open in Browser
 - **Live Cloud Deployment**: **[https://artsians-sih-1.onrender.com](https://artsians-sih-1.onrender.com)**
 - **Local Artisan & Buyer Portal**: **[http://localhost:3000](http://localhost:3000)**
 - **Admin Governance Portal**: **[http://localhost:5174](http://localhost:5174)**

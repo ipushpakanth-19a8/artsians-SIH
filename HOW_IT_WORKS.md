@@ -154,11 +154,21 @@ Over 7 million traditional Indian craftspeople face:
    - Automatically detects weave structures, wood types, traditional motifs, and GI recognition.
    - Generates culturally rich stories in English, Hindi, and Telugu.
 
-4. **Smart Fair-Wage Pricing Engine**:
-   - **Formula**: `[Raw Material Cost + (Labor Hours × Fair Hourly Living Wage)] × 1.25 (Contingency Margin)`.
-   - Cross-references official handicraft benchmarks (TRIFED, Dastkar, APCO).
-   - Shows price breakdown: Artisan Direct Earnings vs. Traditional Middleman Cuts.
-   - Human-in-the-loop control: Artisan can accept or tweak the final price.
+4. **Smart Fair-Wage Pricing Engine & Voice Explanation**:
+   - **Deterministic Backend Engine**: Implemented in [`pricing.service.ts`](file:///c:/Users/pushp/.gemini/antigravity-ide/scratch/artsians-SIH/server/services/pricing.service.ts) and exposed via `POST /api/v1/pricing/calculate` (independent of Gemini LLM hallucinations).
+   - **Canonical Formula**:
+     - `Labor Value = Labor Hours × Fair Hourly Wage` (statutory living wage floor ₹100/hr)
+     - `Base Production Cost = Material Cost + Labor Value (+ Packaging/Transport)`
+     - `Margin / Contingency = Base Cost × 0.25` (25% safety margin for tool wear & business expenses)
+     - `Recommended Fair Price = Base Cost + Margin / Contingency`
+   - **Zero Client Tampering**: Checkout endpoints (`/api/v1/orders/checkout` & `/api/v1/orders/verify`) recalculate prices server-side from authoritative database records, preventing forged client prices.
+   - **Dual-Price Model**: Transparently preserves both `recommendedFairPrice` and `artisanApprovedPrice` on products, invoices, and orders.
+   - **Multilingual Voice Explanation ([`FairPriceBreakdownCard.tsx`](file:///c:/Users/pushp/.gemini/antigravity-ide/scratch/artsians-SIH/src/components/common/FairPriceBreakdownCard.tsx))**:
+     - One-tap "🔊 Explain Fair Price" audio narration in English, Hindi, and Telugu via Web Speech API.
+     - Explains exact cost breakdown: material cost, labor hours, living wage rate, total labor value, and contingency margin.
+     - Voice command recognition: *"Explain the price"*, *"Accept this price"*, *"Change the price"* (with vernacular equivalents).
+   - **Visual Low-Literacy Cards**: Intuitive icon-based cards for 🧵 Raw Material, 👩‍🎨 Artisan Labor, 📦 Base Cost, 📈 Margin, and 💰 Recommended Fair Price.
+   - **Voice Extraction AI ([`/api/v1/ai/voice-extract-details`](file:///c:/Users/pushp/.gemini/antigravity-ide/scratch/artsians-SIH/server.ts))**: Automatically extracts craft type, material, material cost, and labor hours from spoken voice notes.
 
 5. **Physical Stall Provenance Tag Generator ([`ProvenanceTagModal.tsx`](file:///c:/Users/pushp/.gemini/antigravity-ide/scratch/artsians-SIH/src/components/ProvenanceTagModal.tsx))**:
    - Generates a printable stall hangtag featuring:

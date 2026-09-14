@@ -1,11 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTutorial } from './TutorialContext';
 import { useLanguage } from '../../lib/LanguageContext';
-import { Play, Sparkles, X, Check, FastForward } from 'lucide-react';
+import { speakText } from '../../lib/i18n';
+import { Play, Sparkles, X, Check, FastForward, Volume2 } from 'lucide-react';
 
 export const WelcomeJourneyModal: React.FC = () => {
   const { showWelcomeModal, startJourney, startDemoJourney, skipJourney, closeWelcomeModal } = useTutorial();
   const { language } = useLanguage();
+
+  useEffect(() => {
+    if (showWelcomeModal) {
+      const welcomeText =
+        language === 'hi'
+          ? 'शिल्पसेतु में आपका स्वागत है! अपनी डिजिटल दुकान साथ मिलकर तैयार करें।'
+          : language === 'te'
+          ? 'శిల్పసేతుకు స్వాగతం! మీ డిజిటల్ దుకాణాన్ని కలిసి ఏర్పాటు చేద్దాం.'
+          : 'Welcome to ShilpSetu! Let us set up your digital shop together.';
+      speakText(welcomeText, language);
+    }
+  }, [showWelcomeModal, language]);
 
   if (!showWelcomeModal) return null;
 

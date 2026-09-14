@@ -105,7 +105,7 @@ export function ProductBrowse() {
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fdf2e9] text-[#9c4124] text-xs font-black uppercase tracking-wider mb-2 border border-[#f8d7c2]">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Direct Artisan Marketplace</span>
+            <span>Direct Artisan Crafts</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-[#262220] font-['Rozha_One',serif]">
             Discover Living Indian Craft Heritage

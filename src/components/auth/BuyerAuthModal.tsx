@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingBag, X, Eye, EyeOff, Sparkles, AlertCircle, ArrowRight, ShieldCheck, HelpCircle } from 'lucide-react';
+import { ShoppingBag, X, Eye, EyeOff, Sparkles, AlertCircle, ArrowRight, ShieldCheck, HelpCircle, Mic } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { useLanguage } from '../../lib/LanguageContext';
 import { translations } from '../../lib/i18n';
+import { useVoiceFormAssistant, VoiceFormFieldConfig } from '../../lib/useVoiceFormAssistant';
+import { VoiceAssistBanner } from '../common/VoiceAssistBanner';
+import { LanguageSelectionModal } from '../common/LanguageSelectionModal';
+import { LanguageCode } from '../../types';
 
 interface BuyerAuthModalProps {
   isOpen: boolean;
@@ -12,7 +16,7 @@ interface BuyerAuthModalProps {
 }
 
 export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: BuyerAuthModalProps) {
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const { loginBuyer, signupBuyer } = useAuth();
   const navigate = useNavigate();
   const t = translations[language];
@@ -22,6 +26,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showForgotModal, setShowForgotModal] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
 
   // Sign In Form State
   const [signInIdentifier, setSignInIdentifier] = useState('');
@@ -36,6 +41,139 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
   const [address, setAddress] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Fields configured for voice input
+  const signInFields: VoiceFormFieldConfig[] = useMemo(() => [
+    {
+      key: 'signInIdentifier',
+      label: language === 'hi' ? 'ईमेल या मोबाइल नंबर' : language === 'te' ? 'ఈమెయిల్ లేదా మొబైల్' : 'Email or Mobile Number',
+      type: 'text',
+      prompts: {
+        en: 'Please speak your registered email address or 10-digit mobile number.',
+        hi: 'कृपया अपना पंजीकृत ईमेल पता या 10 अंकों का मोबाइल नंबर बोलें।',
+        te: 'దయచేసి మీ రిజిస్టర్డ్ ఈమెయిల్ లేదా 10 అంకెల మొబైల్ నంబర్ చెప్పండి.',
+      },
+      sampleFallback: {
+        en: 'buyer@culturecurate.in',
+        hi: 'buyer@culturecurate.in',
+        te: 'buyer@culturecurate.in',
+      },
+    },
+    {
+      key: 'signInPassword',
+      label: language === 'hi' ? 'पासवर्ड' : language === 'te' ? 'పాస్వర్డ్' : 'Password',
+      type: 'password',
+      prompts: {
+        en: 'Now please speak your password.',
+        hi: 'अब अपना पासवर्ड बोलें।',
+        te: 'ఇప్పుడు మీ పాస్వర్డ్ చెప్పండి.',
+      },
+      sampleFallback: {
+        en: 'Buyer@123456',
+        hi: 'Buyer@123456',
+        te: 'Buyer@123456',
+      },
+    },
+  ], [language]);
+
+  const signUpFields: VoiceFormFieldConfig[] = useMemo(() => [
+    {
+      key: 'fullName',
+      label: language === 'hi' ? 'पूरा नाम' : language === 'te' ? 'పూర్తి పేరు' : 'Full Name',
+      type: 'text',
+      prompts: {
+        en: 'Please speak your full name.',
+        hi: 'कृपया अपना पूरा नाम बोलें।',
+        te: 'దయచేసి మీ పూర్తి పేరు చెప్పండి.',
+      },
+      sampleFallback: {
+        en: 'Anita Deshmukh',
+        hi: 'अनिता देशमुख',
+        te: 'అనితా దేశ్ముఖ్',
+      },
+    },
+    {
+      key: 'email',
+      label: language === 'hi' ? 'ईमेल पता' : language === 'te' ? 'ఈమెయిల్' : 'Email Address',
+      type: 'email',
+      prompts: {
+        en: 'Please speak your email address.',
+        hi: 'कृपया अपना ईमेल पता बोलें।',
+        te: 'దయచేసి మీ ఈమెయిల్ చెప్పండి.',
+      },
+      sampleFallback: {
+        en: 'buyer@culturecurate.in',
+        hi: 'buyer@culturecurate.in',
+        te: 'buyer@culturecurate.in',
+      },
+    },
+    {
+      key: 'phone',
+      label: language === 'hi' ? 'मोबाइल नंबर' : language === 'te' ? 'మొబైల్ నంబర్' : 'Mobile Number',
+      type: 'tel',
+      prompts: {
+        en: 'Please speak your 10 digit mobile number.',
+        hi: 'कृपया अपना 10 अंकों का मोबाइल नंबर बोलें।',
+        te: 'దయచేసి మీ 10 అంకెల మొబైల్ నంబర్ చెప్పండి.',
+      },
+      sampleFallback: {
+        en: '9444077889',
+        hi: '9444077889',
+        te: '9444077889',
+      },
+    },
+    {
+      key: 'location',
+      label: language === 'hi' ? 'शहर' : language === 'te' ? 'నగరం' : 'City or Location',
+      type: 'text',
+      prompts: {
+        en: 'Please speak your city name.',
+        hi: 'कृपया अपने शहर का नाम बोलें।',
+        te: 'దయచేసి మీ నగరం పేరు చెప్పండి.',
+      },
+      sampleFallback: {
+        en: 'Bengaluru',
+        hi: 'बेंगलुरु',
+        te: 'బెంగళూరు',
+      },
+    },
+    {
+      key: 'password',
+      label: language === 'hi' ? 'पासवर्ड' : language === 'te' ? 'పాస్వర్డ్' : 'Password',
+      type: 'password',
+      prompts: {
+        en: 'Please speak your desired password.',
+        hi: 'कृपया अपना पासवर्ड बोलें।',
+        te: 'దయచేసి మీ పాస్వర్డ్ చెప్పండి.',
+      },
+      sampleFallback: {
+        en: 'Buyer@123456',
+        hi: 'Buyer@123456',
+        te: 'Buyer@123456',
+      },
+    },
+  ], [language]);
+
+  const activeFields = tab === 'signin' ? signInFields : signUpFields;
+
+  const handleFieldFilled = (key: string, value: string) => {
+    if (key === 'signInIdentifier') setSignInIdentifier(value);
+    if (key === 'signInPassword') setSignInPassword(value);
+    if (key === 'fullName') setFullName(value);
+    if (key === 'email') setEmail(value);
+    if (key === 'phone') setPhone(value);
+    if (key === 'location') setLocation(value);
+    if (key === 'password') {
+      setPassword(value);
+      setConfirmPassword(value);
+    }
+  };
+
+  const voice = useVoiceFormAssistant({
+    language,
+    fields: activeFields,
+    onFieldFilled: handleFieldFilled,
+  });
 
   if (!isOpen) return null;
 
@@ -55,8 +193,8 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
     const res = await loginBuyer(signInIdentifier.trim(), signInPassword);
     setLoading(false);
     if (res.success) {
-      onClose();
-      navigate('/buyer');
+      voice.stopAssistant();
+      setShowLanguageModal(true);
     } else {
       setError(res.error || 'Failed to sign in. Please check your credentials.');
     }
@@ -102,11 +240,20 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
     setLoading(false);
 
     if (res.success) {
-      onClose();
-      navigate('/buyer');
+      voice.stopAssistant();
+      setShowLanguageModal(true);
     } else {
       setError(res.error || 'Registration failed. Please review the form.');
     }
+  };
+
+  const handleLanguageChosen = (chosenLang: LanguageCode) => {
+    setLanguage(chosenLang);
+    sessionStorage.setItem('open_buyer_tutorial', 'true');
+    sessionStorage.removeItem('kalatech_seen_buyer_tour');
+    setShowLanguageModal(false);
+    onClose();
+    navigate('/buyer');
   };
 
   const handleQuickDemoFill = () => {
@@ -121,8 +268,11 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-teal-800 p-6 text-white relative">
           <button
-            onClick={onClose}
-            className="absolute top-5 right-5 w-8 h-8 rounded-full bg-black/20 hover:bg-black/30 flex items-center justify-center text-white transition-colors"
+            onClick={() => {
+              voice.stopAssistant();
+              onClose();
+            }}
+            className="absolute top-5 right-5 w-8 h-8 rounded-full bg-black/20 hover:bg-black/30 flex items-center justify-center text-white transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -141,16 +291,24 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
           {/* Tab Switcher */}
           <div className="flex bg-black/20 p-1 rounded-xl mt-4">
             <button
-              onClick={() => { setTab('signin'); setError(null); }}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+              onClick={() => {
+                voice.stopAssistant();
+                setTab('signin');
+                setError(null);
+              }}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 tab === 'signin' ? 'bg-white text-stone-900 shadow' : 'text-emerald-100 hover:text-white'
               }`}
             >
               {t.signIn}
             </button>
             <button
-              onClick={() => { setTab('signup'); setError(null); }}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+              onClick={() => {
+                voice.stopAssistant();
+                setTab('signup');
+                setError(null);
+              }}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 tab === 'signup' ? 'bg-white text-stone-900 shadow' : 'text-emerald-100 hover:text-white'
               }`}
             >
@@ -161,6 +319,49 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
 
         {/* Scrollable Form Content */}
         <div className="p-6 overflow-y-auto flex-1 space-y-4">
+          {/* Active Voice Assistant Banner */}
+          <VoiceAssistBanner
+            language={language}
+            isListening={voice.isListening}
+            isSpeaking={voice.isSpeaking}
+            activeFieldKey={voice.activeFieldKey}
+            statusMessage={voice.statusMessage}
+            transcript={voice.transcript}
+            onStop={voice.stopAssistant}
+          />
+
+          {/* Voice Assistance Master Button */}
+          <button
+            type="button"
+            onClick={voice.startGuidedFlow}
+            className="w-full py-2.5 px-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 hover:from-amber-100 hover:to-orange-100 border-2 border-amber-300 text-amber-950 font-black text-xs sm:text-sm flex items-center justify-between shadow-xs transition-all active:scale-[0.99] cursor-pointer group"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                <Mic className="w-4 h-4" />
+              </div>
+              <div className="text-left">
+                <span className="block leading-tight font-extrabold text-stone-900 text-xs sm:text-sm">
+                  {language === 'hi'
+                    ? '🎙️ बोलकर लॉगिन विवरण भरें (Voice Assist)'
+                    : language === 'te'
+                    ? '🎙️ వాయిస్ ద్వారా వివరాలు నమోదు చేయండి'
+                    : '🎙️ Voice Assist Login Details'}
+                </span>
+                <span className="text-[10px] text-amber-800 font-bold block">
+                  {language === 'hi'
+                    ? 'बटन दबाकर बोलें - सहायक अपने आप भरेगा'
+                    : language === 'te'
+                    ? 'మాట్లాడండి - వివరాలు ఆటోమేటిక్‌గా నమోదు అవుతాయి'
+                    : 'Click to speak and auto-fill details'}
+                </span>
+              </div>
+            </div>
+            <span className="bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 shadow-2xs">
+              {language === 'hi' ? 'आवाज़ से भरें' : language === 'te' ? 'వాయిస్' : 'Speak'}
+            </span>
+          </button>
+
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-semibold flex items-center gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -170,18 +371,38 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
 
           {tab === 'signin' ? (
             <form onSubmit={handleSignIn} className="space-y-4">
+              {/* Identifier Input with Field Mic */}
               <div>
                 <label className="block text-xs font-bold text-stone-700 mb-1.5">{t.emailOrMobile}</label>
-                <input
-                  type="text"
-                  required
-                  value={signInIdentifier}
-                  onChange={(e) => setSignInIdentifier(e.target.value)}
-                  placeholder="e.g. buyer@culturecurate.in or 9444077889"
-                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    value={signInIdentifier}
+                    onChange={(e) => setSignInIdentifier(e.target.value)}
+                    placeholder="e.g. buyer@culturecurate.in or 9444077889"
+                    className={`w-full pl-3.5 pr-11 py-2.5 bg-stone-50 border rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all ${
+                      voice.activeFieldKey === 'signInIdentifier'
+                        ? 'border-amber-500 ring-2 ring-amber-300 bg-amber-50/50'
+                        : 'border-stone-300'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => voice.recordSingleField('signInIdentifier')}
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all cursor-pointer ${
+                      voice.activeFieldKey === 'signInIdentifier' && voice.isListening
+                        ? 'bg-red-500 text-white animate-pulse'
+                        : 'text-stone-400 hover:text-amber-700 hover:bg-amber-100/60'
+                    }`}
+                    title={language === 'hi' ? 'ईमेल या मोबाइल बोलें' : 'Speak email or mobile'}
+                  >
+                    <Mic className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
+              {/* Password Input with Field Mic */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-bold text-stone-700">{t.password}</label>
@@ -200,22 +421,40 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                     value={signInPassword}
                     onChange={(e) => setSignInPassword(e.target.value)}
                     placeholder="Enter password"
-                    className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-10"
+                    className={`w-full pl-3.5 pr-20 py-2.5 bg-stone-50 border rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all ${
+                      voice.activeFieldKey === 'signInPassword'
+                        ? 'border-amber-500 ring-2 ring-amber-300 bg-amber-50/50'
+                        : 'border-stone-300'
+                    }`}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-stone-400 hover:text-stone-600"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => voice.recordSingleField('signInPassword')}
+                      className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                        voice.activeFieldKey === 'signInPassword' && voice.isListening
+                          ? 'bg-red-500 text-white animate-pulse'
+                          : 'text-stone-400 hover:text-amber-700 hover:bg-amber-100/60'
+                      }`}
+                      title={language === 'hi' ? 'पासवर्ड बोलें' : 'Speak password'}
+                    >
+                      <Mic className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="p-1.5 text-stone-400 hover:text-stone-600"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
               >
                 {loading ? t.loading : t.signIn}
                 <ArrowRight className="w-4 h-4" />
@@ -226,7 +465,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                 <button
                   type="button"
                   onClick={handleQuickDemoFill}
-                  className="w-full py-2 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-2 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                   {t.quickDemoLogin} (Anita Deshmukh • Bengaluru)
@@ -237,52 +476,88 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
             <form onSubmit={handleSignUp} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-bold text-stone-700 mb-1">{t.fullName} *</label>
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Anita Deshmukh"
-                  className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. Anita Deshmukh"
+                    className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => voice.recordSingleField('fullName')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-amber-700"
+                  >
+                    <Mic className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-stone-700 mb-1">Email *</label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="buyer@culturecurate.in"
-                    className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
+                  <div className="relative">
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="buyer@culturecurate.in"
+                      className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => voice.recordSingleField('email')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-amber-700"
+                    >
+                      <Mic className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-stone-700 mb-1">Mobile (10 digits) *</label>
-                  <input
-                    type="tel"
-                    required
-                    maxLength={10}
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="9444077889"
-                    className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      required
+                      maxLength={10}
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="9444077889"
+                      className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => voice.recordSingleField('phone')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-amber-700"
+                    >
+                      <Mic className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-stone-700 mb-1">{t.locationCity}</label>
-                  <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="e.g. Bengaluru"
-                    className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="e.g. Bengaluru"
+                      className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => voice.recordSingleField('location')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-amber-700"
+                    >
+                      <Mic className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-stone-700 mb-1">{t.state}</label>
@@ -335,7 +610,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
               >
                 {loading ? t.loading : t.createAccount}
                 <ArrowRight className="w-4 h-4" />
@@ -351,8 +626,12 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
             100% Proceeds to Artisans • Fair Trade Certified
           </span>
           <button
-            onClick={() => { setTab(tab === 'signin' ? 'signup' : 'signin'); setError(null); }}
-            className="text-emerald-700 font-bold hover:underline"
+            onClick={() => {
+              voice.stopAssistant();
+              setTab(tab === 'signin' ? 'signup' : 'signin');
+              setError(null);
+            }}
+            className="text-emerald-700 font-bold hover:underline cursor-pointer"
           >
             {tab === 'signin' ? t.noAccount : t.haveAccount}
           </button>
@@ -375,12 +654,23 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
             </p>
             <button
               onClick={() => setShowForgotModal(false)}
-              className="w-full py-2 bg-stone-900 text-white rounded-xl text-xs font-bold"
+              className="w-full py-2 bg-stone-900 text-white rounded-xl text-xs font-bold cursor-pointer"
             >
               Understood
             </button>
           </div>
         </div>
+      )}
+
+      {/* Language Selection Modal upon Login */}
+      {showLanguageModal && (
+        <LanguageSelectionModal
+          isOpen={showLanguageModal}
+          onClose={() => handleLanguageChosen(language)}
+          onSelectLanguage={handleLanguageChosen}
+          title="Welcome! Choose Your Language"
+          subtitle="Select your preferred language for buyer voice tour and app navigation"
+        />
       )}
     </div>
   );

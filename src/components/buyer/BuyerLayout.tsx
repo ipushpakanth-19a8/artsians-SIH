@@ -1,21 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
-import { ShoppingBag, Heart, ShoppingCart, Search, Globe, LogOut, Package, User, Headphones, Menu, X, ArrowLeft, Home } from 'lucide-react';
+import { ShoppingBag, Heart, ShoppingCart, Search, Globe, LogOut, Package, User, Headphones, Menu, X, ArrowLeft, Home, Mic, Volume2 } from 'lucide-react';
 import { useLanguage } from '../../lib/LanguageContext';
 import { useAuth } from '../../lib/AuthContext';
 import { translations } from '../../lib/i18n';
 import { LanguageCode } from '../../types';
 import { triggerHaptic, setupHardwareBackButton } from '../../lib/nativeBridge';
+import { BuyerOnboarding } from './onboarding/BuyerOnboarding';
+import { BuyerAuthModal } from '../auth/BuyerAuthModal';
 
 export function BuyerLayout() {
   const { language, setLanguage } = useLanguage();
-  const { logout } = useAuth();
+  const { user, logout, login } = useAuth();
   const navigate = useNavigate();
   const t = translations[language];
 
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [manualTourOpen, setManualTourOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  // Auto-init buyer demo session if visiting /buyer unauthenticated, so onboarding and cart are immediately accessible
+  useEffect(() => {
+    if (!user || user.role !== 'buyer') {
+      login('buyer');
+    }
+  }, [user, login]);
+
+  const isFirstTimeBuyer = user && user.role === 'buyer' && user.hasCompletedBuyerOnboarding !== true;
+  const shouldShowOnboarding = manualTourOpen || isFirstTimeBuyer;
+
+  // Auto-trigger tutorial on login or entry from other portals
+  useEffect(() => {
+    const shouldOpen =
+      sessionStorage.getItem('open_buyer_tutorial') === 'true' ||
+      !sessionStorage.getItem('kalatech_seen_buyer_tour') ||
+      isFirstTimeBuyer;
+
+    if (shouldOpen) {
+      setManualTourOpen(true);
+      sessionStorage.setItem('kalatech_seen_buyer_tour', 'true');
+      sessionStorage.removeItem('open_buyer_tutorial');
+    }
+  }, [user, isFirstTimeBuyer]);
 
   useEffect(() => {
     const cleanup = setupHardwareBackButton(() => {
@@ -52,8 +80,19 @@ export function BuyerLayout() {
     navigate('/');
   };
 
+  const handleSwitchToSeller = () => {
+    login('seller');
+    sessionStorage.setItem('open_seller_tutorial', 'true');
+    navigate('/seller');
+  };
+
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col font-sans">
+      {/* First-Time User Voice Onboarding Modal (Automatic, zero clicks required + manual replay) */}
+      {shouldShowOnboarding && (
+        <BuyerOnboarding onComplete={() => setManualTourOpen(false)} />
+      )}
+
       {/* Top Notification Bar: Fair Trade Promise */}
       <div className="bg-stone-900 text-amber-300 text-[11px] py-1.5 px-4 text-center font-medium">
         🇮🇳 100% Verified Indian Handicrafts • Direct Artisan Support • Fair-Trade Guaranteed
@@ -84,7 +123,7 @@ export function BuyerLayout() {
                   </span>
                 </div>
                 <span className="text-[10px] text-amber-700 font-bold tracking-wider uppercase">
-                  Artisan Marketplace
+                  Buyer Portal
                 </span>
               </div>
             </Link>
@@ -146,6 +185,16 @@ export function BuyerLayout() {
               ))}
             </div>
 
+            {/* Voice Tour Trigger / Replay Button */}
+            <button
+              onClick={() => setManualTourOpen(true)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-300 text-amber-900 text-xs font-bold transition-all shadow-xs cursor-pointer"
+              title="Start or Replay Automatic Voice Tour"
+            >
+              <Headphones className="w-3.5 h-3.5 text-amber-700 animate-pulse" />
+              <span className="hidden sm:inline">Voice Tour</span>
+            </button>
+
             {/* Wishlist */}
             <Link
               to="/buyer/wishlist"
@@ -174,18 +223,40 @@ export function BuyerLayout() {
               )}
             </Link>
 
-            {/* Switch to Seller Portal link */}
-            <Link
-              to="/seller"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-100 hover:bg-amber-100/70 text-stone-800 rounded-xl text-xs font-bold border border-stone-200 transition-colors"
+            {/* Voice Search for Crafts Trigger */}
+            <button
+              onClick={() => navigate('/buyer/browse?voice=1')}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 text-xs font-bold transition-all shadow-xs cursor-pointer"
+              title="Voice Search for Indian Crafts"
             >
-              Artisan Mode
-            </Link>
+              <Mic className="w-3.5 h-3.5 text-amber-700 animate-pulse" />
+              <span className="hidden md:inline">{language === 'hi' ? 'आवाज़ खोज' : language === 'te' ? 'వాయిస్ శోధన' : 'Voice Search'}</span>
+            </button>
+
+            {/* Account / Sign In with Voice Assist */}
+            <button
+              onClick={() => setAuthModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+              title="Sign In / Switch Account with Voice Assist"
+            >
+              <User className="w-3.5 h-3.5 text-emerald-700" />
+              <span className="hidden sm:inline">{user?.role === 'buyer' && user?.name ? user.name.split(' ')[0] : 'Sign In'}</span>
+            </button>
+
+            {/* Switch to Seller Portal with Automatic Voice Tour */}
+            <button
+              onClick={handleSwitchToSeller}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-[#9c4124] rounded-xl text-xs font-black border border-amber-300 transition-colors cursor-pointer shadow-2xs"
+              title="Switch to Artisan Studio with Step-by-Step Voice Guide"
+            >
+              <Volume2 className="w-3.5 h-3.5 text-amber-700" />
+              <span>Artisan Mode →</span>
+            </button>
 
             {/* Logout */}
             <button
               onClick={handleLogout}
-              className="p-2 text-stone-400 hover:text-red-500 rounded-xl hover:bg-red-50 transition-colors"
+              className="p-2 text-stone-400 hover:text-red-500 rounded-xl hover:bg-red-50 transition-colors cursor-pointer"
               title="Exit Buyer Portal"
             >
               <LogOut className="w-4 h-4" />
@@ -226,14 +297,17 @@ export function BuyerLayout() {
               {t.customerCare}
             </NavLink>
             <div className="pt-2 border-t border-stone-100 flex items-center justify-between">
-              <Link
-                to="/seller"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-xs font-bold text-amber-700"
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleSwitchToSeller();
+                }}
+                className="text-xs font-bold text-amber-700 flex items-center gap-1 cursor-pointer"
               >
-                Go to Seller Portal →
-              </Link>
-              <button onClick={handleLogout} className="text-xs font-semibold text-red-600">
+                <Volume2 className="w-3.5 h-3.5" />
+                <span>Go to Seller Portal (Voice Guide) →</span>
+              </button>
+              <button onClick={handleLogout} className="text-xs font-semibold text-red-600 cursor-pointer">
                 {t.logout}
               </button>
             </div>
@@ -353,6 +427,15 @@ export function BuyerLayout() {
           <p>© 2026 ShilpSetu (KALAtech). Built with pride for Indian Handicrafts.</p>
         </div>
       </footer>
+
+      {/* Buyer Auth Modal with Voice Assist */}
+      {authModalOpen && (
+        <BuyerAuthModal
+          isOpen={authModalOpen}
+          onClose={() => setAuthModalOpen(false)}
+          defaultTab="signin"
+        />
+      )}
     </div>
   );
 }

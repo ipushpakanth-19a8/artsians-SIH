@@ -83,7 +83,7 @@ export function BuyerHome() {
         <div className="relative z-10 max-w-2xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-amber-200 text-xs font-extrabold tracking-wide">
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>Direct Artisan Marketplace • 0% Middleman Cuts</span>
+            <span>Direct Artisan Crafts • 0% Middleman Cuts</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black font-['Rozha_One',serif] leading-tight text-white">

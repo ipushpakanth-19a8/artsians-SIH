@@ -31,7 +31,7 @@ const PRODUCTION_API_URL = 'https://artsians-sih-1.onrender.com';
 
 export const getApiBaseUrl = (): string => {
   if (isNativePlatform()) {
-    const customUrl = import.meta.env.VITE_API_URL;
+    const customUrl = (import.meta as any).env?.VITE_API_URL;
     return (customUrl && typeof customUrl === 'string' && customUrl.trim()) ? customUrl.trim() : PRODUCTION_API_URL;
   }
   // On web, relative path uses Vite / Express direct route

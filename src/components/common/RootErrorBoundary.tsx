@@ -10,12 +10,18 @@ interface State {
   errorInfo: ErrorInfo | null;
 }
 
-export class RootErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false,
-    error: null,
-    errorInfo: null,
-  };
+export class RootErrorBoundary extends React.Component<Props, State> {
+  declare props: Props;
+  declare state: State;
+  declare setState: any;
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null,
+    };
+  }
 
   public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error, errorInfo: null };

@@ -6,8 +6,9 @@ import { useAuth } from '../../lib/AuthContext';
 import { translations } from '../../lib/i18n';
 import { calculateBill, generateBillNumber, validateBill, formatINR } from '../../lib/billingService';
 import { getMarketPriceAnalysis, getMarketRecommendationText } from '../../lib/marketPriceService';
-import { Bill, Product } from '../../types';
+import { Bill, Product, FairPricingResponse } from '../../types';
 import { BillPreview } from './BillPreview';
+import { FairPriceBreakdownCard } from '../common/FairPriceBreakdownCard';
 
 export function CreateBill() {
   const { language } = useLanguage();
@@ -25,11 +26,17 @@ export function CreateBill() {
   const [productCategory, setProductCategory] = useState('Handloom');
   const [quantity, setQuantity] = useState(1);
   const [materialCost, setMaterialCost] = useState(800);
+  const [laborHours, setLaborHours] = useState(12);
+  const [fairHourlyWage, setFairHourlyWage] = useState(100);
   const [labourCost, setLabourCost] = useState(1200);
   const [transportationCost, setTransportationCost] = useState(150);
   const [otherCost, setOtherCost] = useState(50);
   const [proposedPrice, setProposedPrice] = useState(3200);
   const [finalPrice, setFinalPrice] = useState(3200);
+
+  // Fair pricing & Voice Explanation state
+  const [fairPricing, setFairPricing] = useState<FairPricingResponse | null>(null);
+  const [isCalculatingFairPrice, setIsCalculatingFairPrice] = useState(false);
 
   // Market comparison state
   const [marketMin, setMarketMin] = useState(2800);
@@ -56,8 +63,15 @@ export function CreateBill() {
           setProductCategory(p.category);
           if (p.cost) {
             setMaterialCost(p.cost.material_cost || 800);
-            setLabourCost((p.cost.labor_hours || 10) * (p.cost.hourly_rate || 100));
+            const hrs = p.laborHours || p.cost.labor_hours || 12;
+            const wage = p.fairHourlyWage || p.cost.hourly_rate || 100;
+            setLaborHours(hrs);
+            setFairHourlyWage(wage);
+            setLabourCost(hrs * wage);
             setOtherCost(p.cost.other_cost || 50);
+          }
+          if (p.recommendedFairPrice) {
+            setAiRecPrice(p.recommendedFairPrice);
           }
           if (p.final_price) {
             setProposedPrice(p.final_price);
@@ -83,8 +97,15 @@ export function CreateBill() {
       setProductCategory(p.category);
       if (p.cost) {
         setMaterialCost(p.cost.material_cost || 0);
-        setLabourCost((p.cost.labor_hours || 0) * (p.cost.hourly_rate || 0));
+        const hrs = p.laborHours || p.cost.labor_hours || 10;
+        const wage = p.fairHourlyWage || p.cost.hourly_rate || 100;
+        setLaborHours(hrs);
+        setFairHourlyWage(wage);
+        setLabourCost(hrs * wage);
         setOtherCost(p.cost.other_cost || 0);
+      }
+      if (p.recommendedFairPrice) {
+        setAiRecPrice(p.recommendedFairPrice);
       }
       if (p.final_price) {
         setProposedPrice(p.final_price);
@@ -103,9 +124,42 @@ export function CreateBill() {
     quantity,
   });
 
-  // Fetch market analysis on stepping to Step 3
+  // Fetch market analysis and deterministic backend fair pricing on stepping to Step 3
   const handleGoToStep3 = async () => {
     const totalUnitCost = materialCost + labourCost + transportationCost + otherCost;
+    setIsCalculatingFairPrice(true);
+
+    try {
+      const fairRes = await fetch('/api/v1/pricing/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productName: productName || 'Handicraft Item',
+          craftType: productCategory,
+          material: 'Natural Artisan Material',
+          materialCost,
+          laborHours,
+          fairHourlyWage,
+          otherCost: transportationCost + otherCost,
+          quantity,
+          language,
+        }),
+      });
+
+      if (fairRes.ok) {
+        const fairData: FairPricingResponse = await fairRes.json();
+        setFairPricing(fairData);
+        if (fairData.recommendedFairPrice) {
+          setAiRecPrice(fairData.recommendedFairPrice);
+          setFinalPrice(proposedPrice || fairData.recommendedFairPrice);
+        }
+      }
+    } catch (err) {
+      console.warn('Fair pricing calculate failed:', err);
+    } finally {
+      setIsCalculatingFairPrice(false);
+    }
+
     try {
       const res = await getMarketPriceAnalysis({
         category: productCategory,
@@ -116,8 +170,10 @@ export function CreateBill() {
       setMarketMin(res.minPrice);
       setMarketAvg(res.averagePrice);
       setMarketMax(res.maxPrice);
-      setAiRecPrice(res.recommendedPrice);
-      setFinalPrice(proposedPrice || res.recommendedPrice);
+      if (!fairPricing) {
+        setAiRecPrice(res.recommendedPrice);
+        setFinalPrice(proposedPrice || res.recommendedPrice);
+      }
 
       const text = getMarketRecommendationText(
         proposedPrice || res.recommendedPrice,
@@ -130,8 +186,10 @@ export function CreateBill() {
       setMarketMin(Math.round(totalUnitCost * 1.3));
       setMarketAvg(Math.round(totalUnitCost * 1.6));
       setMarketMax(Math.round(totalUnitCost * 2.1));
-      setAiRecPrice(Math.round(totalUnitCost * 1.5));
-      setFinalPrice(proposedPrice);
+      if (!fairPricing) {
+        setAiRecPrice(Math.round(totalUnitCost * 1.5));
+        setFinalPrice(proposedPrice);
+      }
     }
     setStep(3);
   };
@@ -150,6 +208,15 @@ export function CreateBill() {
       productCategory,
       quantity,
       materialCost,
+      laborHours,
+      fairHourlyWage,
+      laborValue: fairPricing?.breakdown.laborValue ?? (laborHours * fairHourlyWage),
+      baseCost: fairPricing?.breakdown.baseCost ?? (materialCost + (laborHours * fairHourlyWage) + transportationCost + otherCost),
+      marginAmount: fairPricing?.breakdown.marginAmount ?? Math.round((materialCost + (laborHours * fairHourlyWage) + transportationCost + otherCost) * 0.25),
+      recommendedFairPrice: fairPricing?.recommendedFairPrice ?? aiRecPrice,
+      artisanApprovedPrice: finalPrice,
+      pricingFormulaVersion: fairPricing?.pricingFormulaVersion ?? 'v1.0-fair-wage',
+      pricingCalculatedAt: fairPricing?.calculatedAt ?? new Date().toISOString(),
       labourCost,
       transportationCost,
       otherCost,
@@ -158,7 +225,7 @@ export function CreateBill() {
       marketMinPrice: marketMin,
       marketAveragePrice: marketAvg,
       marketMaxPrice: marketMax,
-      recommendedPrice: aiRecPrice,
+      recommendedPrice: fairPricing?.recommendedFairPrice ?? aiRecPrice,
       finalPrice: finalPrice,
       profit: calc.profit,
       profitPercentage: calc.profitPercentage,
@@ -380,16 +447,50 @@ export function CreateBill() {
                 <p className="text-[11px] text-stone-500 mt-1">Raw clay, threads, natural dyes, wood, brass, etc.</p>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">👩‍🎨 {t.laborHours || 'Labor Hours'} (hrs)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={laborHours}
+                    onChange={(e) => {
+                      const hrs = Math.max(1, parseInt(e.target.value) || 1);
+                      setLaborHours(hrs);
+                      setLabourCost(hrs * fairHourlyWage);
+                    }}
+                    className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm font-semibold"
+                  />
+                  <p className="text-[10px] text-stone-500 mt-1">Direct craft hours</p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">⚖️ {t.fairHourlyWage || 'Fair Wage (₹/hr)'}</label>
+                  <input
+                    type="number"
+                    min="50"
+                    value={fairHourlyWage}
+                    onChange={(e) => {
+                      const wage = Math.max(50, parseInt(e.target.value) || 100);
+                      setFairHourlyWage(wage);
+                      setLabourCost(laborHours * wage);
+                    }}
+                    className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm font-semibold"
+                  />
+                  <p className="text-[10px] text-stone-500 mt-1">Living wage floor ₹100/hr</p>
+                </div>
+              </div>
+
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">{t.labourCost} (₹ per unit)</label>
+                <label className="block text-xs font-bold text-stone-700 mb-1">{t.labourCost} (₹ calculated)</label>
                 <input
                   type="number"
                   min="0"
                   value={labourCost}
                   onChange={(e) => setLabourCost(Math.max(0, parseInt(e.target.value) || 0))}
-                  className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm bg-stone-50 font-bold"
                 />
-                <p className="text-[11px] text-stone-500 mt-1">Artisan hours × fair artisan rate</p>
+                <p className="text-[11px] text-stone-500 mt-1">{laborHours} hrs × ₹{fairHourlyWage}/hr = ₹{labourCost}</p>
               </div>
 
               <div>
@@ -476,6 +577,20 @@ export function CreateBill() {
             <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 text-xs font-bold flex items-center justify-center">3</span>
             {t.reviewRecommendation}
           </h2>
+
+          {/* Deterministic Fair Living Price Breakdown Card with Voice Explanation */}
+          {fairPricing ? (
+            <FairPriceBreakdownCard
+              pricing={fairPricing}
+              selectedLanguage={language}
+              onApprovePrice={(approved) => setFinalPrice(approved)}
+            />
+          ) : isCalculatingFairPrice ? (
+            <div className="p-6 bg-amber-50/70 border border-amber-200 rounded-2xl flex items-center justify-center gap-3 text-amber-800 font-bold text-sm">
+              <RefreshCw className="w-5 h-5 animate-spin text-amber-600" />
+              <span>Calculating Fair Wage & Cost Breakdown...</span>
+            </div>
+          ) : null}
 
           {/* AI Market Recommendation Card */}
           <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-stone-50 border border-amber-200 rounded-2xl p-5 shadow-sm">

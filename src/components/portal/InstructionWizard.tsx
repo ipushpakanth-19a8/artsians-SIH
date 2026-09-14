@@ -1,5 +1,5 @@
-import React from 'react';
-import { Camera, Bot, IndianRupee, ArrowRight, ArrowLeft, Volume2, Sparkles, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Camera, Bot, IndianRupee, ArrowRight, ArrowLeft, Volume2, Sparkles, CheckCircle2, Play, Pause, FastForward } from 'lucide-react';
 import { LanguageCode } from '../../types';
 import { PORTAL_TRANSLATIONS } from '../../lib/portalI18n';
 
@@ -8,7 +8,7 @@ interface InstructionWizardProps {
   currentStep: number; // 0, 1, 2
   onStepChange: (step: number) => void;
   onFinish: () => void;
-  onSpeakInstruction: (text: string) => void;
+  onSpeakInstruction: (text: string, onEnd?: () => void) => void;
   isSpeaking?: boolean;
 }
 
@@ -128,14 +128,52 @@ export const InstructionWizard: React.FC<InstructionWizardProps> = ({
     },
   ];
 
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Stop auto play when unmounting
+  useEffect(() => {
+    return () => {
+      if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+    };
+  }, []);
+
+  const playStepWithAutoAdvance = (stepIdx: number) => {
+    const stepData = steps[stepIdx];
+    if (!stepData) return;
+
+    onSpeakInstruction(stepData.speech, () => {
+      // When voice ends, wait a brief pause then automatically advance
+      autoPlayTimerRef.current = setTimeout(() => {
+        if (stepIdx < steps.length - 1) {
+          onStepChange(stepIdx + 1);
+          playStepWithAutoAdvance(stepIdx + 1);
+        } else {
+          setIsAutoPlaying(false);
+          onFinish();
+        }
+      }, 900);
+    });
+  };
+
+  const handleStartAutoPlay = () => {
+    setIsAutoPlaying(true);
+    playStepWithAutoAdvance(currentStep);
+  };
+
+  const handleStopAutoPlay = () => {
+    setIsAutoPlaying(false);
+    if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+  };
+
   const current = steps[currentStep];
 
   return (
     <section aria-labelledby="simple-tutorial-heading" className="w-full max-w-2xl mx-auto">
       {/* Container Card */}
       <div className="bg-white rounded-3xl p-5 sm:p-8 border-2 border-amber-200/80 shadow-xl shadow-amber-950/5 relative">
-        {/* Header with Step Badge & Voice Listen Trigger */}
-        <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-stone-100">
+        {/* Header with Step Badge, Auto-Play Tour Trigger & Voice Listen */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-stone-100">
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-black tracking-wider uppercase border border-amber-300">
               {current.badge}
@@ -145,20 +183,62 @@ export const InstructionWizard: React.FC<InstructionWizardProps> = ({
             </span>
           </div>
 
-          {/* Voice Instruction Button */}
-          <button
-            onClick={() => onSpeakInstruction(current.speech)}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border text-xs font-bold transition-all ${
-              isSpeaking
-                ? 'bg-amber-500 text-stone-950 border-amber-400 shadow-md animate-pulse'
-                : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
-            }`}
-            title="Listen to this step aloud"
-          >
-            <Volume2 className="w-4 h-4 text-amber-700" />
-            <span>{t.voiceListen} 🔊</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Automatic Voice Guided Tour Button */}
+            <button
+              onClick={isAutoPlaying ? handleStopAutoPlay : handleStartAutoPlay}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-black transition-all cursor-pointer shadow-xs ${
+                isAutoPlaying
+                  ? 'bg-amber-600 text-white border-amber-700 animate-pulse'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-transparent'
+              }`}
+              title="Sit back: tutorial will speak and advance automatically"
+            >
+              {isAutoPlaying ? (
+                <>
+                  <Pause className="w-3.5 h-3.5" />
+                  <span>Pause Tour</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5" />
+                  <span>Auto-Tour (Voice)</span>
+                </>
+              )}
+            </button>
+
+            {/* Manual Voice Instruction Button */}
+            <button
+              onClick={() => {
+                // If clicked, speak and auto-advance to next step when finished
+                onSpeakInstruction(current.speech, () => {
+                  if (currentStep < steps.length - 1) {
+                    onStepChange(currentStep + 1);
+                  } else {
+                    onFinish();
+                  }
+                });
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                isSpeaking
+                  ? 'bg-amber-100 text-amber-950 border-amber-400 shadow-sm animate-pulse'
+                  : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
+              }`}
+              title="Listen to this step with voice guidance"
+            >
+              <Volume2 className="w-4 h-4 text-amber-700" />
+              <span>{t.voiceListen}</span>
+            </button>
+          </div>
         </div>
+
+        {/* Status banner when auto-playing */}
+        {isAutoPlaying && (
+          <div className="mb-4 py-1.5 px-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-amber-900">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-spin" />
+            <span>Voice tutorial active • Steps advance to next automatically</span>
+          </div>
+        )}
 
         {/* Big Step Title & Visual Description */}
         <div className="text-center mb-6">

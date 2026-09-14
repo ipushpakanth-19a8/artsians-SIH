@@ -16,6 +16,8 @@ export interface AuthUser {
   location?: string;
   state?: string;
   artisan?: Artisan;
+  hasCompletedBuyerOnboarding?: boolean;
+  hasCompletedSellerOnboarding?: boolean;
 }
 
 interface AuthContextType {
@@ -47,6 +49,8 @@ interface AuthContextType {
     state?: string;
     address?: string;
   }) => Promise<{ success: boolean; error?: string }>;
+  updateBuyerOnboarding: (completed: boolean) => Promise<{ success: boolean; error?: string }>;
+  updateSellerOnboarding: (completed: boolean) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
 }
 
@@ -60,6 +64,8 @@ const AuthContext = createContext<AuthContextType>({
   signupSeller: async () => ({ success: false }),
   loginBuyer: async () => ({ success: false }),
   signupBuyer: async () => ({ success: false }),
+  updateBuyerOnboarding: async () => ({ success: false }),
+  updateSellerOnboarding: async () => ({ success: false }),
   logout: () => {},
 });
 
@@ -142,6 +148,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: newRole,
       craft_type: newRole === 'seller' ? art.category : undefined,
       artisan: newRole === 'seller' ? art : undefined,
+      hasCompletedBuyerOnboarding: newRole === 'buyer' ? false : undefined,
+      hasCompletedSellerOnboarding: newRole === 'seller' ? false : undefined,
     };
     saveAuth(demoUser, `demo-token-${newRole}-${Date.now()}`);
   };
@@ -259,6 +267,81 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateBuyerOnboarding = async (completed: boolean): Promise<{ success: boolean; error?: string }> => {
+    try {
+      if (user) {
+        const updatedUser: AuthUser = {
+          ...user,
+          hasCompletedBuyerOnboarding: completed,
+        };
+        saveAuth(updatedUser);
+      }
+
+      if (token) {
+        const res = await fetch(resolveApiUrl('/api/users/onboarding'), {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ hasCompletedBuyerOnboarding: completed }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) {
+            saveAuth({
+              ...data.user,
+              role: 'buyer',
+            });
+          }
+          return { success: true };
+        }
+      }
+      return { success: true };
+    } catch (err: any) {
+      console.error('Failed to update buyer onboarding status:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
+  const updateSellerOnboarding = async (completed: boolean): Promise<{ success: boolean; error?: string }> => {
+    try {
+      if (user) {
+        const updatedUser: AuthUser = {
+          ...user,
+          hasCompletedSellerOnboarding: completed,
+        };
+        saveAuth(updatedUser);
+      }
+
+      if (token) {
+        const res = await fetch(resolveApiUrl('/api/users/onboarding'), {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ hasCompletedSellerOnboarding: completed }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) {
+            saveAuth({
+              ...data.user,
+              role: 'seller',
+              artisan: user?.artisan || DEFAULT_ARTISAN,
+            });
+          }
+          return { success: true };
+        }
+      }
+      return { success: true };
+    } catch (err: any) {
+      console.error('Failed to update seller onboarding status:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -279,6 +362,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signupSeller,
         loginBuyer,
         signupBuyer,
+        updateBuyerOnboarding,
+        updateSellerOnboarding,
         logout,
       }}
     >

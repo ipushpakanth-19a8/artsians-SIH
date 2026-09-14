@@ -146,9 +146,16 @@ export function Cart() {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-stone-900 text-sm truncate">{item.product?.title}</h3>
                   <p className="text-xs text-stone-500">{item.product?.category} • {item.product?.artisan_state}</p>
-                  <p className="text-sm font-black text-amber-800 mt-1">
-                    {formatINR(item.product?.final_price || 2500)}
-                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-sm font-black text-amber-800">
+                      {formatINR(item.product?.final_price || 2500)}
+                    </p>
+                    {(item.product?.laborValue || item.product?.cost?.labor_hours) && (
+                      <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-bold">
+                        👩‍🎨 ₹{item.product.laborValue || ((item.product.cost?.labor_hours || 10) * (item.product.cost?.hourly_rate || 100))} Artisan Labor
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-3">

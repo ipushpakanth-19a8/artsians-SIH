@@ -667,30 +667,87 @@ export const INITIAL_PRODUCTS: Product[] = [
 
 export const DEMO_PRESET_CRAFTS = [
   {
+    id: "prod-03",
     name: "Bastar Dhokra Lost-Wax Bell Metal Bull",
     category: "Metalcraft",
+    subcategory: "Dhokra Lost-Wax Casting",
     material: "Lost-Wax Cast Bell Metal (Bronze & Brass)",
     region: "Chhattisgarh (Bastar)",
+    est_dimensions: "7 x 4 x 6 inches",
+    weight: "950 grams",
+    gi_status: "certified" as const,
     image_url: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80",
     cost: { material_cost: 950, labor_hours: 24, hourly_rate: 80, other_cost: 200 },
     hint: "Ancient 4,000-year-old Harappan lost-wax casting technique"
   },
   {
+    id: "prod-05",
     name: "Channapatna Non-Toxic Lacquered Wooden Stacker",
     category: "Woodwork",
-    material: "Ivory Wood (Wrightia Tinctoria) & Natural Lacquer",
+    subcategory: "Channapatna Turned Lacquerware",
+    material: "Ivory Wood (Wrightia Tinctoria) & Natural Vegetable Lacquer",
     region: "Karnataka (Ramanagara)",
+    est_dimensions: "8 x 4 inches (Base diameter: 4 inches)",
+    weight: "320 grams",
+    gi_status: "certified" as const,
     image_url: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=800&q=80",
     cost: { material_cost: 220, labor_hours: 6, hourly_rate: 75, other_cost: 50 },
     hint: "Eco-friendly vegetable dyed wooden toy safe for children"
   },
   {
+    id: "prod-06",
     name: "Bidriware Pure Silver Inlay Black Metal Goblet",
     category: "Metalcraft",
+    subcategory: "Bidriware Silver Damascening",
     material: "Zinc-Copper Alloy with Pure Silver 99.9% Inlay",
     region: "Karnataka (Bidar) / Telangana",
+    est_dimensions: "6 x 3.5 inches",
+    weight: "580 grams",
+    gi_status: "certified" as const,
     image_url: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80",
     cost: { material_cost: 1600, labor_hours: 28, hourly_rate: 90, other_cost: 300 },
     hint: "Blackened with special fort soil and inlaid with genuine silver wire"
+  },
+  {
+    id: "prod-01",
+    name: "Handloom Pochampally Double Ikat Pure Silk Saree",
+    category: "Weaving",
+    subcategory: "Pochampally Double Ikat Handloom",
+    material: "100% Pure Mulberry Silk with Natural Azo-Free Dyes",
+    region: "Telangana (Bhoodan Pochampally)",
+    est_dimensions: "5.5 meters x 1.15 meters (includes 80cm blouse piece)",
+    weight: "580 grams",
+    gi_status: "certified" as const,
+    image_url: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
+    cost: { material_cost: 2800, labor_hours: 48, hourly_rate: 85, other_cost: 300 },
+    hint: "Geometric warp and weft resist-dyeing on traditional pit loom"
+  },
+  {
+    id: "prod-02",
+    name: "Jaipur Blue Pottery Floral Decorative Ceramic Vase",
+    category: "Pottery",
+    subcategory: "Jaipur Blue Pottery",
+    material: "Ground Quartz, Fuller's Earth, Natural Resin & Cobalt Glaze",
+    region: "Rajasthan (Jaipur / Kot Jewar)",
+    est_dimensions: "10 x 5 inches",
+    weight: "750 grams",
+    gi_status: "certified" as const,
+    image_url: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80",
+    cost: { material_cost: 450, labor_hours: 14, hourly_rate: 80, other_cost: 150 },
+    hint: "Dough molded without clay wheel, low-fired with copper & cobalt oxides"
+  },
+  {
+    id: "prod-04",
+    name: "Madhubani Hand-Painted Tree of Life Canvas Scroll",
+    category: "Folk Painting",
+    subcategory: "Mithila / Madhubani Painting",
+    material: "Handmade Cotton Canvas with Organic Natural Plant & Mineral Pigments",
+    region: "Bihar (Madhubani / Jitwarpur)",
+    est_dimensions: "24 x 18 inches",
+    weight: "250 grams",
+    gi_status: "certified" as const,
+    image_url: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?auto=format&fit=crop&w=800&q=80",
+    cost: { material_cost: 650, labor_hours: 32, hourly_rate: 90, other_cost: 200 },
+    hint: "Fineline bamboo nib sketching with natural soot, turmeric & indigo dyes"
   }
 ];

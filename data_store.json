@@ -62,7 +62,8 @@
       "location": "Bengaluru",
       "state": "Karnataka",
       "address": "Indiranagar 100ft Rd, Bengaluru - 560038",
-      "created_at": "2026-08-30T12:42:40.143Z"
+      "created_at": "2026-08-30T12:42:40.143Z",
+      "hasCompletedBuyerOnboarding": false
     },
     {
       "id": "usr-buyer-02",
@@ -75,7 +76,8 @@
       "location": "New Delhi",
       "state": "Delhi",
       "address": "Vasant Vihar, New Delhi - 110057",
-      "created_at": "2026-09-04T12:42:40.143Z"
+      "created_at": "2026-09-04T12:42:40.143Z",
+      "hasCompletedBuyerOnboarding": false
     }
   ],
   "artisans": [

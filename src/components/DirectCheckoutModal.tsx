@@ -171,6 +171,33 @@ export const DirectCheckoutModal: React.FC<DirectCheckoutModalProps> = ({
               </div>
             </div>
 
+            {/* Fair Wage Transparency Breakdown */}
+            <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-xs space-y-1.5">
+              <div className="flex items-center justify-between font-bold text-emerald-900">
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>Fair Trade Price Transparency</span>
+                </span>
+                <span className="text-[10px] bg-emerald-200/80 text-emerald-950 px-2 py-0.5 rounded-full uppercase font-black">
+                  Direct to Artisan
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-stone-700 text-[11px] pt-1 border-t border-emerald-200/60">
+                <div>
+                  <span className="text-stone-500 block text-[10px]">🧵 Raw Materials:</span>
+                  <b>₹{(product.materialCost || product.cost?.material_cost || Math.round(unitPrice * 0.35)).toLocaleString('en-IN')}</b>
+                </div>
+                <div>
+                  <span className="text-stone-500 block text-[10px]">👩‍🎨 Artisan Labor:</span>
+                  <b className="text-emerald-700">₹{(product.laborValue || ((product.laborHours || product.cost?.labor_hours || 10) * (product.fairHourlyWage || product.cost?.hourly_rate || 100))).toLocaleString('en-IN')}</b>
+                </div>
+                <div>
+                  <span className="text-stone-500 block text-[10px]">⚖️ Living Wage:</span>
+                  <b>₹{(product.fairHourlyWage || product.cost?.hourly_rate || 100).toLocaleString('en-IN')}/hr</b>
+                </div>
+              </div>
+            </div>
+
             {/* Buyer Delivery Form */}
             <div className="space-y-3">
               <h5 className="text-xs font-extrabold uppercase tracking-wider text-stone-600">
@@ -368,7 +395,7 @@ export const DirectCheckoutModal: React.FC<DirectCheckoutModalProps> = ({
               onClick={onClose}
               className="w-full py-3 bg-stone-900 hover:bg-stone-800 text-white font-bold rounded-xl text-xs transition-colors"
             >
-              Close & View Marketplace
+              Close & Continue Shopping
             </button>
           </div>
         )}

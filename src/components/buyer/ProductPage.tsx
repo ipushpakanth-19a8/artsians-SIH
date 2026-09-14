@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, ShoppingCart, ShieldCheck, Sparkles, Phone, MapPin, Award, CheckCircle, Share2, Info } from 'lucide-react';
+import { ArrowLeft, Heart, ShoppingCart, ShieldCheck, Sparkles, Phone, MapPin, Award, CheckCircle, Share2, Info, Volume2 } from 'lucide-react';
 import { useLanguage } from '../../lib/LanguageContext';
-import { translations } from '../../lib/i18n';
+import { translations, speakText } from '../../lib/i18n';
 import { Product } from '../../types';
 import { formatINR } from '../../lib/billingService';
 import { ProvenanceTagModal } from '../ProvenanceTagModal';
@@ -52,7 +52,7 @@ export function ProductPage() {
           onClick={() => navigate('/buyer/browse')}
           className="mt-4 px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-bold"
         >
-          Return to Marketplace
+          Return to Crafts
         </button>
       </div>
     );

@@ -135,6 +135,52 @@ export interface ProductTranslation {
   source: 'ai' | 'manual';
 }
 
+export interface FairPricingExplanation {
+  english: string;
+  telugu: string;
+  hindi: string;
+}
+
+export interface FairPricingRequest {
+  productId?: string;
+  productName?: string;
+  craftType?: string;
+  category?: string;
+  material?: string;
+  materialCost: number;
+  laborHours: number;
+  fairHourlyWage?: number;
+  quantity?: number;
+  otherCost?: number;
+  region?: string;
+  artisanApprovedPrice?: number;
+}
+
+export interface FairPricingResponse {
+  productId?: string;
+  productName?: string;
+  materialCost: number;
+  laborHours: number;
+  fairHourlyWage: number;
+  laborValue: number;
+  baseCost: number;
+  marginOrContingency: number;
+  recommendedFairPrice: number;
+  artisanApprovedPrice?: number;
+  quantity: number;
+  unitFairPrice: number;
+  currency: string;
+  pricingFormulaVersion: string;
+  explanation: FairPricingExplanation;
+  marketBenchmarks?: {
+    min: number;
+    avg: number;
+    max: number;
+    count: number;
+    typicalMiddlemanCut: number;
+  };
+}
+
 export interface Product {
   id: string;
   artisan_id: string;
@@ -197,6 +243,17 @@ export interface Product {
   quantity?: number;
   location?: string;
   craft_origin?: string;
+  materialCost?: number;
+  laborHours?: number;
+  fairHourlyWage?: number;
+  laborValue?: number;
+  baseCost?: number;
+  marginAmount?: number;
+  recommendedFairPrice?: number;
+  artisanApprovedPrice?: number;
+  pricingFormulaVersion?: string;
+  pricingCalculatedAt?: string;
+  fairPricingBreakdown?: FairPricingResponse;
 }
 
 export interface MarketPriceBenchmark {
@@ -249,16 +306,21 @@ export interface Order {
   artisan_id: string;
   artisan_name: string;
   buyer_name: string;
-  buyer_contact: string;
+  buyer_contact?: string;
+  buyer_phone?: string;
   buyer_email?: string;
   buyer_address?: string;
-  quantity: number;
-  unit_price: number;
+  shipping_address?: string;
+  quantity?: number;
+  unit_price?: number;
   total_amount: number;
-  status: 'created' | 'paid' | 'shipped' | 'delivered';
+  status: 'created' | 'paid' | 'preparing' | 'ready_to_ship' | 'shipped' | 'delivered';
   payment_id?: string;
-  payment_method: 'razorpay_test' | 'upi_direct' | 'cash_on_delivery';
-  fair_trade_verified: boolean;
+  payment_method?: 'razorpay_test' | 'upi_direct' | 'cash_on_delivery';
+  fair_trade_verified?: boolean;
+  recommended_fair_price?: number;
+  artisan_approved_price?: number;
+  fair_price_breakdown?: FairPricingResponse;
   created_at: string;
 }
 
@@ -302,6 +364,16 @@ export interface Bill {
   finalPrice: number;
   profit: number;
   profitPercentage: number;
+  fairHourlyWage?: number;
+  laborHours?: number;
+  laborValue?: number;
+  baseCost?: number;
+  marginAmount?: number;
+  recommendedFairPrice?: number;
+  artisanApprovedPrice?: number;
+  pricingFormulaVersion?: string;
+  pricingCalculatedAt?: string;
+  fairPriceBreakdown?: FairPricingResponse;
   status: 'draft' | 'finalized';
   createdAt: string;
   finalizedAt?: string;

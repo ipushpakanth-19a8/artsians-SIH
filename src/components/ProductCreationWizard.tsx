@@ -3,15 +3,16 @@ import {
   Camera, Upload, Sparkles, CheckCircle2, ArrowRight, ArrowLeft,
   Sliders, Mic, MicOff, DollarSign, TrendingUp, Share2, Tag,
   ExternalLink, Layers, Eye, RefreshCw, AlertCircle, ShoppingBag, Globe2,
-  Wifi, WifiOff, QrCode, FileText, Trash2, Building2
+  Wifi, WifiOff, QrCode, FileText, Trash2, Building2, ShieldCheck
 } from 'lucide-react';
-import { LanguageCode, Product, Artisan, BuyerChannelMatch, PriceRecommendation } from '../types';
+import { LanguageCode, Product, Artisan, BuyerChannelMatch, PriceRecommendation, FairPricingResponse } from '../types';
 import { translations, speakText } from '../lib/i18n';
 import { DEMO_PRESET_CRAFTS } from '../data/seedData';
 import { ProvenanceTagModal } from './ProvenanceTagModal';
 import { CameraCaptureModal } from './common/CameraCaptureModal';
 import { AudioVoiceNoteRecorder } from './common/AudioVoiceNoteRecorder';
 import { GovernmentMarketplaceModal } from './common/GovernmentMarketplaceModal';
+import { FairPriceBreakdownCard } from './common/FairPriceBreakdownCard';
 
 interface ProductCreationWizardProps {
   artisan: Artisan;
@@ -84,6 +85,7 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
   const [laborHours, setLaborHours] = useState<number>(18);
   const [hourlyWage, setHourlyWage] = useState<number>(85);
   const [pricingRec, setPricingRec] = useState<PriceRecommendation | null>(null);
+  const [fairPricing, setFairPricing] = useState<FairPricingResponse | null>(null);
   const [finalPrice, setFinalPrice] = useState<number>(2400);
 
   // Market Linkage (Step 5)
@@ -178,10 +180,25 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
     setRawImage(preset.image_url);
     setEnhancedImage(preset.image_url);
     setCategory(preset.category);
+    setTitle(preset.name);
+    setSubcategory(preset.subcategory);
+    setMaterial(preset.material);
+    setEstDimensions(preset.est_dimensions);
+    setWeight(preset.weight);
+    setGiStatus(preset.gi_status);
+    if (preset.hint) setCraftTechnique(preset.hint);
     setMaterialCost(preset.cost.material_cost);
     setLaborHours(preset.cost.labor_hours);
     setHourlyWage(preset.cost.hourly_rate);
-    createDraftProduct(preset.image_url, preset.category, preset.cost);
+    createDraftProduct(preset.image_url, preset.category, preset.cost, {
+      title: preset.name,
+      subcategory: preset.subcategory,
+      material: preset.material,
+      est_dimensions: preset.est_dimensions,
+      weight: preset.weight,
+      gi_status: preset.gi_status,
+      craft_technique: preset.hint
+    });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -243,7 +260,16 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
   const createDraftProduct = async (
     imgUrl: string,
     cat: string,
-    cost: { material_cost: number; labor_hours: number; hourly_rate: number; other_cost?: number }
+    cost: { material_cost: number; labor_hours: number; hourly_rate: number; other_cost?: number },
+    extraDetails?: {
+      title?: string;
+      subcategory?: string;
+      material?: string;
+      est_dimensions?: string;
+      weight?: string;
+      gi_status?: string;
+      craft_technique?: string;
+    }
   ) => {
     setLoading(true);
     setError(null);
@@ -259,6 +285,13 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
           artisan_district: artisan.district,
           artisan_state: artisan.state,
           category_hint: cat,
+          title: extraDetails?.title || title || undefined,
+          subcategory: extraDetails?.subcategory || subcategory || undefined,
+          material: extraDetails?.material || material || undefined,
+          est_dimensions: extraDetails?.est_dimensions || estDimensions || undefined,
+          weight: extraDetails?.weight || weight || undefined,
+          gi_status: extraDetails?.gi_status || giStatus || undefined,
+          craft_technique: extraDetails?.craft_technique || craftTechnique || undefined,
           cost
         })
       });
@@ -289,26 +322,33 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
         await runEnhancement(productId);
       }
 
-      // 2. Call multimodal catalog generation
+      // 2. Call multimodal catalog generation with accurate craft hints
       const catRes = await fetch(`/api/v1/products/${productId}/generate-catalog`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           category_hint: category,
-          region: `${artisan.district}, ${artisan.state}`
+          region: `${artisan.district}, ${artisan.state}`,
+          title_hint: title || undefined,
+          subcategory_hint: subcategory || undefined,
+          material_hint: material || undefined,
+          dimensions_hint: estDimensions || undefined,
+          weight_hint: weight || undefined,
+          gi_status_hint: giStatus || undefined,
+          technique_hint: craftTechnique || undefined
         })
       });
       const catData = await catRes.json();
 
       if (catRes.ok) {
-        setTitle(catData.title || '');
-        setDescription(catData.description || '');
+        setTitle(catData.title || title || '');
+        setDescription(catData.description || description || '');
         setCategory(catData.category || category);
-        setSubcategory(catData.subcategory || '');
-        setTags(catData.tags || ['Handmade', category]);
-        setMaterial(catData.material || '');
-        setEstDimensions(catData.est_dimensions || '');
-        setWeight(catData.weight || '');
+        setSubcategory(catData.subcategory || subcategory || '');
+        setTags(catData.tags || tags || ['Handmade', category]);
+        setMaterial(catData.material || material || '');
+        setEstDimensions(catData.est_dimensions || estDimensions || '');
+        setWeight(catData.weight || weight || '');
         if (catData.craft_technique) setCraftTechnique(catData.craft_technique);
         if (catData.motifs) setMotifs(catData.motifs);
         if (catData.gi_status) setGiStatus(catData.gi_status);
@@ -325,6 +365,27 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
       setCurrentStep(3);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Extract craft and pricing hints from voice transcript
+  const extractDetailsFromVoice = async (spokenText: string) => {
+    try {
+      const extRes = await fetch('/api/v1/ai/voice-extract-details', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transcript: spokenText, language })
+      });
+      if (extRes.ok) {
+        const ext = await extRes.json();
+        if (ext.materialCost && ext.materialCost > 0) setMaterialCost(ext.materialCost);
+        if (ext.laborHours && ext.laborHours > 0) setLaborHours(ext.laborHours);
+        if (ext.hourlyWage && ext.hourlyWage > 0) setHourlyWage(ext.hourlyWage);
+        if (ext.material && !material) setMaterial(ext.material);
+        if (ext.productType && !title) setTitle(ext.productType);
+      }
+    } catch (e) {
+      console.warn('Voice extract details failed:', e);
     }
   };
 
@@ -345,6 +406,7 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
             const spokenText = event.results[0][0].transcript;
             setDescription((prev) => prev ? `${prev} ${spokenText}` : spokenText);
             setIsRecording(false);
+            extractDetailsFromVoice(spokenText);
           };
           recognition.onerror = () => setIsRecording(false);
           recognition.onend = () => setIsRecording(false);
@@ -362,12 +424,13 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
     setIsRecording(true);
     setTimeout(() => {
       const sampleDictated = language === 'hi'
-        ? 'यह उत्पाद हमारे गांव की शुद्ध मिट्टी और पारंपरिक हाथ के पहिये से तैयार किया गया है।'
+        ? 'यह उत्पाद हमारे गांव की शुद्ध मिट्टी और पारंपरिक हाथ के पहिये से तैयार किया गया है। सामग्री 600 रुपये और 12 घंटे मेहनत लगी।'
         : language === 'te'
         ? 'ఈ వస్తువు మా గ్రామంలో సాంప్రదాయ పద్ధతిలో చేతితో తయారు చేయబడింది.'
-        : 'This piece is made entirely by hand using heirloom techniques passed down through our family.';
+        : 'This piece is made entirely by hand using heirloom techniques passed down through our family. Material cost was 800 and took 15 hours.';
       setDescription((prev) => prev ? `${prev} ${sampleDictated}` : sampleDictated);
       setIsRecording(false);
+      extractDetailsFromVoice(sampleDictated);
     }, 1500);
   };
 
@@ -403,9 +466,16 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
           hourly_rate: hourlyWage
         })
       });
-      const priceData: PriceRecommendation = await priceRes.json();
+      const priceData: any = await priceRes.json();
       setPricingRec(priceData);
-      setFinalPrice(priceData.target_recommended || 2400);
+      if (priceData.fair_pricing) {
+        setFairPricing(priceData.fair_pricing);
+        if (priceData.fair_pricing.recommendedFairPrice) {
+          setFinalPrice(priceData.fair_pricing.recommendedFairPrice);
+        }
+      } else if (priceData.target_recommended) {
+        setFinalPrice(priceData.target_recommended);
+      }
 
       setCurrentStep(4);
     } catch (err) {
@@ -430,9 +500,16 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
           hourly_rate: hourlyWage
         })
       });
-      const priceData: PriceRecommendation = await priceRes.json();
+      const priceData: any = await priceRes.json();
       setPricingRec(priceData);
-      setFinalPrice(priceData.target_recommended || 2400);
+      if (priceData.fair_pricing) {
+        setFairPricing(priceData.fair_pricing);
+        if (priceData.fair_pricing.recommendedFairPrice) {
+          setFinalPrice(priceData.fair_pricing.recommendedFairPrice);
+        }
+      } else if (priceData.target_recommended) {
+        setFinalPrice(priceData.target_recommended);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -446,11 +523,21 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
     setLoading(true);
 
     try {
-      // Save final price
+      // Save final price and preserve both recommended fair price and artisan approved price
       await fetch(`/api/v1/products/${productId}/price`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ final_price: finalPrice })
+        body: JSON.stringify({
+          final_price: finalPrice,
+          materialCost: fairPricing?.breakdown.materialCost ?? materialCost,
+          laborHours: fairPricing?.breakdown.laborHours ?? laborHours,
+          fairHourlyWage: fairPricing?.breakdown.fairHourlyWage ?? hourlyWage,
+          laborValue: fairPricing?.breakdown.laborValue ?? (laborHours * hourlyWage),
+          baseCost: fairPricing?.breakdown.baseCost ?? (materialCost + laborHours * hourlyWage),
+          marginAmount: fairPricing?.breakdown.marginAmount ?? Math.round((materialCost + laborHours * hourlyWage) * 0.25),
+          recommendedFairPrice: fairPricing?.recommendedFairPrice ?? (pricingRec?.target_recommended || finalPrice),
+          artisanApprovedPrice: finalPrice,
+        })
       });
 
       // Get buyer channel matching
@@ -1458,6 +1545,17 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Fair Living Price Breakdown Card with Voice Explanation & Voice Recognition */}
+          {fairPricing && (
+            <div className="mb-6">
+              <FairPriceBreakdownCard
+                pricing={fairPricing}
+                selectedLanguage={language}
+                onApprovePrice={(approved) => setFinalPrice(approved)}
+              />
+            </div>
+          )}
 
           <div className="flex items-center justify-between pt-4 border-t border-stone-100">
             <button

@@ -12,6 +12,7 @@ import {
 } from "./server/gemini.js";
 import { enhanceCraftImage } from "./server/imageProcessor.js";
 import { LanguageCode, Enquiry } from "./src/types.js";
+import { pricingService } from "./server/services/pricing.service.js";
 
 // Token helpers for secure stateless session authentication
 function generateToken(user: User): string {
@@ -148,6 +149,7 @@ async function startServer() {
       location: location || "Bhoodan Pochampally",
       state: state || "Telangana",
       artisan_id: artisan.id,
+      hasCompletedSellerOnboarding: false,
     });
 
     const token = generateToken(newUser);
@@ -232,6 +234,7 @@ async function startServer() {
       location: location || "Bengaluru",
       state: state || "Karnataka",
       address: address || "",
+      hasCompletedBuyerOnboarding: false,
     });
 
     const token = generateToken(newUser);
@@ -317,6 +320,29 @@ async function startServer() {
       success: true,
       user: sanitizeUser(user),
       artisan,
+    });
+  });
+
+  // Update User Onboarding Status (Buyer or Seller)
+  app.patch("/api/users/onboarding", requireAuth, (req, res) => {
+    const user = (req as any).user as User;
+    const { hasCompletedBuyerOnboarding, hasCompletedSellerOnboarding } = req.body;
+
+    let updated = user;
+    if (typeof hasCompletedBuyerOnboarding === "boolean") {
+      updated = db.updateUserOnboarding(user.id, hasCompletedBuyerOnboarding) || updated;
+    }
+    if (typeof hasCompletedSellerOnboarding === "boolean") {
+      if (user.role !== "seller" && user.role !== "admin") {
+        return res.status(403).json({ error: "Only sellers can update seller onboarding" });
+      }
+      updated = db.updateSellerOnboarding(user.id, hasCompletedSellerOnboarding) || updated;
+    }
+
+    res.json({
+      success: true,
+      message: "Onboarding status updated successfully",
+      user: sanitizeUser(updated),
     });
   });
 
@@ -468,6 +494,14 @@ async function startServer() {
       artisan_district,
       artisan_state,
       category_hint,
+      title,
+      subcategory,
+      material,
+      est_dimensions,
+      weight,
+      gi_status,
+      craft_technique,
+      tags,
       cost
     } = req.body;
 
@@ -480,6 +514,14 @@ async function startServer() {
       original_image_url: image || "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
       enhanced_image_url: image || "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
       category: category_hint || "Weaving",
+      title: title || undefined,
+      subcategory: subcategory || undefined,
+      material: material || undefined,
+      est_dimensions: est_dimensions || undefined,
+      weight: weight || undefined,
+      gi_status: gi_status || undefined,
+      craft_technique: craft_technique || undefined,
+      tags: tags || undefined,
       status: "draft",
       cost: cost || {
         material_cost: 600,
@@ -617,12 +659,28 @@ async function startServer() {
     const startTime = Date.now();
     const categoryHint = req.body.category_hint || product.category || "Handicraft";
     const regionHint = req.body.region || `${product.artisan_district}, ${product.artisan_state}`;
+    const titleHint = req.body.title_hint || (product.title && !product.title.includes("Handcrafted Heritage") ? product.title : undefined);
+    const subcategoryHint = req.body.subcategory_hint || (product.subcategory && product.subcategory !== "Traditional Craft" ? product.subcategory : undefined);
+    const materialHint = req.body.material_hint || (product.material && !product.material.includes("Natural Artisanal") ? product.material : undefined);
+    const dimensionsHint = req.body.dimensions_hint || (product.est_dimensions && product.est_dimensions !== "Standard Size" ? product.est_dimensions : undefined);
+    const weightHint = req.body.weight_hint || (product.weight && product.weight !== "400 grams" ? product.weight : undefined);
+    const giStatusHint = req.body.gi_status_hint || product.gi_status;
+    const techniqueHint = req.body.technique_hint || product.craft_technique;
 
     try {
       const result = await generateProductCatalog(
         product.enhanced_image_url || product.original_image_url,
         categoryHint,
-        regionHint
+        regionHint,
+        {
+          titleHint,
+          subcategoryHint,
+          materialHint,
+          dimensionsHint,
+          weightHint,
+          giStatusHint,
+          techniqueHint
+        }
       );
 
       product.title = result.title;
@@ -768,19 +826,201 @@ async function startServer() {
     }
   });
 
-  // T10: Smart Pricing Recommendation
+  // ==========================================
+  // FAIR PRICING ENGINE ENDPOINTS (BACKEND DETERMINISTIC)
+  // ==========================================
+
+  // Dedicated Fair Pricing Calculation Endpoint
+  app.post("/api/v1/pricing/calculate", async (req, res) => {
+    try {
+      const {
+        productId,
+        productName,
+        category,
+        craftType,
+        material,
+        materialCost,
+        laborHours,
+        fairHourlyWage,
+        quantity,
+        otherCost,
+        region,
+        artisanApprovedPrice
+      } = req.body;
+
+      const numMaterialCost = materialCost !== undefined ? Number(materialCost) : 0;
+      const numLaborHours = laborHours !== undefined ? Number(laborHours) : 10;
+      const numFairHourlyWage = fairHourlyWage !== undefined ? Number(fairHourlyWage) : 100;
+      const numQuantity = quantity !== undefined ? Number(quantity) : 1;
+      const numArtisanApprovedPrice = artisanApprovedPrice !== undefined ? Number(artisanApprovedPrice) : undefined;
+
+      const validation = pricingService.validatePricingInputs({
+        materialCost: numMaterialCost,
+        laborHours: numLaborHours,
+        fairHourlyWage: numFairHourlyWage,
+        quantity: numQuantity,
+        artisanApprovedPrice: numArtisanApprovedPrice
+      });
+
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.errors[0], errors: validation.errors });
+      }
+
+      const pricing = await pricingService.calculateFairPrice({
+        productId,
+        productName,
+        category: category || craftType || "Handicraft",
+        craftType,
+        material,
+        materialCost: numMaterialCost,
+        laborHours: numLaborHours,
+        fairHourlyWage: numFairHourlyWage,
+        quantity: numQuantity,
+        otherCost: Number(otherCost) || 0,
+        region,
+        artisanApprovedPrice: numArtisanApprovedPrice
+      });
+
+      res.json(pricing);
+    } catch (err: any) {
+      console.error("Fair pricing calculation endpoint error:", err);
+      res.status(400).json({ error: err.message || "Failed to calculate fair price" });
+    }
+  });
+
+  // Alias for backward compatibility / AI suite
+  app.post("/api/v1/ai/pricing-recommendation", async (req, res) => {
+    try {
+      const pricing = await pricingService.calculateFairPrice(req.body);
+      res.json(pricing);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || "Failed to calculate fair price" });
+    }
+  });
+
+  // Voice Details Extraction (connects artisan speech to pricing fields)
+  app.post("/api/v1/ai/voice-extract-details", async (req, res) => {
+    const { transcript } = req.body;
+    if (!transcript || typeof transcript !== "string") {
+      return res.status(400).json({ error: "Voice transcript is required" });
+    }
+
+    const t = transcript.toLowerCase();
+
+    // 1. Material cost extraction: e.g. "material cost is 800", "spent 800 rupees on material", etc.
+    let materialCost = 0;
+    const matMatch = t.match(/(?:material|materials|raw material|spent|cost|लागत|सामग्री|ఖర్చు)[\s\w:]*?(\d+)/i) ||
+                     t.match(/(\d+)\s*(?:rs\.?|rupees|inr|₹|रुपये|రూపాయలు)/i);
+    if (matMatch) {
+      materialCost = parseInt(matMatch[1], 10);
+    }
+
+    // 2. Labor hours extraction: e.g. "took me 15 hours", "15 hours of work"
+    let laborHours = 0;
+    const hoursMatch = t.match(/(\d+)\s*(?:hours|hrs|घंटे|గంటలు)/i) ||
+                       t.match(/(?:took|worked)\s*(?:me\s*)?(\d+)/i);
+    if (hoursMatch) {
+      laborHours = parseInt(hoursMatch[1], 10);
+    }
+
+    // 3. Craft / Product type extraction
+    let productType = "Handicraft";
+    const typeKeywords: Record<string, string> = {
+      saree: "Saree",
+      sari: "Saree",
+      साड़ी: "Saree",
+      చీర: "Saree",
+      pot: "Terracotta Pot",
+      pottery: "Pottery",
+      कुल्हड़: "Kulhar Cup",
+      मटका: "Clay Pot",
+      vase: "Vase",
+      toy: "Wooden Toy",
+      खिलौना: "Wooden Toy",
+      బొమ్మ: "Wooden Toy",
+      painting: "Folk Painting",
+      पेंटिंग: "Folk Painting",
+      చిత్రం: "Folk Painting",
+      shawl: "Handwoven Shawl",
+      शॉल: "Handwoven Shawl",
+      scarf: "Silk Scarf",
+      sculpture: "Bell Metal Sculpture",
+      मूर्ति: "Metal Sculpture"
+    };
+    for (const [kw, name] of Object.entries(typeKeywords)) {
+      if (t.includes(kw)) {
+        productType = name;
+        break;
+      }
+    }
+
+    // 4. Material extraction
+    let material = "Artisanal Material";
+    const materialKeywords: Record<string, string> = {
+      cotton: "Pure Cotton",
+      सूती: "Pure Cotton",
+      कॉटन: "Pure Cotton",
+      పత్తి: "Pure Cotton",
+      silk: "Mulberry Silk",
+      रेशम: "Pure Silk",
+      पट्टू: "Pure Silk",
+      పట్టు: "Pure Silk",
+      terracotta: "Terracotta Clay",
+      clay: "Natural Clay",
+      मिट्टी: "Natural Clay",
+      మట్టి: "Natural Clay",
+      wood: "Ivory Wood",
+      लकड़ी: "Natural Wood",
+      చెక్క: "Natural Wood",
+      brass: "Cast Brass",
+      पीतल: "Cast Brass",
+      पित्तడి: "Cast Brass",
+      "bell metal": "Bell Metal Bronze",
+      धोकरा: "Lost-Wax Bell Metal"
+    };
+    for (const [kw, name] of Object.entries(materialKeywords)) {
+      if (t.includes(kw)) {
+        material = name;
+        break;
+      }
+    }
+
+    // 5. Quantity extraction: default 1
+    let quantity = 1;
+    const qtyMatch = t.match(/(\d+)\s*(?:pieces|units|items|नग|పీసులు)/i);
+    if (qtyMatch) {
+      quantity = parseInt(qtyMatch[1], 10);
+    }
+
+    res.json({
+      productType,
+      material,
+      materialCost,
+      laborHours,
+      fairHourlyWage: 100,
+      quantity,
+      extractedFrom: transcript
+    });
+  });
+
+  // T10: Smart Pricing Recommendation (Synchronized with Deterministic Fair Pricing Engine)
   app.post("/api/v1/products/:id/price-recommendation", async (req, res) => {
     const product = db.getProductById(req.params.id);
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    const { material_cost, labor_hours, hourly_rate, other_cost } = req.body;
+    const { material_cost, labor_hours, hourly_rate, other_cost, materialCost, laborHours, fairHourlyWage } = req.body;
+    const matCost = Number(materialCost !== undefined ? materialCost : material_cost !== undefined ? material_cost : product.cost.material_cost);
+    const labHours = Number(laborHours !== undefined ? laborHours : labor_hours !== undefined ? labor_hours : product.cost.labor_hours);
+    const wage = Number(fairHourlyWage !== undefined ? fairHourlyWage : hourly_rate !== undefined ? hourly_rate : product.cost.hourly_rate);
+    const othCost = Number(other_cost !== undefined ? other_cost : product.cost.other_cost || 0);
+
     const cost = {
-      material_cost: Number(material_cost) || product.cost.material_cost,
-      labor_hours: Number(labor_hours) || product.cost.labor_hours,
-      hourly_rate: Number(hourly_rate) || product.cost.hourly_rate,
-      other_cost: Number(other_cost) || product.cost.other_cost
+      material_cost: matCost,
+      labor_hours: labHours,
+      hourly_rate: wage,
+      other_cost: othCost
     };
     product.cost = cost;
 
@@ -790,37 +1030,92 @@ async function startServer() {
     );
 
     const startTime = Date.now();
-    const pricing = await generatePriceRecommendation(
+    // 1. Calculate deterministic fair pricing
+    const fairPricing = await pricingService.calculateFairPrice({
+      productId: product.id,
+      productName: product.title,
+      category: product.category,
+      material: product.material,
+      materialCost: matCost,
+      laborHours: labHours,
+      fairHourlyWage: wage,
+      otherCost: othCost
+    });
+
+    // 2. Multimodal Vision assessment (optional visual rating without changing base formula)
+    const visionPricing = await generatePriceRecommendation(
       cost,
       product.category,
       relevantBenchmarks,
       product.enhanced_image_url || product.original_image_url
     );
 
-    product.pricing = pricing;
-    product.b2b_price = pricing.b2b_recommended;
-    if (!product.final_price || product.final_price === 0) {
-      product.final_price = pricing.target_recommended;
+    product.pricing = {
+      ...visionPricing,
+      target_recommended: fairPricing.recommendedFairPrice,
+      fair_cost: fairPricing.baseCost,
+      fair_wage_floor: fairPricing.baseCost + fairPricing.marginOrContingency
+    };
+    product.materialCost = fairPricing.materialCost;
+    product.laborHours = fairPricing.laborHours;
+    product.fairHourlyWage = fairPricing.fairHourlyWage;
+    product.laborValue = fairPricing.laborValue;
+    product.baseCost = fairPricing.baseCost;
+    product.marginAmount = fairPricing.marginOrContingency;
+    product.recommendedFairPrice = fairPricing.recommendedFairPrice;
+    if (!product.artisanApprovedPrice) {
+      product.artisanApprovedPrice = fairPricing.recommendedFairPrice;
     }
+    product.pricingFormulaVersion = fairPricing.pricingFormulaVersion;
+    product.pricingCalculatedAt = new Date().toISOString();
+    product.fairPricingBreakdown = fairPricing;
+
+    product.final_price = product.artisanApprovedPrice || fairPricing.recommendedFairPrice;
+    product.b2b_price = Math.round(fairPricing.recommendedFairPrice * 0.85);
 
     db.updateProduct(product.id, {
       cost: product.cost,
       pricing: product.pricing,
       final_price: product.final_price,
-      b2b_price: product.b2b_price
+      b2b_price: product.b2b_price,
+      materialCost: product.materialCost,
+      laborHours: product.laborHours,
+      fairHourlyWage: product.fairHourlyWage,
+      laborValue: product.laborValue,
+      baseCost: product.baseCost,
+      marginAmount: product.marginAmount,
+      recommendedFairPrice: product.recommendedFairPrice,
+      artisanApprovedPrice: product.artisanApprovedPrice,
+      pricingFormulaVersion: product.pricingFormulaVersion,
+      pricingCalculatedAt: product.pricingCalculatedAt,
+      fairPricingBreakdown: product.fairPricingBreakdown
     });
 
     db.logAudit({
       product_id: product.id,
       feature: "pricing",
-      model_used: pricing.modelUsed,
+      model_used: "deterministic-fair-pricing-v1",
       latency_ms: Date.now() - startTime,
-      status: pricing.status,
-      raw_input_summary: `Cost: ₹${cost.material_cost} + ${cost.labor_hours}h @ ₹${cost.hourly_rate}/hr | Tier: ${pricing.quality_tier || "Fine Mastercraft"} (Complexity: ${pricing.craft_complexity_score || 7}/10)`,
-      raw_response_summary: `Target: ₹${pricing.target_recommended} (B2B: ₹${pricing.b2b_recommended} | Floor: ₹${pricing.fair_wage_floor}) | Active Comps: ${pricing.market_comparables?.length || 0} listings`
+      status: "success",
+      raw_input_summary: `Cost: ₹${matCost} + ${labHours}h @ ₹${wage}/hr | Tier: ${visionPricing.quality_tier || "Fine Mastercraft"}`,
+      raw_response_summary: `Recommended: ₹${fairPricing.recommendedFairPrice} (Base: ₹${fairPricing.baseCost} + Margin: ₹${fairPricing.marginOrContingency})`
     });
 
-    res.json(pricing);
+    // Return unified breakdown satisfying both contracts
+    res.json({
+      ...fairPricing,
+      ...product.pricing,
+      productId: product.id,
+      materialCost: fairPricing.materialCost,
+      laborHours: fairPricing.laborHours,
+      fairHourlyWage: fairPricing.fairHourlyWage,
+      laborValue: fairPricing.laborValue,
+      baseCost: fairPricing.baseCost,
+      marginOrContingency: fairPricing.marginOrContingency,
+      recommendedFairPrice: fairPricing.recommendedFairPrice,
+      currency: "INR",
+      explanation: fairPricing.explanation
+    });
   });
 
   // ==========================================
@@ -964,15 +1259,63 @@ async function startServer() {
     });
   });
 
-  // Patch artisan accepted/overridden final price
+  // Patch artisan accepted/overridden final price (Preserves Recommended Fair Price)
   app.patch("/api/v1/products/:id/price", (req, res) => {
-    const { final_price } = req.body;
+    const {
+      final_price,
+      artisan_approved_price,
+      artisanApprovedPrice,
+      recommendedFairPrice,
+      recommended_fair_price,
+      materialCost,
+      laborHours,
+      fairHourlyWage,
+      laborValue,
+      baseCost,
+      marginAmount
+    } = req.body;
     const product = db.getProductById(req.params.id);
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
-    product.final_price = Number(final_price);
-    res.json({ success: true, product });
+
+    const rawVal = artisan_approved_price !== undefined ? artisan_approved_price : artisanApprovedPrice !== undefined ? artisanApprovedPrice : final_price;
+    const approvedPrice = Number(rawVal);
+    if (isNaN(approvedPrice) || approvedPrice <= 0) {
+      return res.status(400).json({ error: "Artisan price must be a valid positive number" });
+    }
+
+    product.artisanApprovedPrice = Math.round(approvedPrice);
+    product.final_price = Math.round(approvedPrice);
+    if (recommendedFairPrice !== undefined || recommended_fair_price !== undefined) {
+      product.recommendedFairPrice = Number(recommendedFairPrice ?? recommended_fair_price);
+    }
+    if (materialCost !== undefined) product.materialCost = Number(materialCost);
+    if (laborHours !== undefined) product.laborHours = Number(laborHours);
+    if (fairHourlyWage !== undefined) product.fairHourlyWage = Number(fairHourlyWage);
+    if (laborValue !== undefined) product.laborValue = Number(laborValue);
+    if (baseCost !== undefined) product.baseCost = Number(baseCost);
+    if (marginAmount !== undefined) product.marginAmount = Number(marginAmount);
+
+    db.updateProduct(product.id, {
+      artisanApprovedPrice: product.artisanApprovedPrice,
+      final_price: product.final_price,
+      recommendedFairPrice: product.recommendedFairPrice,
+      materialCost: product.materialCost,
+      laborHours: product.laborHours,
+      fairHourlyWage: product.fairHourlyWage,
+      laborValue: product.laborValue,
+      baseCost: product.baseCost,
+      marginAmount: product.marginAmount
+    });
+
+    res.json({
+      success: true,
+      message: "Artisan price approved successfully",
+      recommendedFairPrice: product.recommendedFairPrice || product.pricing?.target_recommended,
+      artisanApprovedPrice: product.artisanApprovedPrice,
+      product
+    });
   });
 
   // T12: Market-Linkage matching engine
@@ -1088,17 +1431,30 @@ async function startServer() {
     res.json(db.getOrdersByArtisan(req.params.id));
   });
 
-  // Create Checkout Session / Lock Amount Server-Side
-  app.post("/api/v1/orders/checkout", (req, res) => {
-    const { product_id, quantity, buyer_name, buyer_contact, buyer_email, buyer_address, payment_method } = req.body;
-    const product = db.getProductById(product_id);
+  // Create Checkout Session / Lock Amount Server-Side with Fair Pricing Verification
+  app.post("/api/v1/orders/checkout", async (req, res) => {
+    const { product_id, productId, quantity, buyer_name, buyerName, buyer_contact, buyerContact, buyer_email, buyerEmail, buyer_address, buyerAddress, payment_method, paymentMethod } = req.body;
+    const pid = product_id || productId;
+    const product = db.getProductById(pid);
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
 
     const qty = Math.max(1, Number(quantity) || 1);
-    // Enforce server-locked price — preventing any client-side tampering
-    const unitPrice = product.final_price || product.pricing?.target_recommended || 1500;
+
+    // 1. Fetch stored pricing inputs and recalculate / verify fair price on backend
+    const mat = product.materialCost ?? product.cost?.material_cost ?? 800;
+    const hours = product.laborHours ?? product.cost?.labor_hours ?? 10;
+    const wage = product.fairHourlyWage ?? product.cost?.hourly_rate ?? 100;
+    const other = product.cost?.other_cost ?? 0;
+    const laborVal = hours * wage;
+    const baseCost = mat + laborVal + other;
+    const margin = Math.round(baseCost * 0.25);
+    const calculatedFairPrice = baseCost + margin;
+
+    const recommendedFairPrice = product.recommendedFairPrice || calculatedFairPrice;
+    // Enforce verified artisan approved selling price (or recommended fair price if unadjusted)
+    const unitPrice = product.artisanApprovedPrice || product.final_price || recommendedFairPrice;
     const totalAmount = unitPrice * qty;
 
     const razorpayOrderId = `order_rp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
@@ -1108,12 +1464,27 @@ async function startServer() {
       razorpay_order_id: razorpayOrderId,
       key_id: "rzp_test_kalatech_artisan",
       amount: totalAmount,
+      total_amount: totalAmount,
+      unit_price: unitPrice,
       currency: "INR",
       product: {
         id: product.id,
         title: product.title,
         unit_price: unitPrice,
-        quantity: qty
+        recommended_fair_price: recommendedFairPrice,
+        artisan_approved_price: unitPrice,
+        quantity: qty,
+        fair_price_breakdown: product.fairPricingBreakdown || {
+          productId: product.id,
+          materialCost: mat,
+          laborHours: hours,
+          fairHourlyWage: wage,
+          laborValue: laborVal,
+          baseCost,
+          marginOrContingency: margin,
+          recommendedFairPrice,
+          currency: "INR"
+        }
       },
       artisan: {
         id: product.artisan_id,
@@ -1123,10 +1494,11 @@ async function startServer() {
     });
   });
 
-  // Verify & Finalize Order
+  // Verify & Finalize Order (Server-Enforced Fair Pricing)
   app.post("/api/v1/orders/verify", (req, res) => {
     const {
       product_id,
+      productId,
       quantity,
       buyer_name,
       buyer_contact,
@@ -1136,13 +1508,26 @@ async function startServer() {
       razorpay_payment_id
     } = req.body;
 
-    const product = db.getProductById(product_id);
+    const pid = product_id || productId;
+    const product = db.getProductById(pid);
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
 
     const qty = Math.max(1, Number(quantity) || 1);
-    const unitPrice = product.final_price || product.pricing?.target_recommended || 1500;
+
+    // Recalculate and verify server price
+    const mat = product.materialCost ?? product.cost?.material_cost ?? 800;
+    const hours = product.laborHours ?? product.cost?.labor_hours ?? 10;
+    const wage = product.fairHourlyWage ?? product.cost?.hourly_rate ?? 100;
+    const other = product.cost?.other_cost ?? 0;
+    const laborVal = hours * wage;
+    const baseCost = mat + laborVal + other;
+    const margin = Math.round(baseCost * 0.25);
+    const calculatedFairPrice = baseCost + margin;
+
+    const recommendedFairPrice = product.recommendedFairPrice || calculatedFairPrice;
+    const unitPrice = product.artisanApprovedPrice || product.final_price || recommendedFairPrice;
     const totalAmount = unitPrice * qty;
     const paymentId = razorpay_payment_id || `pay_test_${Date.now()}`;
 
@@ -1158,6 +1543,31 @@ async function startServer() {
       quantity: qty,
       unit_price: unitPrice,
       total_amount: totalAmount,
+      recommended_fair_price: recommendedFairPrice,
+      artisan_approved_price: unitPrice,
+      fair_price_breakdown: product.fairPricingBreakdown || {
+        productId: product.id,
+        materialCost: mat,
+        laborHours: hours,
+        fairHourlyWage: wage,
+        laborValue: laborVal,
+        baseCost,
+        marginOrContingency: margin,
+        recommendedFairPrice,
+        artisanApprovedPrice: unitPrice,
+        quantity: qty,
+        unitFairPrice: recommendedFairPrice,
+        currency: "INR",
+        pricingFormulaVersion: "v1.0-living-wage",
+        explanation: pricingService.generateExplanations({
+          recommendedFairPrice,
+          materialCost: mat,
+          laborHours: hours,
+          fairHourlyWage: wage,
+          laborValue: laborVal,
+          marginOrContingency: margin
+        })
+      },
       status: "paid",
       payment_id: paymentId,
       payment_method: (payment_method as any) || "razorpay_test",
@@ -1170,7 +1580,7 @@ async function startServer() {
       model_used: "fair-trade-payment-gateway",
       latency_ms: 180,
       status: "success",
-      raw_input_summary: `Direct Order: ${qty}x "${product.title}" @ ₹${unitPrice}`,
+      raw_input_summary: `Direct Order: ${qty}x "${product.title}" @ ₹${unitPrice} (Fair Rec: ₹${recommendedFairPrice})`,
       raw_response_summary: `Processed ₹${totalAmount} 100% to artisan ${product.artisan_name} with ₹0 platform commission`
     });
 
@@ -1216,7 +1626,7 @@ async function startServer() {
     res.json(products);
   });
 
-  app.post("/api/products", (req, res) => {
+  app.post(["/api/products", "/api/v1/products"], (req, res) => {
     const {
       title,
       description,
@@ -1225,12 +1635,21 @@ async function startServer() {
       dimensions,
       weight,
       price,
+      final_price,
       image,
       artisan_id,
       artisan_name,
       artisan_district,
       artisan_state,
       cost,
+      materialCost,
+      laborHours,
+      fairHourlyWage,
+      laborValue,
+      baseCost,
+      marginAmount,
+      recommendedFairPrice,
+      artisanApprovedPrice
     } = req.body;
 
     const newProd = db.createProduct({
@@ -1243,7 +1662,15 @@ async function startServer() {
       enhanced_image_url: image || "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
       category: category || "Handloom",
       status: "published",
-      cost: cost || { material_cost: 800, labor_hours: 10, hourly_rate: 100, other_cost: 50 },
+      cost: cost || { material_cost: materialCost || 800, labor_hours: laborHours || 10, hourly_rate: fairHourlyWage || 100, other_cost: 50 },
+      materialCost: materialCost || cost?.material_cost,
+      laborHours: laborHours || cost?.labor_hours,
+      fairHourlyWage: fairHourlyWage || cost?.hourly_rate,
+      laborValue: laborValue,
+      baseCost: baseCost,
+      marginAmount: marginAmount,
+      recommendedFairPrice: recommendedFairPrice,
+      artisanApprovedPrice: artisanApprovedPrice || final_price || price
     });
 
     if (title) newProd.title = title;
@@ -1251,9 +1678,9 @@ async function startServer() {
     if (material) newProd.material = material;
     if (dimensions) newProd.est_dimensions = dimensions;
     if (weight) newProd.weight = weight;
-    if (price) newProd.final_price = Number(price);
+    if (price || final_price) newProd.final_price = Number(price || final_price);
 
-    res.json(newProd);
+    res.json({ success: true, product: newProd, ...newProd });
   });
 
   app.delete("/api/products/:id", (req, res) => {
@@ -1272,6 +1699,46 @@ async function startServer() {
 
   app.post("/api/orders", (req, res) => {
     const orderData = req.body;
+    const pid = orderData.product_id || orderData.productId;
+    const product = pid ? db.getProductById(pid) : undefined;
+    if (product) {
+      const rec = product.recommendedFairPrice || product.pricing?.target_recommended || 1500;
+      const approved = product.artisanApprovedPrice || product.final_price || rec;
+      orderData.unit_price = approved;
+      orderData.total_amount = approved * (Number(orderData.quantity) || 1);
+      orderData.recommended_fair_price = rec;
+      orderData.artisan_approved_price = approved;
+      const orderQty = Number(orderData.quantity) || 1;
+      const orderMat = product.materialCost ?? 800;
+      const orderHours = product.laborHours ?? 10;
+      const orderWage = product.fairHourlyWage ?? 100;
+      const orderLaborVal = orderHours * orderWage;
+      const orderBaseCost = orderMat + orderLaborVal;
+      const orderMargin = Math.round(orderBaseCost * 0.25);
+      orderData.fair_price_breakdown = product.fairPricingBreakdown || {
+        productId: product.id,
+        materialCost: orderMat,
+        laborHours: orderHours,
+        fairHourlyWage: orderWage,
+        laborValue: orderLaborVal,
+        baseCost: orderBaseCost,
+        marginOrContingency: orderMargin,
+        recommendedFairPrice: rec,
+        artisanApprovedPrice: approved,
+        quantity: orderQty,
+        unitFairPrice: rec,
+        currency: "INR",
+        pricingFormulaVersion: "v1.0-living-wage",
+        explanation: pricingService.generateExplanations({
+          recommendedFairPrice: rec,
+          materialCost: orderMat,
+          laborHours: orderHours,
+          fairHourlyWage: orderWage,
+          laborValue: orderLaborVal,
+          marginOrContingency: orderMargin
+        })
+      };
+    }
     const order = db.createOrder(orderData);
     res.json(order);
   });

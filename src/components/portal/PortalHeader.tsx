@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Volume2, Sparkles } from 'lucide-react';
+import { Volume2, Sparkles, LogIn, ChevronDown, User, Store } from 'lucide-react';
 import { LanguageCode } from '../../types';
 import { PORTAL_TRANSLATIONS } from '../../lib/portalI18n';
 import { SihStoryDemoModal } from '../common/SihStoryDemoModal';
@@ -10,6 +10,8 @@ interface PortalHeaderProps {
   onSelectLanguage: (lang: LanguageCode) => void;
   onTriggerVoice?: () => void;
   isSpeaking?: boolean;
+  onOpenBuyerSignIn?: () => void;
+  onOpenSellerSignIn?: () => void;
 }
 
 export const PortalHeader: React.FC<PortalHeaderProps> = ({
@@ -17,9 +19,12 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
   onSelectLanguage,
   onTriggerVoice,
   isSpeaking = false,
+  onOpenBuyerSignIn,
+  onOpenSellerSignIn,
 }) => {
   const t = PORTAL_TRANSLATIONS[language];
   const [showStoryModal, setShowStoryModal] = useState(false);
+  const [showSignInDropdown, setShowSignInDropdown] = useState(false);
   const { openWelcomeModal } = useTutorial();
 
   return (
@@ -51,6 +56,63 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
 
           {/* Actions & Language Selector */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Sign In Dropdown with Voice Assist */}
+            {(onOpenBuyerSignIn || onOpenSellerSignIn) && (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowSignInDropdown(!showSignInDropdown)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-[#eadfd4] hover:border-[#9c4124] text-[#9c4124] text-xs font-bold transition-all shadow-xs cursor-pointer"
+                  title="Sign In with Voice Assistance"
+                >
+                  <LogIn className="w-3.5 h-3.5 text-[#9c4124]" />
+                  <span>{language === 'hi' ? 'लॉगिन' : language === 'te' ? 'లాగిన్' : 'Sign In'}</span>
+                  <ChevronDown className="w-3 h-3 text-stone-400" />
+                </button>
+
+                {showSignInDropdown && (
+                  <div className="absolute right-0 top-full mt-1.5 w-52 bg-white rounded-2xl shadow-xl border border-stone-200 py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    {onOpenBuyerSignIn && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowSignInDropdown(false);
+                          onOpenBuyerSignIn();
+                        }}
+                        className="w-full px-3.5 py-2.5 text-left text-xs font-bold text-stone-800 hover:bg-[#fdf2e9] hover:text-[#9c4124] flex items-center gap-2 transition-colors cursor-pointer"
+                      >
+                        <div className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
+                          <User className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <span className="block font-extrabold">{language === 'hi' ? 'खरीदार लॉगिन' : 'Buyer Sign In'}</span>
+                          <span className="block text-[10px] text-stone-500 font-medium">Voice Assist Enabled</span>
+                        </div>
+                      </button>
+                    )}
+                    {onOpenSellerSignIn && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowSignInDropdown(false);
+                          onOpenSellerSignIn();
+                        }}
+                        className="w-full px-3.5 py-2.5 text-left text-xs font-bold text-stone-800 hover:bg-[#fdf2e9] hover:text-[#9c4124] flex items-center gap-2 transition-colors cursor-pointer border-t border-stone-100"
+                      >
+                        <div className="w-6 h-6 rounded-lg bg-amber-100 text-[#9c4124] flex items-center justify-center text-xs">
+                          <Store className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <span className="block font-extrabold">{language === 'hi' ? 'कारीगर लॉगिन' : 'Artisan Sign In'}</span>
+                          <span className="block text-[10px] text-stone-500 font-medium">Voice Assist Enabled</span>
+                        </div>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Artisan Journey Game Tutorial Trigger */}
             <button
               onClick={() => openWelcomeModal()}
@@ -71,7 +133,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
               title="View 1-minute SIH connected journey demonstration"
             >
               <Sparkles className="w-3.5 h-3.5 text-[#c85a32]" />
-              <span>1-Min Story Demo</span>
+              <span>1-Min Story</span>
             </button>
 
             {onTriggerVoice && (

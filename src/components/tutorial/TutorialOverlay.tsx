@@ -90,6 +90,21 @@ export const TutorialOverlay: React.FC = () => {
     };
   }, [isActive, isPaused, currentMission, completeCurrentMission]);
 
+  // Automatically speak Saathi instructions whenever level or active mission activates (Hook must be before any early return)
+  useEffect(() => {
+    if (isActive && !isPaused && currentMission) {
+      setIsSpeaking(true);
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+      }
+      listenCurrentMission();
+      const timer = setTimeout(() => setIsSpeaking(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isActive, isPaused, currentLevel, currentMission, listenCurrentMission]);
+
   if (!isActive || isPaused) return null;
 
   const missionTitle =

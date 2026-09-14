@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, PlusCircle, BarChart3, FileText, ShoppingCart,
-  TrendingUp, Headphones, LogOut, Menu, X, Globe, WifiOff, Wifi, Sparkles, Home, User
+  TrendingUp, Headphones, LogOut, Menu, X, Globe, WifiOff, Wifi, Sparkles, Home, User, Volume2
 } from 'lucide-react';
 import { useLanguage } from '../../lib/LanguageContext';
 import { useAuth } from '../../lib/AuthContext';
@@ -10,16 +10,45 @@ import { translations } from '../../lib/i18n';
 import { LanguageCode } from '../../types';
 import { useTutorial } from '../tutorial/TutorialContext';
 import { triggerHaptic, setupHardwareBackButton } from '../../lib/nativeBridge';
+import { SellerOnboarding } from './onboarding/SellerOnboarding';
+import { SellerAuthModal } from '../auth/SellerAuthModal';
 
 export function SellerLayout() {
   const { language, setLanguage } = useLanguage();
-  const { logout } = useAuth();
+  const { user, logout, login } = useAuth();
   const { startJourney, journeyPoints, currentLevel } = useTutorial();
   const navigate = useNavigate();
   const location = useLocation();
   const t = translations[language];
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [manualTourOpen, setManualTourOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  // Check if seller has not completed onboarding or needs automatic tutorial on entry
+  const isFirstTimeSeller = user && user.role === 'seller' && user.hasCompletedSellerOnboarding !== true;
+  const showSellerTour = manualTourOpen || isFirstTimeSeller;
+
+  // Auto-trigger tutorial on login or entry from buyer portal
+  useEffect(() => {
+    const shouldOpen =
+      sessionStorage.getItem('open_seller_tutorial') === 'true' ||
+      !sessionStorage.getItem('kalatech_seen_seller_tour') ||
+      isFirstTimeSeller;
+
+    if (shouldOpen) {
+      setManualTourOpen(true);
+      sessionStorage.setItem('kalatech_seen_seller_tour', 'true');
+      sessionStorage.removeItem('open_seller_tutorial');
+    }
+  }, [user, isFirstTimeSeller]);
+
+  // Ensure seller session if user is not set or has different role
+  useEffect(() => {
+    if (!user || user.role !== 'seller') {
+      login('seller');
+    }
+  }, [user, login]);
 
   useEffect(() => {
     const cleanup = setupHardwareBackButton(() => {
@@ -158,6 +187,15 @@ export function SellerLayout() {
           </div>
 
           <button
+            onClick={() => setAuthModalOpen(true)}
+            className="flex items-center gap-2 w-full px-3 py-2 mb-1 rounded-xl bg-amber-50 hover:bg-amber-100 text-[#9c4124] border border-amber-200 text-xs font-bold transition-colors cursor-pointer"
+            title="Sign In / Switch Account with Voice Assist"
+          >
+            <User className="w-4 h-4 text-[#9c4124]" />
+            <span>{language === 'hi' ? 'खाता बदलें (लॉगिन)' : 'Switch / Sign In'}</span>
+          </button>
+
+          <button
             onClick={handleLogout}
             className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-stone-600 hover:bg-red-50 hover:text-red-700 text-xs font-bold transition-colors cursor-pointer"
           >
@@ -234,6 +272,16 @@ export function SellerLayout() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Step-by-Step App Tour Button on Mobile */}
+            <button
+              onClick={() => setManualTourOpen(true)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 text-white text-[11px] font-black cursor-pointer shadow-xs"
+              title="Voice step-by-step tutorial on how to use the app"
+            >
+              <Volume2 className="w-3.5 h-3.5 animate-pulse" />
+              <span>{language === 'hi' ? 'गाइड' : 'Tour'}</span>
+            </button>
+
             {/* Artisan Journey Pill on Mobile */}
             <button
               onClick={startJourney}
@@ -258,6 +306,58 @@ export function SellerLayout() {
                 </button>
               ))}
             </div>
+          </div>
+        </header>
+
+        {/* Desktop Top Navigation Header */}
+        <header className="hidden lg:flex sticky top-0 z-20 bg-[#faf7f2]/95 backdrop-blur-md border-b border-[#eadfd4] px-8 py-3.5 items-center justify-between shadow-2xs">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-black uppercase tracking-wider text-stone-500">
+              Artisan Studio
+            </span>
+            <span className="text-stone-300">•</span>
+            <span className="text-xs font-bold text-[#9c4124]">
+              {language === 'hi' ? 'दुकान प्रबंधन व बिक्री' : language === 'te' ? 'దుకాణ నిర్వహణ' : 'Shop Management & Sales'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Dedicated Step-by-Step Voice Assistance Tutorial Button */}
+            <button
+              onClick={() => setManualTourOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-xs font-black transition-all shadow-xs cursor-pointer active:scale-95"
+              title="Voice step-by-step tutorial on how to use the app"
+            >
+              <Volume2 className="w-4 h-4 animate-bounce" />
+              <span>{language === 'hi' ? '🔊 ऐप कैसे चलाएं (आवाज़ गाइड)' : language === 'te' ? '🔊 యాప్ ఎలా ఉపయోగించాలి (వాయిస్ గైడ్)' : '🔊 How to Use App (Voice Tour)'}</span>
+            </button>
+
+            {/* Artisan Journey Voice Tutorial Launch Button */}
+            <button
+              onClick={startJourney}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-100/80 hover:bg-amber-200/80 border border-amber-300 text-amber-950 text-xs font-black transition-all shadow-xs cursor-pointer"
+              title="Launch Artisan Saathi Voice Guided Journey"
+            >
+              <span className="text-sm animate-bounce">🌱</span>
+              <span>{language === 'hi' ? 'शिल्प यात्रा' : language === 'te' ? 'శిల్ప యాత్ర' : 'Artisan Journey'}</span>
+              <span className="px-1.5 py-0.5 rounded bg-amber-300/80 text-amber-950 text-[10px] font-mono font-black">
+                L{currentLevel}/9
+              </span>
+            </button>
+
+            {/* Switch to Buyer Marketplace with Step-by-Step Voice Guide */}
+            <button
+              onClick={() => {
+                login('buyer');
+                sessionStorage.setItem('open_buyer_tutorial', 'true');
+                sessionStorage.removeItem('kalatech_seen_buyer_tour');
+                navigate('/buyer');
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-50 hover:text-emerald-800 text-stone-700 text-xs font-bold transition-colors border border-[#eadfd4] cursor-pointer shadow-2xs"
+            >
+              <Volume2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>🛍️ Buyer Marketplace →</span>
+            </button>
           </div>
         </header>
 
@@ -347,6 +447,20 @@ export function SellerLayout() {
           </NavLink>
         </nav>
       </div>
+
+      {/* Automatic Voice-Guided First-Time Seller Onboarding Tutorial */}
+      {showSellerTour && (
+        <SellerOnboarding onComplete={() => setManualTourOpen(false)} />
+      )}
+
+      {/* Seller Auth Modal with Voice Assist */}
+      {authModalOpen && (
+        <SellerAuthModal
+          isOpen={authModalOpen}
+          onClose={() => setAuthModalOpen(false)}
+          defaultTab="signin"
+        />
+      )}
     </div>
   );
 }

@@ -235,6 +235,8 @@ const TutorialContext = createContext<TutorialContextType | undefined>(undefined
 
 const STORAGE_KEY = 'shilpsetu_artisan_journey_state';
 
+const COMPLETED_KEY = 'shilpsetu_artisan_journey_completed';
+
 export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -254,6 +256,8 @@ export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
+      const isCompleted = localStorage.getItem(COMPLETED_KEY) === 'true';
+
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.currentLevel) setCurrentLevel(parsed.currentLevel);
@@ -263,24 +267,23 @@ export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (parsed.isPaused !== undefined) setIsPaused(parsed.isPaused);
 
         // If user returned halfway through (e.g. Level 2 to 9) and journey is not active, greet them!
-        if (parsed.currentLevel > 1 && parsed.currentLevel <= TUTORIAL_MISSIONS.length && !parsed.isActive) {
+        if (parsed.currentLevel > 1 && parsed.currentLevel <= TUTORIAL_MISSIONS.length && !parsed.isActive && !isCompleted) {
           setReturningBanner(true);
         }
-      } else {
-        // First login welcome
-        if (location.pathname.startsWith('/seller')) {
-          setShowWelcomeModal(true);
-        }
+      }
+
+      if (!isCompleted && location.pathname.startsWith('/seller')) {
+        setShowWelcomeModal(true);
       }
     } catch {}
   }, []);
 
-  // Listen for navigation into /seller: if user has no saved journey and is not in journey, show welcome
+  // Listen for navigation into /seller: if user has not completed journey, trigger welcome
   useEffect(() => {
     if (location.pathname.startsWith('/seller')) {
       try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (!saved && !isActive && !showWelcomeModal) {
+        const isCompleted = localStorage.getItem(COMPLETED_KEY) === 'true';
+        if (!isCompleted && !isActive && !showWelcomeModal) {
           setShowWelcomeModal(true);
         }
       } catch {}
@@ -344,6 +347,9 @@ export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setIsActive(false);
     setIsPaused(false);
     setShowWelcomeModal(false);
+    try {
+      localStorage.setItem(COMPLETED_KEY, 'true');
+    } catch {}
   };
 
   const completeCurrentMission = () => {
@@ -367,6 +373,9 @@ export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (currentLevel >= TUTORIAL_MISSIONS.length) {
       setIsActive(false);
       setShowCompletionModal(true);
+      try {
+        localStorage.setItem(COMPLETED_KEY, 'true');
+      } catch {}
     } else {
       setCurrentLevel(currentLevel + 1);
     }
@@ -378,6 +387,9 @@ export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } else {
       setIsActive(false);
       setShowCompletionModal(true);
+      try {
+        localStorage.setItem(COMPLETED_KEY, 'true');
+      } catch {}
     }
   };
 
@@ -394,6 +406,10 @@ export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setIsActive(true);
     setIsPaused(false);
     setShowCompletionModal(false);
+    try {
+      localStorage.removeItem(COMPLETED_KEY);
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {}
     navigate('/seller');
   };
 

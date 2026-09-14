@@ -26,13 +26,16 @@ All endpoints are hosted on the unified single-port Express server (`http://loca
 
 ---
 
-## 3. Dynamic Fair-Wage Pricing
+## 3. Dynamic Fair-Wage Pricing & Voice Explanation
 
 | Method | Endpoint | Description | Request Body | Response |
 |---|---|---|---|---|
-| `POST` | `/api/v1/products/:id/price-recommendation` | Hybrid pricing calculation | `{ material_cost, labor_hours, hourly_rate, other_cost }` | `{ suggested_min, suggested_max, target_recommended, b2b_recommended, fair_cost, why_this_price, market_comparables }` |
+| `POST` | `/api/v1/pricing/calculate` | Deterministic backend fair price calculation & multilingual voice explanation | `{ productName, craftType, material, materialCost, laborHours, fairHourlyWage, otherCost, quantity, language }` | `{ recommendedFairPrice, artisanApprovedPrice, breakdown: { materialCost, laborHours, fairHourlyWage, laborValue, baseCost, marginAmount, recommendedFairPrice, totalRecommendedFairPrice, quantity }, explanation: { en, hi, te }, pricingFormulaVersion, calculatedAt }` |
+| `POST` | `/api/v1/ai/pricing-recommendation` | Alias for backend fair price calculation | Same as `/api/v1/pricing/calculate` | Same as `/api/v1/pricing/calculate` |
+| `POST` | `/api/v1/ai/voice-extract-details` | Parse speech transcript to extract craft type, material, material cost, labor hours | `{ transcript, language }` | `{ productType, material, materialCost, laborHours, hourlyWage, confidenceScore }` |
+| `POST` | `/api/v1/products/:id/price-recommendation` | Product-specific fair price calculation with living-wage floor | `{ material_cost, labor_hours, hourly_rate, other_cost }` | `{ product_id, fair_pricing, suggested_min, suggested_max, target_recommended, cost_breakdown, why_this_price, market_comparables }` |
 | `POST` | `/api/v1/market-prices/compare` | Query multi-market comp dataset | `{ category, proposed_price }` | Comparable averages across Amazon, Etsy & GeM |
-| `PATCH` | `/api/v1/products/:id/price` | Artisan manually locks custom asking price | `{ final_price }` | Updated product record |
+| `PATCH` | `/api/v1/products/:id/price` | Artisan reviews & approves selling price (preserves both recommended & approved price) | `{ final_price, materialCost, laborHours, fairHourlyWage, laborValue, baseCost, marginAmount, recommendedFairPrice, artisanApprovedPrice }` | Updated product record with preserved dual-price model |
 
 ---
 

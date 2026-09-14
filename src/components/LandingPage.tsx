@@ -15,7 +15,8 @@ import { InstructionWizard } from './portal/InstructionWizard';
 import { AIProcessingDemo } from './portal/AIProcessingDemo';
 import { RoleSelector } from './portal/RoleSelector';
 import { ArtisanOnboardingModal } from './portal/ArtisanOnboardingModal';
-import { BuyerOnboardingModal } from './portal/BuyerOnboardingModal';
+import { BuyerAuthModal } from './auth/BuyerAuthModal';
+import { SellerAuthModal } from './auth/SellerAuthModal';
 import { useTutorial } from './tutorial/TutorialContext';
 
 export function LandingPage() {
@@ -31,9 +32,10 @@ export function LandingPage() {
   // Active step in the 3-step tutorial
   const [instructionStep, setInstructionStep] = useState(0);
 
-  // Modal States
+  // Modal State
   const [artisanModalOpen, setArtisanModalOpen] = useState(false);
   const [buyerModalOpen, setBuyerModalOpen] = useState(false);
+  const [sellerModalOpen, setSellerModalOpen] = useState(false);
 
   // Section references for smooth navigation
   const tutorialRef = useRef<HTMLDivElement>(null);
@@ -48,22 +50,34 @@ export function LandingPage() {
     }
   };
 
+  // Start guided voice tutorial that advances to NEXT automatically
   const handleStartTutorial = () => {
     tutorialRef.current?.scrollIntoView({ behavior: 'smooth' });
-    voice.speak(t.step1Speech, language);
+    setInstructionStep(0);
+    voice.speak(t.step1Speech, language, () => {
+      // Advance to step 2 automatically
+      setInstructionStep(1);
+      voice.speak(t.step2Speech, language, () => {
+        // Advance to step 3 automatically
+        setInstructionStep(2);
+        voice.speak(t.step3Speech, language, () => {
+          handleFinishInstructions();
+        });
+      });
+    });
   };
 
   const handleListenWelcome = () => {
     voice.speak(t.welcomeAudioSpeech, language);
   };
 
-  const handleSpeakInstruction = (text: string) => {
-    voice.speak(text, language);
+  const handleSpeakInstruction = (text: string, onEnd?: () => void) => {
+    voice.speak(text, language, onEnd);
   };
 
   const handleFinishInstructions = () => {
     roleRef.current?.scrollIntoView({ behavior: 'smooth' });
-    voice.speak(t.roleSelectionSpeech, language);
+    voice.speak(t.roleArtisanTitle + '. ' + t.roleArtisanDesc, language);
   };
 
   return (
@@ -74,6 +88,8 @@ export function LandingPage() {
         onSelectLanguage={handleSelectLanguage}
         onTriggerVoice={handleListenWelcome}
         isSpeaking={voice.isPlaying}
+        onOpenBuyerSignIn={() => setBuyerModalOpen(true)}
+        onOpenSellerSignIn={() => setSellerModalOpen(true)}
       />
 
       {/* 2. Floating Voice Controller with Audio Waveform */}
@@ -141,21 +157,13 @@ export function LandingPage() {
               <ArrowRight className="w-4.5 h-4.5" />
             </button>
 
+            {/* Voice Tour with Auto Next Button (Replacing Buyer Portal button) */}
             <button
-              onClick={() => navigate('/buyer')}
-              className="w-full sm:w-auto min-h-[52px] px-6 py-3.5 rounded-2xl font-bold text-base text-[#262220] bg-white hover:bg-[#f5efeb] border border-[#eadfd4] shadow-xs transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
+              onClick={handleStartTutorial}
+              className="w-full sm:w-auto min-h-[52px] px-6 py-3.5 rounded-2xl font-bold text-base text-[#9c4124] bg-white hover:bg-[#fdf2e9] border-2 border-[#f8d7c2] shadow-xs transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
             >
-              <ShoppingBag className="w-4.5 h-4.5 text-[#9c4124]" />
-              <span>{t.secondaryCta}</span>
-            </button>
-
-            <button
-              onClick={handleListenWelcome}
-              className="w-full sm:w-auto min-h-[52px] px-4 py-3.5 rounded-2xl font-bold text-xs text-[#9c4124] bg-[#fdf2e9] hover:bg-[#fae5d3] border border-[#f8d7c2] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              title="Listen to Instructions in Audio"
-            >
-              <Volume2 className="w-4 h-4 text-[#9c4124]" />
-              <span>{t.voiceListen} 🔊</span>
+              <Volume2 className="w-4.5 h-4.5 text-[#9c4124] animate-pulse" />
+              <span>{language === 'hi' ? 'आवाज़ गाइड (ऑटो)' : language === 'te' ? 'వాయిస్ గైడ్ (ఆటో)' : 'Voice Tour (Auto Next)'}</span>
             </button>
           </div>
 
@@ -205,7 +213,8 @@ export function LandingPage() {
       </section>
 
       {/* ================================================== */}
-      {/* 4. ROLE SELECTION (ARTISAN VS BUYER ONLY) */}
+      {/* ================================================== */}
+      {/* 4. DEDICATED ARTISAN ONBOARDING (NO BUYER PORTAL) */}
       {/* ================================================== */}
       <section
         ref={roleRef}
@@ -215,7 +224,6 @@ export function LandingPage() {
         <RoleSelector
           language={language}
           onSelectArtisan={() => setArtisanModalOpen(true)}
-          onSelectBuyer={() => setBuyerModalOpen(true)}
           onSpeak={handleSpeakInstruction}
           isSpeaking={voice.isPlaying}
         />
@@ -291,7 +299,7 @@ export function LandingPage() {
       </div>
 
       {/* ================================================== */}
-      {/* ONBOARDING MODALS */}
+      {/* ARTISAN ONBOARDING MODAL */}
       {/* ================================================== */}
       {artisanModalOpen && (
         <ArtisanOnboardingModal
@@ -302,12 +310,25 @@ export function LandingPage() {
         />
       )}
 
+      {/* ================================================== */}
+      {/* BUYER AUTH MODAL (WITH VOICE ASSIST) */}
+      {/* ================================================== */}
       {buyerModalOpen && (
-        <BuyerOnboardingModal
-          language={language}
+        <BuyerAuthModal
           isOpen={buyerModalOpen}
           onClose={() => setBuyerModalOpen(false)}
-          onSpeak={handleSpeakInstruction}
+          defaultTab="signin"
+        />
+      )}
+
+      {/* ================================================== */}
+      {/* SELLER AUTH MODAL (WITH VOICE ASSIST) */}
+      {/* ================================================== */}
+      {sellerModalOpen && (
+        <SellerAuthModal
+          isOpen={sellerModalOpen}
+          onClose={() => setSellerModalOpen(false)}
+          defaultTab="signin"
         />
       )}
     </div>

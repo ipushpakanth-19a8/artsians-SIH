@@ -67,11 +67,25 @@ export interface PricingGenResult {
   suggested_min: number;
   suggested_max: number;
   target_recommended: number;
+  b2b_recommended?: number;
+  fair_cost?: number;
+  market_low?: number;
+  market_avg?: number;
+  market_high?: number;
   rationale: string;
+  why_this_price?: {
+    simple_explanation: string;
+    labor_share_pct: number;
+    material_cost: number;
+    packaging_transport: number;
+    fair_living_wage: number;
+    market_comparables_count: number;
+  };
   comparable_average: number;
   typical_middleman_price: number;
   artisan_profit_gain: number;
   margin_percentage: number;
+  confidence_score?: number;
   craft_complexity_score?: number; // 1-10
   quality_tier?: string; // Standard Artisan, Fine Mastercraft, Museum / Heritage Grade
   market_comparables?: MarketComparableItem[];
@@ -108,10 +122,282 @@ function prepareImagePart(imageDataUrlOrBase64: string): { inlineData: { mimeTyp
   }
 }
 
+export interface CatalogGenOptions {
+  titleHint?: string;
+  subcategoryHint?: string;
+  materialHint?: string;
+  dimensionsHint?: string;
+  weightHint?: string;
+  giStatusHint?: string;
+  techniqueHint?: string;
+}
+
+export interface CraftTaxonomyItem {
+  keywords: string[];
+  title: string;
+  category: string;
+  subcategory: string;
+  material: string;
+  est_dimensions: string;
+  weight: string;
+  gi_status: 'certified' | 'potential' | 'none' | 'Needs artisan confirmation';
+  craft_technique: string;
+  motifs: string[];
+  colors: string[];
+  tags: string[];
+  description: string;
+  short_description: string;
+  b2b_description: string;
+  social_caption: string;
+}
+
+export const AUTHENTIC_CRAFT_TAXONOMY: CraftTaxonomyItem[] = [
+  {
+    keywords: ["dhokra", "dokra", "lost-wax", "bell metal", "bastar", "tribal bull"],
+    title: "Bastar Dhokra Lost-Wax Bell Metal Bull",
+    category: "Metalcraft",
+    subcategory: "Dhokra Lost-Wax Casting",
+    material: "Lost-Wax Cast Bell Metal (Bronze & Brass Alloy)",
+    est_dimensions: "7 x 4 x 6 inches",
+    weight: "950 grams",
+    gi_status: "certified",
+    craft_technique: "Harappan Lost-Wax Casting (Cire Perdue) with Hand-Coiled Beeswax",
+    motifs: ["Tribal Bull", "Geometric Line Spirals", "Sun and Folk Spirits"],
+    colors: ["Antique Bronze", "Warm Gold Patina", "Charcoal Ochre"],
+    tags: ["GI Certified", "Dhokra", "Bell Metal", "Lost-Wax Cast", "Bastar Tribal Art", "Handmade"],
+    description: "Handcrafted by tribal artisans of Bastar using the 4,000-year-old lost-wax technique dating back to the Indus Valley civilization. Each clay-beeswax mold is broken during casting, guaranteeing a one-of-a-kind collector's sculpture.",
+    short_description: "Authentic Bastar Dhokra lost-wax bell metal figurine with antique patina finish.",
+    b2b_description: "Export-grade solid bell metal tribal casting. Handcrafted in Kondagaon cluster, GI tag certified.",
+    social_caption: "Direct from the tribal kilns of Bastar! Every curve in this Dhokra bell metal bull tells a 4,000-year-old story of sacred fire and soil. #BastarDhokra #IndianHandicrafts #GIHeritage"
+  },
+  {
+    keywords: ["bidriware", "bidri", "silver inlay", "goblet", "damascening", "bidar"],
+    title: "Bidriware Pure Silver Inlay Black Metal Goblet",
+    category: "Metalcraft",
+    subcategory: "Bidriware Silver Damascening",
+    material: "Zinc-Copper Alloy with 99.9% Pure Silver Inlay",
+    est_dimensions: "6 x 3.5 inches",
+    weight: "580 grams",
+    gi_status: "certified",
+    craft_technique: "Tarkashi & Zarnishan Silver Wire Inlay with Historic Fort Soil Oxidation",
+    motifs: ["Floral Arabesque", "Starry Jaal", "Persian Geometric"],
+    colors: ["Velvet Matte Black", "Shimmering Pure Silver"],
+    tags: ["GI Certified", "Bidriware", "Pure Silver Inlay", "Damascening", "Bidar Craft", "Heritage Metalcraft"],
+    description: "Originating in the 14th-century Bahmani Sultanate, Bidriware is crafted from an alloy of zinc and copper, engraved with pure 99.9% silver wire, and darkened using special nitrate-rich soil from the Bidar Fort that oxidizes the surface to a velvet matte black.",
+    short_description: "Exquisite Bidriware blackened metal goblet inlaid with pure silver wire from Bidar.",
+    b2b_description: "Certified GI-registered Bidriware collectible artifact. Tested 99.9% fine silver inlay on anti-corrosive zinc alloy.",
+    social_caption: "The magic of Bidar Fort soil meets 99.9% pure silver inlay. Discover authentic Bidriware mastercraft direct from hereditary artisans. #Bidriware #IndianCrafts #SilverInlay"
+  },
+  {
+    keywords: ["channapatna", "wooden toy", "lacquerware", "stacker", "ivory wood", "ramanagara"],
+    title: "Channapatna Eco-Friendly Lacquered Wooden Stacker",
+    category: "Woodwork",
+    subcategory: "Channapatna Turned Lacquerware",
+    material: "Ivory Wood (Wrightia Tinctoria) & Natural Vegetable Lacquer",
+    est_dimensions: "8 x 4 inches (Base diameter: 4 inches)",
+    weight: "320 grams",
+    gi_status: "certified",
+    craft_technique: "Precision Lathe Turning & Friction-Burnished Natural Vegetable Lacquer",
+    motifs: ["Concentric Rings", "Harmonic Cylinders", "Smooth Curves"],
+    colors: ["Turmeric Yellow", "Sindoor Red", "Indigo Blue", "Leaf Green"],
+    tags: ["GI Certified", "Channapatna Toys", "Non-Toxic Wooden Toy", "Baby Safe", "Eco Friendly"],
+    description: "Turned on traditional hand lathes by master artisans in Karnataka's toy town. Made from sustainably harvested Ivory Wood (Wrightia Tinctoria) and hand-burnished with non-toxic, food-safe natural vegetable lacquers. 100% baby-safe with rounded edges.",
+    short_description: "Safe, eco-friendly hand-turned Channapatna wooden stacking toy with natural vegetable dyes.",
+    b2b_description: "BS EN 71 & ASTM compliant organic wooden educational toy. Packaged in biodegradable corrugated craft box.",
+    social_caption: "Ditch plastic for generation-tested Channapatna wooden toys! Coloured with natural turmeric & lac resin, safe for tiny hands and kind to the Earth. #ChannapatnaToys #SustainablePlay"
+  },
+  {
+    keywords: ["pochampally", "ikat", "patola", "silk saree", "bhoodan", "double ikat"],
+    title: "Handloom Pochampally Double Ikat Pure Silk Saree",
+    category: "Weaving",
+    subcategory: "Pochampally Double Ikat Handloom",
+    material: "100% Pure Mulberry Silk with Natural Azo-Free Dyes",
+    est_dimensions: "5.5 meters x 1.15 meters (includes 80cm blouse piece)",
+    weight: "580 grams",
+    gi_status: "certified",
+    craft_technique: "Precision Resist-Dye Double Ikat Weaving on Traditional Pit Looms",
+    motifs: ["Chowkada Diamond", "Parrot Border (Kili)", "Geometric Chevron"],
+    colors: ["Temple Crimson Red", "Mustard Ochre", "Natural Raw Silk Ecru"],
+    tags: ["GI Certified", "Silk Mark", "Handloom Mark", "Pochampally Ikat", "Pure Mulberry Silk", "Double Ikat"],
+    description: "Woven on family-inherited pit looms in Bhoodan Pochampally. In Double Ikat, both the warp and weft threads are individually tied and dyed before weaving, requiring immense mathematical calculation so the pattern aligns with millimetric precision on the loom.",
+    short_description: "Authentic GI-certified Pochampally Double Ikat pure mulberry silk saree with geometric diamonds.",
+    b2b_description: "Silk Mark certified handloom saree. High warp density (120x100), natural azo-free fast dyes.",
+    social_caption: "Mathematical precision meets centuries of handloom wisdom. Adorn yourself in genuine Pochampally Double Ikat pure silk! #PochampallySaree #VocalForLocal #HandloomIndia"
+  },
+  {
+    keywords: ["blue pottery", "jaipur pottery", "quartz", "ceramic vase", "kot jewar"],
+    title: "Jaipur Blue Pottery Hand-Painted Ceramic Floral Vase",
+    category: "Pottery",
+    subcategory: "Jaipur Blue Pottery",
+    material: "Ground Quartz, Fuller's Earth, Natural Resin & Cobalt Glaze",
+    est_dimensions: "10 x 5 inches",
+    weight: "750 grams",
+    gi_status: "certified",
+    craft_technique: "Clay-Free Dough Pressing & Low-Fire Kiln Glazing with Mineral Oxides",
+    motifs: ["Persian Floral Arabesque", "Dancing Peacocks", "Lotus Rosettes"],
+    colors: ["Cobalt Blue", "Turquoise Blue", "Pristine White"],
+    tags: ["GI Certified", "Jaipur Blue Pottery", "Hand Painted", "Lead Free Ceramic", "Rajasthani Craft"],
+    description: "Unique across Indian ceramics, Jaipur Blue Pottery uses no clay. The dough is compounded from powdered quartz stone, glass, and Multani Mitti, shaped in open molds, hand-painted with cobalt and copper oxides, and fired once in low-temperature kilns.",
+    short_description: "Hand-painted Jaipur Blue Pottery floral vase crafted from natural ground quartz.",
+    b2b_description: "Lead-free decorative ceramic vase with impermeable vitreous glaze. Ideal for premium lifestyle retail.",
+    social_caption: "Bring the royal turquoise blues of Jaipur into your living space. 100% clay-free, hand-painted by master artisans. #JaipurBluePottery #IncredibleIndia #HomeDecor"
+  },
+  {
+    keywords: ["madhubani", "mithila", "tree of life", "jitwarpur", "bihar painting"],
+    title: "Handmade Madhubani Folk Art Painting Canvas (Tree of Life)",
+    category: "Folk Painting",
+    subcategory: "Mithila / Madhubani Painting",
+    material: "Handmade Cotton Canvas with Organic Natural Plant & Mineral Pigments",
+    est_dimensions: "24 x 18 inches",
+    weight: "250 grams",
+    gi_status: "certified",
+    craft_technique: "Fineline Bamboo-Nib Sketching with Double-Line Bordering and Natural Dyes",
+    motifs: ["Tree of Life", "Sun & Moon", "Prosperity Fish", "Lotus Bloom"],
+    colors: ["Turmeric Yellow", "Indigo Blue", "Lampblack Soot", "Kusum Crimson"],
+    tags: ["GI Certified", "Madhubani Painting", "Mithila Folk Art", "Natural Vegetable Pigments", "Handmade"],
+    description: "Painted by generational Mithila women artists in Jitwarpur using fine bamboo nibs and natural organic pigments. The Tree of Life symbolizes the cosmic harmony between flora, fauna, and human life with intricate double-line cross-hatching (Kachni & Bharni styles).",
+    short_description: "Original handmade Madhubani folk canvas painted with organic plant dyes and bamboo nibs.",
+    b2b_description: "Framing-ready authentic Mithila folk art on acid-free handmade paper/canvas with artist signature certificate.",
+    social_caption: "Every line hand-drawn with a bamboo twig and coloured with turmeric, indigo, and soot. Celebrate sacred Indian folk art. #MadhubaniArt #MithilaPainting #HandmadeInIndia"
+  },
+  {
+    keywords: ["chikankari", "lucknowi", "shadow work", "bakhiya", "chikan"],
+    title: "Lucknowi Hand-Embroidered Chikankari Kurta Piece",
+    category: "Embroidery",
+    subcategory: "Lucknow Chikankari Embroidery",
+    material: "Pure Handloom Cotton / Mulmul with Untwisted Floss Thread",
+    est_dimensions: "2.5 meters x 1.1 meters unstitched fabric",
+    weight: "320 grams",
+    gi_status: "certified",
+    craft_technique: "32 Traditional Chikankari Needlework Stitches (Tepchi, Bakhiya, Jaali)",
+    motifs: ["Paisley Kalka", "Jasmine Vines (Chamel)", "Shadow Jaal"],
+    colors: ["Pristine White", "Ivory Cream", "Pastel Mint"],
+    tags: ["GI Certified", "Lucknowi Chikankari", "Hand Embroidered", "Pure Cotton", "Heritage Needlework"],
+    description: "Refined Mughal court embroidery hand-stitched by skilled women artisans across Lucknow villages. Features delicate herringbone shadow work (Bakhiya) on the reverse that casts subtle tonal patterns on the front sheer cotton fabric.",
+    short_description: "Intricate hand-embroidered Lucknowi Chikankari unstitched fabric in pure breathable cotton.",
+    b2b_description: "3-meter unstitched fabric set with GI mark and thread-density inspection report. Export-ready packaging.",
+    social_caption: "Timeless elegance from Awadh. Experience the feather-light finesse of genuine Lucknowi Chikankari hand embroidery. #Chikankari #LucknowCrafts #VocalForHandmade"
+  },
+  {
+    keywords: ["kantha", "sujani", "running stitch", "tussar", "nakshi"],
+    title: "Artisan Hand-Stitched Kantha Embroidery Silk Stole",
+    category: "Embroidery",
+    subcategory: "Nakshi Kantha Heritage Embroidery",
+    material: "Handloom Tussar Silk with Mulberry Silk Threads",
+    est_dimensions: "72 x 28 inches",
+    weight: "340 grams",
+    gi_status: "certified",
+    craft_technique: "Running Stitch Layer Quilting & Folk Pictorial Embroidery",
+    motifs: ["Lotus Mandala", "Village Daily Life", "Paisley Curves"],
+    colors: ["Natural Raw Tussar", "Indigo Blue", "Madder Red"],
+    tags: ["GI Certified", "Kantha Stitch", "Tussar Silk", "Upcycled Luxury", "Hand Embroidered"],
+    description: "Generational running-stitch embroidery created by rural Bengali craftswomen, quilting together silk layers into unique wearable works of storytelling and eco-friendly art.",
+    short_description: "Hand-stitched Kantha embroidery stole in pure natural Tussar silk.",
+    b2b_description: "Hand-embroidered GI-tagged Tussar silk stole with artisan cluster certification.",
+    social_caption: "Every thread tells a rural mother's story. Elevate your wardrobe with authentic Nakshi Kantha embroidery. #KanthaEmbroidery #ArtisanalLuxury"
+  },
+  {
+    keywords: ["kondapalli", "bommalu", "ponki wood", "dancing dolls"],
+    title: "Kondapalli Traditional Dancing Raja-Rani Wooden Figurines",
+    category: "Woodwork",
+    subcategory: "Kondapalli Bommalu (Wooden Toys)",
+    material: "Ponki Soft Wood & Natural Tamarind Seed Paste",
+    est_dimensions: "11 x 5 inches",
+    weight: "380 grams",
+    gi_status: "certified",
+    craft_technique: "Hand-Carved Soft Wood Chipping & Natural Tamarind Assembling",
+    motifs: ["Royal Court Attire", "Traditional Folk Dancers"],
+    colors: ["Crimson", "Royal Yellow", "Emerald Green"],
+    tags: ["GI Certified", "Kondapalli Toys", "Hand Carved Wood", "Heritage Decor"],
+    description: "Sculpted from lightweight soft Ponki wood and assembled with natural tamarind seed paste. Painted with delicate enamel and natural vegetable colors by master artisans in Krishna district.",
+    short_description: "Traditional hand-carved Kondapalli Raja-Rani dancing wooden dolls from Andhra Pradesh.",
+    b2b_description: "Certified GI-tagged Kondapalli handicraft set. Non-hazardous vegetable dyes.",
+    social_caption: "Heritage in motion! The classic Kondapalli Bobblehead Raja-Rani dancing dolls. #Kondapalli #WoodenToys #IndianHandicrafts"
+  },
+  {
+    keywords: ["tarakasi", "filigree", "silver wire", "cuttack"],
+    title: "Cuttack Tarakasi Silver Filigree Fine Heritage Ornament",
+    category: "Metalcraft",
+    subcategory: "Cuttack Tarakasi Silver Filigree",
+    material: "92.5% Sterling Silver Wire (Fine Filigree)",
+    est_dimensions: "4 x 4 inches",
+    weight: "120 grams",
+    gi_status: "certified",
+    craft_technique: "Fine Wire Drawing & Annealed Silver Soldering",
+    motifs: ["Peacock Feather", "Lotus Wheel", "Lacy Mesh Jaal"],
+    colors: ["Lustrous Silver", "Antique Patina"],
+    tags: ["GI Certified", "Sterling Silver", "Filigree", "Tarakasi", "Heritage Jewelry"],
+    description: "Woven from ultra-fine strands of 92.5% sterling silver wire drawn through diamond dies and twisted by hand into fragile yet resilient lacy geometric lace in historic Cuttack.",
+    short_description: "Handcrafted Cuttack Tarakasi pure sterling silver filigree decorative piece.",
+    b2b_description: "Hallmarked 925 sterling silver filigree artwork with certificate of origin.",
+    social_caption: "Spun from silver like moonlit gossamer. Marvel at 500 years of Cuttack Tarakasi filigree art. #SilverFiligree #Tarakasi #OdishaCrafts"
+  },
+  {
+    keywords: ["warli", "tribal art", "palghar", "tarpa"],
+    title: "Authentic Warli Tribal Harvest Celebration Canvas",
+    category: "Folk Painting",
+    subcategory: "Warli Tribal Art",
+    material: "Rice Flour Paste on Mud-Treated Cotton Canvas",
+    est_dimensions: "20 x 16 inches",
+    weight: "220 grams",
+    gi_status: "certified",
+    craft_technique: "Bamboo Twig Finger-Painting with Sacred Geometric Iconography",
+    motifs: ["Tarpa Dance Circle", "Hunting & Sowing Spirals", "Mother Nature Palaghat"],
+    colors: ["Earth Brown Ochre", "Natural Chalk White"],
+    tags: ["GI Certified", "Warli Tribal Art", "Indigenous Painting", "Organic Pigments"],
+    description: "Drawn by Sahyadri tribal artists on mud-and-cow-dung plastered canvas using white paste made of rice flour, water, and tree gum. Celebrates sacred community communion and harvest abundance.",
+    short_description: "Original Warli tribal art canvas depicting the cosmic Tarpa community dance.",
+    b2b_description: "Certified indigenous Warli painting on treated canvas. Framing ready.",
+    social_caption: "Harmonious rhythm of nature and humanity captured in timeless Warli tribal circles. #WarliArt #TribalHeritage #IndigenousArt"
+  },
+  {
+    keywords: ["pashmina", "cashmere", "changthangi", "charkha"],
+    title: "Hand-Spun Kashmiri Pashmina Cashmere Heritage Shawl",
+    category: "Weaving",
+    subcategory: "Kashmiri Pashmina Handloom",
+    material: "100% Changthangi Mountain Pashmina Cashmere",
+    est_dimensions: "80 x 40 inches (200 x 100 cm)",
+    weight: "210 grams",
+    gi_status: "certified",
+    craft_technique: "Hand-Spun Fine Charkha & Wooden Loom Weft Weaving",
+    motifs: ["Chashm-e-Bulbul Eye of Bulbul", "Sozni Hand Needlework"],
+    colors: ["Natural Pashm Warm Grey", "Ivory Cashmere"],
+    tags: ["GI Certified", "100% Pure Pashmina", "Cashmere", "Hand Spun", "Kashmir Heritage"],
+    description: "Spun by hand on traditional wooden Charkha wheels from genuine Changthangi mountain goat fleece (12-15 microns) and woven into a fine diamond (Chashm-e-Bulbul) weave by master weavers in Srinagar.",
+    short_description: "Unbelievably soft 100% pure hand-spun Kashmiri Pashmina cashmere shawl.",
+    b2b_description: "GI-certified pure Kashmiri Pashmina with micro-laser authenticity badge.",
+    social_caption: "Wrap yourself in cloud-like warmth. Authentic, hand-spun Changthangi Pashmina woven with generations of Kashmiri pride. #Pashmina #KashmirCrafts #PureLuxury"
+  }
+];
+
+export function resolveTaxonomyCraft(
+  categoryHint: string = "Handicraft",
+  artisanRegion: string = "India",
+  options?: CatalogGenOptions
+): CraftTaxonomyItem | null {
+  const searchCorpus = [
+    options?.titleHint || "",
+    options?.subcategoryHint || "",
+    options?.materialHint || "",
+    options?.techniqueHint || "",
+    categoryHint || "",
+    artisanRegion || ""
+  ].join(" ").toLowerCase();
+
+  for (const craft of AUTHENTIC_CRAFT_TAXONOMY) {
+    const isMatched = craft.keywords.some(kw => searchCorpus.includes(kw.toLowerCase()));
+    if (isMatched) {
+      return craft;
+    }
+  }
+  return null;
+}
+
 export async function generateProductCatalog(
   imageData: string,
   categoryHint: string = "Handicraft",
-  artisanRegion: string = "India"
+  artisanRegion: string = "India",
+  options?: CatalogGenOptions
 ): Promise<CatalogGenResult> {
   const ai = getAIClient();
   const startTime = Date.now();
@@ -120,8 +406,18 @@ export async function generateProductCatalog(
     try {
       const imagePart = prepareImagePart(imageData);
       const prompt = `You are a specialist in rural Indian handicrafts, folk art, handloom textiles, and artisanal market linkage.
-Analyze the provided product image (with category hint: "${categoryHint}", region: "${artisanRegion}").
+Analyze the provided product image.
+Artisan Hints:
+- Title/Name: "${options?.titleHint || ''}"
+- Category: "${categoryHint}"
+- Subcategory: "${options?.subcategoryHint || ''}"
+- Region: "${artisanRegion}"
+- Known Material: "${options?.materialHint || ''}"
+- Dimensions Hint: "${options?.dimensionsHint || ''}"
+- Weight Hint: "${options?.weightHint || ''}"
+
 Generate an authentic, professional e-commerce catalog record tailored to empower marginalized craftspeople.
+If specific material, dimensions, or title were provided in the hints, respect and incorporate them accurately.
 
 Requirements:
 - title: Evocative, professional handicraft title emphasizing authentic handcraft tradition and heritage.
@@ -140,7 +436,7 @@ Return ONLY valid JSON matching this schema.`;
         : prompt;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.8-flash",
+        model: "gemini-2.5-flash",
         contents,
         config: {
           responseMimeType: "application/json",
@@ -167,16 +463,18 @@ Return ONLY valid JSON matching this schema.`;
       const parsed = JSON.parse(response.text?.trim() || "{}");
       if (parsed.title && parsed.description) {
         return {
-          title: parsed.title,
+          title: options?.titleHint || parsed.title,
           description: parsed.description,
           category: parsed.category || categoryHint,
-          subcategory: parsed.subcategory || `${categoryHint} Craft`,
+          subcategory: options?.subcategoryHint || parsed.subcategory || `${categoryHint} Craft`,
           tags: Array.isArray(parsed.tags) ? parsed.tags : ["Handmade", "Traditional", categoryHint],
-          material: parsed.material || "Traditional Natural Craft Materials",
-          est_dimensions: parsed.est_dimensions || "Standard Handcrafted Dimensions",
-          weight: parsed.weight || "350 grams",
+          material: options?.materialHint || parsed.material || "Traditional Natural Craft Materials",
+          est_dimensions: options?.dimensionsHint || parsed.est_dimensions || "Standard Handcrafted Dimensions",
+          weight: options?.weightHint || parsed.weight || "350 grams",
+          gi_status: (options?.giStatusHint as any) || 'Needs artisan confirmation',
+          craft_technique: options?.techniqueHint || parsed.craft_technique,
           status: 'success',
-          modelUsed: 'gemini-3.8-flash'
+          modelUsed: 'gemini-2.5-flash'
         };
       }
     } catch (err) {
@@ -184,37 +482,123 @@ Return ONLY valid JSON matching this schema.`;
     }
   }
 
-  // Graceful rule-based fallback (as mandated by Section 5 & 14 of Implementation Plan)
-  const categoryTitleMap: Record<string, string> = {
-    Weaving: "Mastercrafted Handloom Heritage Fabric",
-    Pottery: "Artisanal Hand-Molded Terracotta & Glazed Pottery",
-    Metalcraft: "Traditional Lost-Wax Cast Bell Metal Figurine",
-    Woodwork: "Hand-Carved Eco-Friendly Lacquered Wood Craft",
-    Embroidery: "Intricate Hand-Embroidered Folk Heritage Textile",
-    "Folk Painting": "Hand-Painted Folk Canvas with Natural Dyes"
+  // Graceful rule-based fallback using comprehensive Indian handicraft taxonomy
+  const matchedCraft = resolveTaxonomyCraft(categoryHint, artisanRegion, options);
+  if (matchedCraft) {
+    const isGenericMaterial = !options?.materialHint || options.materialHint.includes("Natural Artisanal") || options.materialHint.includes("Traditional Natural");
+    const isGenericDimensions = !options?.dimensionsHint || options.dimensionsHint === "Standard Size" || options.dimensionsHint.includes("10 x 8 inches") || options.dimensionsHint.includes("Standard Handcrafted");
+    const isGenericWeight = !options?.weightHint || options.weightHint === "400 grams" || options.weightHint === "450 grams" || options.weightHint === "350 grams";
+    const isGenericSubcat = !options?.subcategoryHint || options.subcategoryHint === "Traditional Craft" || options.subcategoryHint === `${categoryHint} Craft`;
+
+    return {
+      title: options?.titleHint || matchedCraft.title,
+      description: matchedCraft.description,
+      short_description: matchedCraft.short_description,
+      b2b_description: matchedCraft.b2b_description,
+      social_caption: matchedCraft.social_caption,
+      category: matchedCraft.category,
+      subcategory: !isGenericSubcat ? options!.subcategoryHint! : matchedCraft.subcategory,
+      craft_technique: options?.techniqueHint || matchedCraft.craft_technique,
+      motifs: matchedCraft.motifs,
+      colors: matchedCraft.colors,
+      tags: matchedCraft.tags,
+      material: !isGenericMaterial ? options!.materialHint! : matchedCraft.material,
+      est_dimensions: !isGenericDimensions ? options!.dimensionsHint! : matchedCraft.est_dimensions,
+      weight: !isGenericWeight ? options!.weightHint! : matchedCraft.weight,
+      gi_status: (options?.giStatusHint as any) || matchedCraft.gi_status,
+      status: 'fallback',
+      modelUsed: 'rule-based-handicraft-engine'
+    };
+  }
+
+  // Category-based fallback templates with authentic parameters
+  const categoryDefaults: Record<string, {
+    title: string;
+    subcategory: string;
+    description: string;
+    material: string;
+    est_dimensions: string;
+    weight: string;
+    tags: string[];
+    craft_technique: string;
+  }> = {
+    Weaving: {
+      title: "Handloom Heritage Pure Cotton & Silk Fabric",
+      subcategory: "Traditional Handloom Textile",
+      description: "Skillfully woven on traditional wooden pit looms using pure threads and organic dyes. Each warp and weft represents generations of inherited family weaving wisdom.",
+      material: "Pure Handloom Cotton & Mulberry Silk Blend",
+      est_dimensions: "5.5 meters x 1.15 meters",
+      weight: "540 grams",
+      tags: ["Certified Handmade", "Handloom", "Direct from Artisan", "Pure Fiber", "Heritage Weave"],
+      craft_technique: "Traditional Pit Loom Shuttle Weaving"
+    },
+    Pottery: {
+      title: "Artisanal Hand-Molded Terracotta & Glazed Pottery",
+      subcategory: "Traditional Terracotta & Ceramic",
+      description: "Molded by hand and wheel from natural riverbed clay, sun-dried and low-fired in traditional wood kilns for timeless rustic beauty and thermal resilience.",
+      material: "Natural Riverbed Alluvial Clay & Mineral Glaze",
+      est_dimensions: "9 x 6 x 6 inches",
+      weight: "650 grams",
+      tags: ["Certified Handmade", "Terracotta", "Eco Friendly", "Direct from Artisan", "Natural Clay"],
+      craft_technique: "Wheel Throwing & Low-Fire Kiln Firing"
+    },
+    Metalcraft: {
+      title: "Hand-Cast Solid Brass & Bell Metal Heritage Artifact",
+      subcategory: "Traditional Bell Metal & Brass Craft",
+      description: "Cast using ancient sand or lost-wax casting where molten alloy is poured into hand-fashioned earthen molds to yield an enduring sculpture steeped in regional lore.",
+      material: "Hand-Cast Solid Brass & Bell Metal (Bronze Alloy)",
+      est_dimensions: "8 x 5 x 5 inches",
+      weight: "780 grams",
+      tags: ["Certified Handmade", "Metalcraft", "Brass & Bell Metal", "Heritage Decor", "Direct from Artisan"],
+      craft_technique: "Hand-Molded Metal Alloy Casting"
+    },
+    Woodwork: {
+      title: "Artisanal Hand-Carved Sheesham Wood Creation",
+      subcategory: "Hand-Carved Wooden Craft",
+      description: "Hand-carved from seasoned wood and buffed with natural vegetable lacquers or plant oils for a lustrous satin finish celebrating the wood's natural grain.",
+      material: "Seasoned Sheesham / Teak Wood with Natural Oil Finish",
+      est_dimensions: "10 x 6 x 4 inches",
+      weight: "480 grams",
+      tags: ["Certified Handmade", "Woodwork", "Hand Carved", "Eco Friendly", "Direct from Artisan"],
+      craft_technique: "Chisel Carving & Natural Oil Burnishing"
+    },
+    Embroidery: {
+      title: "Intricate Hand-Embroidered Folk Heritage Textile",
+      subcategory: "Hand-Stitched Folk Needlework",
+      description: "Needleworked with patience by village women artisans, featuring traditional shadow stitching and heritage motifs celebrating nature and community rites.",
+      material: "Handloom Cotton Base with Pure Silk Floss Thread",
+      est_dimensions: "36 x 18 inches",
+      weight: "320 grams",
+      tags: ["Certified Handmade", "Embroidery", "Hand Stitched", "Heritage Craft", "Direct from Artisan"],
+      craft_technique: "Heritage Needlework & Shadow Stitching"
+    },
+    "Folk Painting": {
+      title: "Hand-Painted Indian Folk Art Canvas with Natural Pigments",
+      subcategory: "Traditional Regional Folk Painting",
+      description: "Painted by master folk painters using handmade brushes and mineral pigments, depicting ancient themes of harmony with nature and auspicious blessings.",
+      material: "Handmade Cotton Canvas with Organic Mineral & Plant Dyes",
+      est_dimensions: "20 x 16 inches",
+      weight: "240 grams",
+      tags: ["Certified Handmade", "Folk Art", "Natural Pigments", "Hand Painted", "Direct from Artisan"],
+      craft_technique: "Handmade Bamboo Brush Painting with Natural Dyes"
+    }
   };
 
-  const categoryDescMap: Record<string, string> = {
-    Weaving: "Skillfully woven on traditional wooden pit looms using pure threads and organic dyes. Each warp and weft represents generations of inherited family weaving wisdom.",
-    Pottery: "Molded by hand and wheel from natural riverbed clay, sun-dried and low-fired in traditional wood kilns for timeless rustic beauty and thermal resilience.",
-    Metalcraft: "Cast using the ancient lost-wax technique where every mold is destroyed to yield a singular, non-reproducible metal sculpture steeped in tribal lore.",
-    Woodwork: "Hand-turned on local lathes from sustainably sourced wood and buffed with natural vegetable lacquers for a baby-safe, lustrous satin finish.",
-    Embroidery: "Needleworked with patience by village women artisans, featuring traditional shadow stitching and heritage motifs celebrating nature and community rites.",
-    "Folk Painting": "Painted by master folk painters using handmade brushes and mineral pigments, depicting ancient themes of harmony with nature and auspicious blessings."
-  };
-
-  const title = categoryTitleMap[categoryHint] || `Handcrafted ${categoryHint} Heritage Creation`;
-  const description = categoryDescMap[categoryHint] || `Authentic handmade ${categoryHint.toLowerCase()} created with inherited regional artisan techniques. Preserving cultural heritage while offering exquisite home utility and aesthetic beauty.`;
+  const def = categoryDefaults[categoryHint] || categoryDefaults["Woodwork"];
+  const finalTitle = options?.titleHint || def.title;
+  const finalDesc = def.description;
 
   return {
-    title,
-    description,
+    title: finalTitle,
+    description: finalDesc,
     category: categoryHint || "Handicraft",
-    subcategory: `Traditional ${categoryHint}`,
-    tags: ["Certified Handmade", "Direct from Artisan", "Heritage Craft", "Eco Friendly", categoryHint],
-    material: "Traditional Natural Artisanal Materials",
-    est_dimensions: "10 x 8 inches",
-    weight: "450 grams",
+    subcategory: options?.subcategoryHint || def.subcategory,
+    tags: def.tags,
+    material: options?.materialHint || def.material,
+    est_dimensions: options?.dimensionsHint || def.est_dimensions,
+    weight: options?.weightHint || def.weight,
+    gi_status: (options?.giStatusHint as any) || 'potential',
+    craft_technique: options?.techniqueHint || def.craft_technique,
     status: 'fallback',
     modelUsed: 'rule-based-handicraft-engine'
   };
@@ -302,7 +686,7 @@ Return ONLY valid JSON matching this schema:
 }`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.8-flash",
+        model: "gemini-2.5-flash",
         contents: [
           {
             role: "user",
@@ -331,7 +715,7 @@ Return ONLY valid JSON matching this schema:
           english_summary: parsed.english_summary || parsed.transcript,
           keywords: Array.isArray(parsed.keywords) ? parsed.keywords : ["Handmade", "Traditional"],
           status: 'success',
-          modelUsed: 'gemini-3.8-flash-multimodal-audio'
+          modelUsed: 'gemini-2.5-flash-multimodal-audio'
         };
       }
     } catch (err) {
@@ -421,7 +805,7 @@ Return ONLY valid JSON matching this schema:
 }`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.8-flash",
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -435,7 +819,7 @@ Return ONLY valid JSON matching this schema:
           description: parsed.description,
           tags: Array.isArray(parsed.tags) ? parsed.tags : tags,
           status: 'success',
-          modelUsed: 'gemini-3.8-flash'
+          modelUsed: 'gemini-2.5-flash'
         };
       }
     } catch (e) {
@@ -525,7 +909,7 @@ Return ONLY valid JSON:
 }`;
 
         const visionResponse = await ai.models.generateContent({
-          model: "gemini-3.8-flash",
+          model: "gemini-2.5-flash",
           contents: {
             parts: [imagePart, { text: visionPrompt }]
           },
@@ -576,7 +960,7 @@ Artisan product: ${category}
 Provide a crisp 2-sentence market-grounded justification explaining why ₹${targetRecommended} rewards the artisan's specific skill level and protects them from intermediary exploitation. Return ONLY JSON: {"rationale": "..."}`;
 
       const res = await ai.models.generateContent({
-        model: "gemini-3.8-flash",
+        model: "gemini-2.5-flash",
         contents: rationalePrompt,
         config: { responseMimeType: "application/json" }
       });
@@ -591,6 +975,7 @@ Provide a crisp 2-sentence market-grounded justification explaining why ₹${tar
   }
 
   // Calculate Fair Cost breakdown (materials + labor + packaging/transport/overhead)
+  const costOfLabor = cost.labor_hours * cost.hourly_rate;
   const packagingAndTransport = Math.round(cost.material_cost * 0.08) + 120;
   const fairCost = totalDirectCost + packagingAndTransport;
   const b2bRecommended = Math.max(fairWageFloor, Math.round(targetRecommended * 0.82));
@@ -633,6 +1018,6 @@ Provide a crisp 2-sentence market-grounded justification explaining why ₹${tar
       : "Market-Linkage Trend Dataset + Living-Wage Guardrail",
     fair_wage_floor: fairWageFloor,
     status: isVisionEvaluated ? 'success' : 'fallback',
-    modelUsed: isVisionEvaluated ? 'gemini-3.8-flash' : 'dynamic-market-comps-engine'
+    modelUsed: isVisionEvaluated ? 'gemini-2.5-flash' : 'dynamic-market-comps-engine'
   };
 }
