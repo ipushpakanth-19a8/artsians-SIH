@@ -250,9 +250,9 @@ export function CreateBill() {
       });
     } catch {
       // Local fallback
-      const existing = JSON.parse(localStorage.getItem('kalatech_bills') || '[]');
+      const existing = JSON.parse(localStorage.getItem('ShilpSetu_bills') || '[]');
       existing.unshift(billData);
-      localStorage.setItem('kalatech_bills', JSON.stringify(existing));
+      localStorage.setItem('ShilpSetu_bills', JSON.stringify(existing));
     }
 
     setFinalizedBill(billData);

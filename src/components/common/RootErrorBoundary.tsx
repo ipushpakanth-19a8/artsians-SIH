@@ -28,7 +28,7 @@ export class RootErrorBoundary extends React.Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('KALAtech Uncaught Runtime Error:', error, errorInfo);
+    console.error('ShilpSetu Uncaught Runtime Error:', error, errorInfo);
     this.setState({ errorInfo });
   }
 
@@ -38,9 +38,9 @@ export class RootErrorBoundary extends React.Component<Props, State> {
 
   private handleResetAndReload = () => {
     try {
-      localStorage.removeItem('kalatech_auth');
-      localStorage.removeItem('kalatech_token');
-      localStorage.removeItem('kalatech_language');
+      localStorage.removeItem('ShilpSetu_auth');
+      localStorage.removeItem('ShilpSetu_token');
+      localStorage.removeItem('ShilpSetu_language');
       sessionStorage.clear();
       if ('caches' in window) {
         caches.keys().then((names) => {
@@ -62,7 +62,7 @@ export class RootErrorBoundary extends React.Component<Props, State> {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-amber-300">Application Error Encountered</h2>
-                <p className="text-xs text-stone-400">KALAtech recovered from an unexpected client exception</p>
+                <p className="text-xs text-stone-400">ShilpSetu recovered from an unexpected client exception</p>
               </div>
             </div>
 

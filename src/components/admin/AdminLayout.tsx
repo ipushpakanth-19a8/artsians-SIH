@@ -41,7 +41,7 @@ export function AdminLayout() {
                 <span className="font-extrabold text-white font-['Rozha_One',serif]">ShilpSetu</span>
                 <span className="px-1 py-0.2 bg-red-600 text-white rounded text-[8px] font-black uppercase">Admin</span>
               </div>
-              <p className="text-[10px] text-stone-400 font-medium">KALAtech Governance</p>
+              <p className="text-[10px] text-stone-400 font-medium">ShilpSetu Governance</p>
             </div>
           </Link>
         </div>
@@ -101,7 +101,7 @@ export function AdminLayout() {
             <div className="p-4 border-b border-stone-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center text-white font-bold text-xs">SS</div>
-                <span className="font-bold text-white">ShilpSetu Admin <span className="text-red-400 text-xs font-normal">(KALAtech)</span></span>
+                <span className="font-bold text-white">ShilpSetu Admin <span className="text-red-400 text-xs font-normal">(ShilpSetu)</span></span>
               </div>
               <button onClick={() => setSidebarOpen(false)} className="p-1 text-stone-400"><X className="w-5 h-5" /></button>
             </div>

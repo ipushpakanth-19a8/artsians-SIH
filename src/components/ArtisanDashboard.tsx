@@ -65,7 +65,7 @@ export const ArtisanDashboard: React.FC<ArtisanDashboardProps> = ({
   });
 
   const handleShareWhatsApp = (product: Product) => {
-    const shareText = `Explore authentic handcrafted ${product.title} made by master craftsperson ${product.artisan_name} from ${product.artisan_district}. Direct price: ₹${product.final_price}. View certified listing on KALAtech!`;
+    const shareText = `Explore authentic handcrafted ${product.title} made by master craftsperson ${product.artisan_name} from ${product.artisan_district}. Direct price: ₹${product.final_price}. View certified listing on ShilpSetu!`;
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
     window.open(url, '_blank');
   };

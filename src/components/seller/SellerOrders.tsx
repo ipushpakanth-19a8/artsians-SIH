@@ -122,11 +122,22 @@ export function SellerOrders() {
   });
 
   const handleListen = () => {
-    const text = language === 'hi'
-      ? `आपके पास कुल ${orders.length} ऑर्डर्स हैं। इसमें से ${orders.filter(o => o.status !== 'delivered').length} ऑर्डर्स अभी पूरे किए जाने हैं।`
-      : language === 'te'
-      ? `మీకు మొత్తం ${orders.length} ఆర్డర్లు ఉన్నాయి. వీటిలో ${orders.filter(o => o.status !== 'delivered').length} ఆర్డర్లు పంపాల్సి ఉంది.`
-      : `You have ${orders.length} total orders, with ${orders.filter(o => o.status !== 'delivered').length} active orders to fulfill.`;
+    const activeOrders = orders.filter(o => o.status !== 'delivered').length;
+    const textMap: Record<string, string> = {
+      hi: `आपके पास कुल ${orders.length} ऑर्डर्स हैं। इसमें से ${activeOrders} ऑर्डर्स अभी पूरे किए जाने हैं।`,
+      te: `మీకు మొత్తం ${orders.length} ఆర్డర్లు ఉన్నాయి. వీటిలో ${activeOrders} ఆర్డర్లు పంపాల్సి ఉంది.`,
+      ta: `உங்களிடம் மொத்தம் ${orders.length} ஆர்டர்கள் உள்ளன. இதில் ${activeOrders} ஆர்டர்கள் அனுப்பப்பட வேண்டும்.`,
+      kn: `ನಿಮ್ಮಲ್ಲಿ ಒಟ್ಟು ${orders.length} ಆದೇಶಗಳಿವೆ. ಇವುಗಳಲ್ಲಿ ${activeOrders} ಆದೇಶಗಳನ್ನು ಪೂರೈಸಬೇಕಾಗಿದೆ.`,
+      ml: `നിങ്ങൾക്ക് ആകെ ${orders.length} ഓർഡറുകൾ ഉണ്ട്. ഇതിൽ ${activeOrders} എണ്ണം പൂർത്തിയാക്കാനുണ്ട്.`,
+      mr: `तुमच्याकडे एकूण ${orders.length} मागण्या आहेत. यापैकी ${activeOrders} मागण्या पूर्ण करणे बाकी आहे.`,
+      gu: `તમારી પાસે કુલ ${orders.length} ઓર્ડર છે. જેમાંથી ${activeOrders} ઓર્ડર પૂરા કરવાના બાકી છે.`,
+      bn: `আপনার কাছে মোট ${orders.length}টি অর্ডার রয়েছে। যার মধ্যে ${activeOrders}টি অর্ডার এখনো পূরণ করতে হবে।`,
+      or: `ଆପଣଙ୍କ ପାଖରେ ମୋଟ ${orders.length} ଟି ଅର୍ଡର ଅଛି। ଏଥିରୁ ${activeOrders} ଟି ଅର୍ଡର ପୂରଣ କରିବାକୁ ବାକି ଅଛି।`,
+      pa: `ਤੁਹਾਡੇ ਕੋਲ ਕੁੱਲ ${orders.length} ਆਰਡਰ ਹਨ। ਇਹਨਾਂ ਵਿੱਚੋਂ ${activeOrders} ਆਰਡਰ ਪੂਰੇ ਕੀਤੇ ਜਾਣੇ ਹਨ।`,
+      as: `আপোনাৰ ওচৰত মুঠ ${orders.length} টা অৰ্ডাৰ আছে। ইয়াৰে ${activeOrders} টা অৰ্ডাৰ এতিয়াও সম্পূৰ্ণ কৰিবলৈ বাকী আছে।`,
+      en: `You have ${orders.length} total orders, with ${activeOrders} active orders to fulfill.`
+    };
+    const text = textMap[language] || textMap.en;
     speakText(text, language);
   };
 

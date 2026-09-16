@@ -15,7 +15,7 @@ export function Wishlist() {
 
   const loadWishlist = () => {
     try {
-      const items = JSON.parse(localStorage.getItem('kalatech_wishlist') || '[]');
+      const items = JSON.parse(localStorage.getItem('ShilpSetu_wishlist') || '[]');
       setWishlist(items);
     } catch {}
   };
@@ -27,20 +27,20 @@ export function Wishlist() {
   const removeItem = (productId: string) => {
     const updated = wishlist.filter((item) => item.productId !== productId);
     setWishlist(updated);
-    localStorage.setItem('kalatech_wishlist', JSON.stringify(updated));
+    localStorage.setItem('ShilpSetu_wishlist', JSON.stringify(updated));
     window.dispatchEvent(new Event('cart-updated'));
   };
 
   const moveToCart = (item: WishlistItem) => {
     try {
-      const cart = JSON.parse(localStorage.getItem('kalatech_cart') || '[]');
+      const cart = JSON.parse(localStorage.getItem('ShilpSetu_cart') || '[]');
       const existing = cart.find((i: any) => i.productId === item.productId);
       if (existing) {
         existing.quantity += 1;
       } else {
         cart.push({ productId: item.productId, product: item.product, quantity: 1, addedAt: new Date().toISOString() });
       }
-      localStorage.setItem('kalatech_cart', JSON.stringify(cart));
+      localStorage.setItem('ShilpSetu_cart', JSON.stringify(cart));
       removeItem(item.productId);
     } catch {}
   };

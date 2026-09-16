@@ -30,7 +30,7 @@ const AdminAuthContext = createContext<AdminAuthContextType>({
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [adminToken, setAdminToken] = useState<string | null>(() => {
     try {
-      return localStorage.getItem('kalatech_admin_token') || null;
+      return localStorage.getItem('ShilpSetu_admin_token') || null;
     } catch {
       return null;
     }
@@ -38,7 +38,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
     try {
-      const stored = localStorage.getItem('kalatech_admin_user');
+      const stored = localStorage.getItem('ShilpSetu_admin_user');
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed.role === 'admin') return parsed;
@@ -72,8 +72,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       setAdminToken(data.token);
 
       try {
-        localStorage.setItem('kalatech_admin_token', data.token);
-        localStorage.setItem('kalatech_admin_user', JSON.stringify(user));
+        localStorage.setItem('ShilpSetu_admin_token', data.token);
+        localStorage.setItem('ShilpSetu_admin_user', JSON.stringify(user));
       } catch {}
 
       return { success: true };
@@ -86,8 +86,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     setAdminUser(null);
     setAdminToken(null);
     try {
-      localStorage.removeItem('kalatech_admin_token');
-      localStorage.removeItem('kalatech_admin_user');
+      localStorage.removeItem('ShilpSetu_admin_token');
+      localStorage.removeItem('ShilpSetu_admin_user');
       fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     } catch {}
   };

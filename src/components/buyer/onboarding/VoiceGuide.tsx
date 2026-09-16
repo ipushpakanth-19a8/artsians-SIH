@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Volume2, VolumeX, Pause, Play, Sparkles } from 'lucide-react';
 import { LanguageCode } from '../../../types';
+import { getSpeechLocale } from '../../../config/languages';
 
 interface VoiceGuideProps {
   spokenText: string;
@@ -30,13 +31,10 @@ export const VoiceGuide: React.FC<VoiceGuideProps> = ({
   const getPreferredVoice = useCallback((): SpeechSynthesisVoice | null => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
     const voices = window.speechSynthesis.getVoices();
-    if (language === 'hi') {
-      return voices.find((v) => v.lang === 'hi-IN' || v.lang.startsWith('hi')) || null;
-    }
-    if (language === 'te') {
-      return voices.find((v) => v.lang === 'te-IN' || v.lang.startsWith('te')) || null;
-    }
+    const speechLocale = getSpeechLocale(language);
     return (
+      voices.find((v) => v.lang.toLowerCase() === speechLocale.toLowerCase()) ||
+      voices.find((v) => v.lang.toLowerCase().replace('_', '-').startsWith(language)) ||
       voices.find((v) => v.lang === 'en-IN' || v.name.includes('India')) ||
       voices.find((v) => v.lang.startsWith('en')) ||
       voices[0] ||
@@ -63,13 +61,7 @@ export const VoiceGuide: React.FC<VoiceGuideProps> = ({
       const preferredVoice = getPreferredVoice();
       if (preferredVoice) utterance.voice = preferredVoice;
 
-      if (language === 'hi') {
-        utterance.lang = 'hi-IN';
-      } else if (language === 'te') {
-        utterance.lang = 'te-IN';
-      } else {
-        utterance.lang = 'en-IN';
-      }
+      utterance.lang = getSpeechLocale(language);
 
       utterance.rate = 0.94; // Clear and measured pace
       utterance.pitch = 1.05;

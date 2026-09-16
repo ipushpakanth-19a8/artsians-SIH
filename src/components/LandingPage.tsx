@@ -21,7 +21,14 @@ import { LanguageSelectionModal } from './common/LanguageSelectionModal';
 import { useTutorial } from './tutorial/TutorialContext';
 
 export function LandingPage() {
-  const { language, setLanguage } = useLanguage();
+  const {
+    language,
+    setLanguage,
+    isLanguageModalOpen,
+    openLanguageModal,
+    closeLanguageModal,
+    initialModalStep,
+  } = useLanguage();
   const { user, role } = useAuth();
   const navigate = useNavigate();
   const { startJourney, startDemoJourney, openWelcomeModal } = useTutorial();
@@ -29,15 +36,6 @@ export function LandingPage() {
 
   // Voice Assistant Hook
   const voice = useVoiceAssistant(language);
-
-  // Automatic Language Selection for first-time visits
-  const [showLanguageModal, setShowLanguageModal] = useState<boolean>(() => {
-    try {
-      return !localStorage.getItem('kalatech_language_chosen') && !localStorage.getItem('kalatech_auth');
-    } catch {
-      return true;
-    }
-  });
 
   // Active step in the 3-step tutorial
   const [instructionStep, setInstructionStep] = useState(0);
@@ -52,16 +50,13 @@ export function LandingPage() {
   const roleRef = useRef<HTMLDivElement>(null);
   const aiRef = useRef<HTMLDivElement>(null);
 
-  // Auto-transition to artisan login when language is selected
-  const handleLanguageChosen = (lang: LanguageCode) => {
-    setLanguage(lang);
-    try {
-      localStorage.setItem('kalatech_language_chosen', 'true');
-      localStorage.setItem('kalatech_language', lang);
-    } catch {}
-    setShowLanguageModal(false);
-    // Immediately open voice-first artisan login
-    setArtisanModalOpen(true);
+  // Auto-transition to artisan login when state & language are selected
+  const handleLanguageSetupComplete = (stateName: string, stateCode: string, langCode: LanguageCode) => {
+    closeLanguageModal();
+    // Immediately open voice-first artisan seller login
+    setTimeout(() => {
+      setArtisanModalOpen(true);
+    }, 400);
   };
 
   // Change voice language when user changes interface language
@@ -104,7 +99,7 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#faf7f2] text-[#262220] selection:bg-[#c85a32] selection:text-white font-sans pb-24 sm:pb-12">
-      {/* 1. Header with ShilpSetu (KALAtech) branding and language switcher */}
+      {/* 1. Header with ShilpSetu (ShilpSetu) branding and language switcher */}
       <PortalHeader
         language={language}
         onSelectLanguage={handleSelectLanguage}
@@ -134,7 +129,7 @@ export function LandingPage() {
           {/* Subtle Craft Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fdf2e9] border border-[#f8d7c2] text-[#9c4124] text-xs font-extrabold uppercase tracking-wider mb-4 shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-[#c85a32]" />
-            <span>Digital Business Assistant for Indian Artisans</span>
+            <span>{t.heroBadge}</span>
           </div>
 
           {/* Large Hero Heading */}
@@ -154,7 +149,7 @@ export function LandingPage() {
               className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 border border-amber-300 text-amber-950 text-xs sm:text-sm font-black transition-all shadow-2xs cursor-pointer active:scale-98"
             >
               <span className="text-base">🌱</span>
-              <span>Start Artisan Journey Game</span>
+              <span>{t.startArtisanJourney}</span>
               <span className="bg-[#9c4124] text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
                 9 Levels
               </span>
@@ -185,7 +180,7 @@ export function LandingPage() {
               className="w-full sm:w-auto min-h-[52px] px-6 py-3.5 rounded-2xl font-bold text-base text-[#9c4124] bg-white hover:bg-[#fdf2e9] border-2 border-[#f8d7c2] shadow-xs transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
             >
               <Volume2 className="w-4.5 h-4.5 text-[#9c4124] animate-pulse" />
-              <span>{language === 'hi' ? 'आवाज़ गाइड (ऑटो)' : language === 'te' ? 'వాయిస్ గైడ్ (ఆటో)' : 'Voice Tour (Auto Next)'}</span>
+              <span>{t.voiceTourButton}</span>
             </button>
           </div>
 
@@ -228,7 +223,7 @@ export function LandingPage() {
       </section>
 
       {/* ================================================== */}
-      {/* 3. AI CRAFT ASSISTANT DEMONSTRATION (KALA MITRA) */}
+      {/* 3. AI CRAFT ASSISTANT DEMONSTRATION (ShilpSetu AI) */}
       {/* ================================================== */}
       <section ref={aiRef} className="py-10 sm:py-14 px-4 sm:px-6 max-w-4xl mx-auto">
         <AIProcessingDemo language={language} onSpeak={handleSpeakInstruction} />
@@ -259,11 +254,11 @@ export function LandingPage() {
           <div className="flex items-center justify-center gap-2 mb-3">
             <ShieldCheck className="w-6 h-6 text-emerald-700" />
             <span className="text-base font-black text-[#262220]">
-              National Artisan Welfare & Fair Market Promise
+              {t.ethicalCommitmentTitle}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-2xl mx-auto mb-4">
-            ShilpSetu (powered by KALAtech) is designed to protect traditional Indian artisans from predatory middleman cuts. All price suggestions follow ethical labor compensation and verifiable Geographical Indication (GI) heritage standards.
+            {t.ethicalCommitmentDesc}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-bold text-stone-700">
             <span className="px-3 py-1 bg-[#fdf2e9] border border-[#f8d7c2] text-[#9c4124] rounded-full">✓ 0% Platform Commission on Craft Direct Sales</span>
@@ -286,13 +281,13 @@ export function LandingPage() {
               ShilpSetu
             </span>
             <span className="text-[#9c4124] text-xs">शिल्पसेतु</span>
-            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[#fdf2e9] text-[#9c4124] border border-[#f8d7c2] rounded uppercase">KALAtech</span>
+            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[#fdf2e9] text-[#9c4124] border border-[#f8d7c2] rounded uppercase">ShilpSetu</span>
           </div>
           <p className="text-stone-700 font-medium">
             {t.tagline}
           </p>
           <p className="text-[11px] text-stone-500">
-            Engineered for low-digital-literacy artisans • Web Speech API Audio Enabled • English • हिन्दी • తెలుగు
+            {t.footerAccessibility}
           </p>
           <p className="text-[11px] text-stone-400 pt-2 border-t border-stone-100">
             Smart India Hackathon • Made with reverence for India's living cultural craft heritage.
@@ -321,14 +316,14 @@ export function LandingPage() {
       </div>
 
       {/* ================================================== */}
-      {/* AUTOMATIC VOICE LANGUAGE SELECTION MODAL */}
+      {/* AUTOMATIC VOICE STATE & LANGUAGE SELECTION MODAL */}
       {/* ================================================== */}
-      {showLanguageModal && (
+      {isLanguageModalOpen && (
         <LanguageSelectionModal
-          isOpen={showLanguageModal}
-          onClose={() => setShowLanguageModal(false)}
-          onSelectLanguage={handleLanguageChosen}
-          title="🌐 Choose Your Language"
+          isOpen={isLanguageModalOpen}
+          initialStep={initialModalStep}
+          onClose={closeLanguageModal}
+          onComplete={handleLanguageSetupComplete}
         />
       )}
 

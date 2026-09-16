@@ -19,7 +19,7 @@ export function AdminDashboard() {
       fetch('/api/orders').then((r) => r.json()).catch(() => []),
       fetch('/api/products').then((r) => r.json()).catch(() => []),
       fetch('/api/bills').then((r) => r.json()).catch(() => {
-        return JSON.parse(localStorage.getItem('kalatech_bills') || '[]');
+        return JSON.parse(localStorage.getItem('ShilpSetu_bills') || '[]');
       }),
     ]).then(([orderData, prodData, billData]) => {
       if (Array.isArray(orderData)) setOrders(orderData);

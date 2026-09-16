@@ -223,7 +223,7 @@ export const BuyerMarketplace: React.FC<BuyerMarketplaceProps> = ({
                         title="Chat with Artisan on WhatsApp"
                         onClick={(e) => {
                           e.stopPropagation();
-                          const msg = `Hi ${product.artisan_name}, I am interested in purchasing ${product.title} (₹${product.final_price}) on KALAtech. Is this craft available?`;
+                          const msg = `Hi ${product.artisan_name}, I am interested in purchasing ${product.title} (₹${product.final_price}) on ShilpSetu. Is this craft available?`;
                           window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
                         }}
                         className="p-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition-all shrink-0"

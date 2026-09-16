@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { LanguageCode } from '../types';
+import { getRecognitionLocale, getSpeechLocale } from '../config/languages';
 
 export interface VoiceFormFieldConfig {
   key: string;
@@ -9,11 +10,31 @@ export interface VoiceFormFieldConfig {
     en: string;
     hi: string;
     te: string;
+    ta?: string;
+    kn?: string;
+    ml?: string;
+    mr?: string;
+    gu?: string;
+    bn?: string;
+    or?: string;
+    pa?: string;
+    as?: string;
+    [key: string]: string | undefined;
   };
   sampleFallback?: {
     en: string;
     hi: string;
     te: string;
+    ta?: string;
+    kn?: string;
+    ml?: string;
+    mr?: string;
+    gu?: string;
+    bn?: string;
+    or?: string;
+    pa?: string;
+    as?: string;
+    [key: string]: string | undefined;
   };
 }
 
@@ -24,24 +45,52 @@ export interface UseVoiceFormAssistantOptions {
   onComplete?: () => void;
 }
 
-// Convert spoken number words across EN, HI, TE to digits
+// Convert spoken number words across all 12 supported Indian languages to digits
 export function normalizeSpokenDigits(input: string): string {
   const digitWords: Record<string, string> = {
     // English
     zero: '0', oh: '0', one: '1', two: '2', three: '3', four: '4', five: '5',
     six: '6', seven: '7', eight: '8', nine: '9',
-    // Hindi
-    शून्य: '0', सिफ़र: '0', एक: '1', दो: '2', तीन: '3', चार: '4', पाँच: '5',
-    पांच: '5', छह: '6', छः: '6', सात: '7', आठ: '8', नौ: '9', दस: '10',
+    // Hindi & Marathi
+    शून्य: '0', सिफ़र: '0', एक: '1', दो: '2', दोन: '2', तीन: '3', चार: '4', पाँच: '5',
+    पांच: '5', पाच: '5', छह: '6', छः: '6', सहा: '6', सात: '7', आठ: '8', नौ: '9', नऊ: '9', दस: '10', दहा: '10',
     // Telugu
     సున్నా: '0', ఒకటి: '1', రెండు: '2', మూడు: '3', నాలుగు: '4', ఐదు: '5',
-    ఆరు: '6', ఏడు: '7', ఎనిమిది: '8', తొమ్మిది: '9',
+    ఆరు: '6', ఏడు: '7', ఎనిమిది: '8', తొమ్మిది: '9', పది: '10',
+    // Tamil
+    பூஜ்ஜியம்: '0', ஒன்று: '1', இரண்டு: '2', மூன்று: '3', நான்கு: '4', ஐந்து: '5',
+    ஆறு: '6', ஏழு: '7', எட்டு: '8', ஒன்பது: '9', பத்து: '10',
+    // Kannada
+    ಸೊನ್ನೆ: '0', ಒಂದು: '1', ಎರಡು: '2', ಮೂರು: '3', ನಾಲ್ಕು: '4', ಐದು: '5',
+    ಆರು: '6', ಏಳು: '7', ಎಂಟು: '8', ಒಂಬತ್ತು: '9', ಹತ್ತು: '10',
+    // Malayalam
+    പൂജ്യം: '0', ഒന്ന്: '1', രണ്ട്: '2', മൂന്ന്: '3', നാല്: '4', അഞ്ച്: '5',
+    ആറ്: '6', ഏഴ്: '7', എട്ട്: '8', ഒൻപത്: '9', പത്ത്: '10',
+    // Gujarati
+    શૂન્ય: '0', એક: '1', બે: '2', ત્રણ: '3', ચાર: '4', પાંચ: '5', છ: '6', સાત: '7', આઠ: '8', નવ: '9', દસ: '10',
+    // Bengali & Assamese
+    শূণ্য: '0', শূন্য: '0', এক: '1', দুই: '2', তিনি: '3', তিন: '3', চাৰি: '4', চার: '4', পাঁচ: '5',
+    ছয়: '6', সাত: '7', আট: '8', আঠ: '8', নয়: '9', ন: '9', দশ: '10', দহ: '10',
+    // Odia
+    ଶୂନ: '0', ଏକ: '1', ଦୁଇ: '2', ତିନି: '3', ଚାରି: '4', ପାଞ୍ଚ: '5', ଛଅ: '6', ସାତ: '7', ଆଠ: '8', ନଅ: '9', ଦଶ: '10',
+    // Punjabi
+    ਸਿਫ਼ਰ: '0', ਇੱਕ: '1', ਦੋ: '2', ਤਿੰਨ: '3', ਚਾਰ: '4', ਪੰਜ: '5', ਛੇ: '6', ਸੱਤ: '7', ਅੱਠ: '8', ਨੌਂ: '9', ਦਸ: '10',
   };
 
-  let cleaned = input.toLowerCase();
-  for (const [word, digit] of Object.entries(digitWords)) {
-    const reg = new RegExp(`\\b${word}\\b`, 'gi');
-    cleaned = cleaned.replace(reg, digit);
+  // 1. Exact token-level replacement
+  const tokens = input.split(/\s+/);
+  const normalizedTokens = tokens.map(token => {
+    const cleanToken = token.toLowerCase().replace(/[.,!?;:()]/g, '');
+    return digitWords[cleanToken] || digitWords[token.toLowerCase()] || token;
+  });
+  let cleaned = normalizedTokens.join(' ');
+
+  // 2. Fallback for compound or punctuation-joined words (sorted by length descending)
+  const sortedWords = Object.keys(digitWords).sort((a, b) => b.length - a.length);
+  for (const word of sortedWords) {
+    if (cleaned.includes(word)) {
+      cleaned = cleaned.split(word).join(digitWords[word]);
+    }
   }
   return cleaned;
 }
@@ -141,12 +190,16 @@ export function useVoiceFormAssistant({
       setIsSpeaking(true);
 
       const utterance = new SpeechSynthesisUtterance(text);
-      if (language === 'hi') {
-        utterance.lang = 'hi-IN';
-      } else if (language === 'te') {
-        utterance.lang = 'te-IN';
-      } else {
-        utterance.lang = 'en-IN';
+      utterance.lang = getSpeechLocale(language);
+
+      if ('getVoices' in window.speechSynthesis) {
+        const voices = window.speechSynthesis.getVoices();
+        const match = voices.find(
+          (v) =>
+            v.lang.toLowerCase() === utterance.lang.toLowerCase() ||
+            v.lang.toLowerCase().replace('_', '-').startsWith(language)
+        );
+        if (match) utterance.voice = match;
       }
       utterance.rate = 0.95;
       utterance.pitch = 1.0;
@@ -223,8 +276,8 @@ export function useVoiceFormAssistant({
           recognitionRef.current = recognition;
           recognition.continuous = false;
           recognition.interimResults = true;
-          recognition.lang =
-            language === 'hi' ? 'hi-IN' : language === 'te' ? 'te-IN' : 'en-IN';
+          recognition.lang = getRecognitionLocale(language);
+          console.log(`[VOICE] Language: ${language}, Recognition Locale: ${recognition.lang}`);
 
           setIsListening(true);
 

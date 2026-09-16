@@ -1,9 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { LanguageCode } from '../types';
 
+/** Clear voice state machine: idle → speaking ↔ paused → idle */
+export type VoiceState = 'idle' | 'speaking' | 'paused';
+
 export interface VoiceAssistantState {
   isPlaying: boolean;
   isPaused: boolean;
+  /** Derived state for clearer state machine tracking */
+  voiceState: VoiceState;
   currentText: string | null;
   speak: (text: string, lang?: LanguageCode, onEnd?: () => void) => void;
   pause: () => void;
@@ -11,6 +16,57 @@ export interface VoiceAssistantState {
   replay: () => void;
   stop: () => void;
   toggle: (text: string, lang?: LanguageCode, onEnd?: () => void) => void;
+}
+
+// ---------------------------------------------------------------------------
+// Regional locale map for all 12 supported Indian languages
+// ---------------------------------------------------------------------------
+const REGIONAL_LOCALES: Record<string, string> = {
+  en: 'en-IN',
+  hi: 'hi-IN',
+  te: 'te-IN',
+  ta: 'ta-IN',
+  kn: 'kn-IN',
+  ml: 'ml-IN',
+  mr: 'mr-IN',
+  gu: 'gu-IN',
+  bn: 'bn-IN',
+  pa: 'pa-IN',
+  or: 'or-IN',
+  as: 'as-IN',
+};
+
+/**
+ * Find the best available SpeechSynthesis voice for the given language.
+ * Priority: exact locale match → language-prefix match → null (let browser default)
+ */
+export function getBestVoice(lang: LanguageCode): SpeechSynthesisVoice | null {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
+
+  const targetLocale = REGIONAL_LOCALES[lang] || 'en-IN';
+  const voices = window.speechSynthesis.getVoices();
+
+  // 1. Exact locale match (e.g. 'te-IN' === 'te-IN')
+  const exactMatch = voices.find(
+    (v) => v.lang.toLowerCase() === targetLocale.toLowerCase()
+  );
+  if (exactMatch) return exactMatch;
+
+  // 2. Language-prefix match (e.g. 'te' starts with 'te')
+  const prefixMatch = voices.find(
+    (v) => v.lang.toLowerCase().replace('_', '-').startsWith(lang)
+  );
+  if (prefixMatch) return prefixMatch;
+
+  // 3. Fallback to en-IN if available
+  if (lang !== 'en') {
+    const enFallback = voices.find(
+      (v) => v.lang.toLowerCase() === 'en-in'
+    );
+    if (enFallback) return enFallback;
+  }
+
+  return null;
 }
 
 export function useVoiceAssistant(defaultLang: LanguageCode = 'en'): VoiceAssistantState {
@@ -66,14 +122,10 @@ export function useVoiceAssistant(defaultLang: LanguageCode = 'en'): VoiceAssist
 
       const utterance = new SpeechSynthesisUtterance(text);
 
-      // Best matching voice tag for Indian English, Hindi, Telugu
-      if (lang === 'hi') {
-        utterance.lang = 'hi-IN';
-      } else if (lang === 'te') {
-        utterance.lang = 'te-IN';
-      } else {
-        utterance.lang = 'en-IN';
-      }
+      // Set locale and find best matching voice
+      utterance.lang = REGIONAL_LOCALES[lang] || 'en-IN';
+      const bestVoice = getBestVoice(lang);
+      if (bestVoice) utterance.voice = bestVoice;
 
       utterance.rate = 0.92; // slightly slower for low-literacy clarity
       utterance.pitch = 1.0;
@@ -162,9 +214,13 @@ export function useVoiceAssistant(defaultLang: LanguageCode = 'en'): VoiceAssist
     [isPlaying, isPaused, currentText, pause, resume, speak, defaultLang]
   );
 
+  // Derive clear state machine value
+  const voiceState: VoiceState = isPaused ? 'paused' : isPlaying ? 'speaking' : 'idle';
+
   return {
     isPlaying,
     isPaused,
+    voiceState,
     currentText,
     speak,
     pause,

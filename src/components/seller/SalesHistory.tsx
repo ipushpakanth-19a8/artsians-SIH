@@ -24,7 +24,7 @@ export function SalesHistory() {
     Promise.all([
       fetch('/api/orders').then(r => r.json()).catch(() => []),
       fetch('/api/bills').then(r => r.json()).catch(() => {
-        return JSON.parse(localStorage.getItem('kalatech_bills') || '[]');
+        return JSON.parse(localStorage.getItem('ShilpSetu_bills') || '[]');
       })
     ]).then(([orderData, billData]) => {
       if (Array.isArray(orderData)) setOrders(orderData);
@@ -50,11 +50,21 @@ export function SalesHistory() {
   ];
 
   const handleListen = () => {
-    const text = language === 'hi'
-      ? `इस महीने आपने पिछले महीने से ₹4,200 अधिक कमाए हैं। आपकी कुल बिक्री ₹${totalRevenue} है, जिसमें अनुमानित मुनाफ़ा ₹${estimatedProfit} है।`
-      : language === 'te'
-      ? `ఈ నెల మీరు గత నెల కంటే ₹4,200 ఎక్కువ సంపాదించారు. మీ మొత్తం అమ్మకాలు ₹${totalRevenue}, ఇందులో అంచనా లాభం ₹${estimatedProfit}.`
-      : `You earned ₹4,200 more than last month. Your total sales are ₹${totalRevenue} with an estimated direct profit of ₹${estimatedProfit}.`;
+    const textMap: Record<string, string> = {
+      hi: `इस महीने आपने पिछले महीने से ₹4,200 अधिक कमाए हैं। आपकी कुल बिक्री ₹${totalRevenue} है, जिसमें अनुमानित मुनाफ़ा ₹${estimatedProfit} है।`,
+      te: `ఈ నెల మీరు గత నెల కంటే ₹4,200 ఎక్కువ సంపాదించారు. మీ మొత్తం అమ్మకాలు ₹${totalRevenue}, ఇందులో అంచనా లాభం ₹${estimatedProfit}.`,
+      ta: `இந்த மாதம் கடந்த மாதத்தை விட ₹4,200 அதிகமாக சம்பாதித்துள்ளீர்கள். உங்கள் மொத்த விற்பனை ₹${totalRevenue}, இதில் மதிப்பிடப்பட்ட லாபம் ₹${estimatedProfit}.`,
+      kn: `ಈ ತಿಂಗಳು ನೀವು ಕಳೆದ ತಿಂಗಳಿಗಿಂತ ₹4,200 ಹೆಚ್ಚು ಗಳಿಸಿದ್ದೀರಿ. ನಿಮ್ಮ ಒಟ್ಟು ಮಾರಾಟ ₹${totalRevenue}, ಇದರಲ್ಲಿ ಅಂದಾಜು ಲಾಭ ₹${estimatedProfit}.`,
+      ml: `കഴിഞ്ഞ മാസത്തേക്കാൾ ₹4,200 കൂടുതൽ നിങ്ങൾ ഈ മാസം നേടി. ആകെ വിൽപന ₹${totalRevenue}, കണക്കാക്കിയ ലാഭം ₹${estimatedProfit}.`,
+      mr: `या महिन्यात तुम्ही मागील महिन्यापेक्षा ₹4,200 अधिक कमावले आहेत. तुमची एकूण विक्री ₹${totalRevenue} आहे, ज्यामध्ये अंदाजे नफा ₹${estimatedProfit} आहे.`,
+      gu: `આ મહિને તમે પાછલા મહિના કરતાં ₹4,200 વધુ કમાયા છો. તમારું કુલ વેચાણ ₹${totalRevenue} છે, જેમાં અંદાજિત નફો ₹${estimatedProfit} છે.`,
+      bn: `এই মাসে আপনি গত মাসের চেয়ে ₹৪,২০০ বেশি আয় করেছেন। আপনার মোট বিক্রি ₹${totalRevenue}, যার মধ্যে আনুমানিক লাভ ₹${estimatedProfit}।`,
+      or: `ଏହି ମାସରେ ଆପଣ ଗତ ମାସ ତୁଳନାରେ ₹୪,୨୦୦ ଅଧିକ ରୋଜଗାର କରିଛନ୍ତି। ଆପଣଙ୍କର ମୋଟ ବିକ୍ରି ₹${totalRevenue}, ଯେଉଁଥିରେ ଆନୁମାନିକ ଲାଭ ₹${estimatedProfit}।`,
+      pa: `ਇਸ ਮਹੀਨੇ ਤੁਸੀਂ ਪਿਛਲੇ ਮਹੀਨੇ ਨਾਲੋਂ ₹4,200 ਵੱਧ ਕਮਾਏ ਹਨ। ਤੁਹਾਡੀ ਕੁੱਲ ਵਿਕਰੀ ₹${totalRevenue} ਹੈ, ਜਿਸ ਵਿੱਚ ਅੰਦਾਜ਼ਨ ਮੁਨਾਫਾ ₹${estimatedProfit} ਹੈ।`,
+      as: `এই মাহত আপুনি যোৱা মাহতকৈ ₹৪,২০০ বেছি উপাৰ্জন কৰিছে। আপোনাৰ মুঠ বিক্ৰী ₹${totalRevenue}, যাৰ আনুমানিক লাভ ₹${estimatedProfit}।`,
+      en: `You earned ₹4,200 more than last month. Your total sales are ₹${totalRevenue} with an estimated direct profit of ₹${estimatedProfit}.`
+    };
+    const text = textMap[language] || textMap.en;
     speakText(text, language);
   };
 

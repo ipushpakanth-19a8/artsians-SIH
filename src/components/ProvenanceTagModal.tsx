@@ -168,7 +168,7 @@ export const ProvenanceTagModal: React.FC<ProvenanceTagModalProps> = ({
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Scan QR for Online Re-Orders & Direct Artisan Contact</span>
               </div>
-              <span className="text-stone-400 text-[9px]">Verified GI / Fair Trade Handloom • KALAtech AI Provenance</span>
+              <span className="text-stone-400 text-[9px]">Verified GI / Fair Trade Handloom • ShilpSetu AI Provenance</span>
             </div>
 
           </div>

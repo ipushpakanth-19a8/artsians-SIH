@@ -17,7 +17,7 @@ export function Cart() {
 
   const loadCart = () => {
     try {
-      const items = JSON.parse(localStorage.getItem('kalatech_cart') || '[]');
+      const items = JSON.parse(localStorage.getItem('ShilpSetu_cart') || '[]');
       setCartItems(items);
     } catch {}
   };
@@ -32,14 +32,14 @@ export function Cart() {
       item.productId === productId ? { ...item, quantity: newQty } : item
     );
     setCartItems(updated);
-    localStorage.setItem('kalatech_cart', JSON.stringify(updated));
+    localStorage.setItem('ShilpSetu_cart', JSON.stringify(updated));
     window.dispatchEvent(new Event('cart-updated'));
   };
 
   const removeItem = (productId: string) => {
     const updated = cartItems.filter((item) => item.productId !== productId);
     setCartItems(updated);
-    localStorage.setItem('kalatech_cart', JSON.stringify(updated));
+    localStorage.setItem('ShilpSetu_cart', JSON.stringify(updated));
     window.dispatchEvent(new Event('cart-updated'));
   };
 
@@ -83,7 +83,7 @@ export function Cart() {
       }
 
       // Clear cart
-      localStorage.setItem('kalatech_cart', '[]');
+      localStorage.setItem('ShilpSetu_cart', '[]');
       window.dispatchEvent(new Event('cart-updated'));
       setCheckoutDone(true);
       setTimeout(() => {

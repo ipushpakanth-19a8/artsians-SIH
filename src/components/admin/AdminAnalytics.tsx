@@ -131,7 +131,7 @@ export function AdminAnalytics() {
             ₹14.4 Lakhs Saved from Middleman Exploitation
           </h3>
           <p className="text-stone-300 text-xs sm:text-sm leading-relaxed">
-            By enabling transparent production-cost billing, AI market benchmark comparisons, and direct artisan-to-buyer transactions, KALAtech has retained an estimated 65% additional revenue directly for heritage artisan families in FY 2025-26.
+            By enabling transparent production-cost billing, AI market benchmark comparisons, and direct artisan-to-buyer transactions, ShilpSetu has retained an estimated 65% additional revenue directly for heritage artisan families in FY 2025-26.
           </p>
         </div>
       </div>

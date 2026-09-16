@@ -27,7 +27,7 @@ export function BuyerHome() {
       .catch(() => setLoading(false));
 
     try {
-      const wish = JSON.parse(localStorage.getItem('kalatech_wishlist') || '[]');
+      const wish = JSON.parse(localStorage.getItem('ShilpSetu_wishlist') || '[]');
       setWishlistIds(wish.map((w: any) => w.productId));
     } catch {}
   }, []);
@@ -35,7 +35,7 @@ export function BuyerHome() {
   const toggleWishlist = (e: React.MouseEvent, prod: Product) => {
     e.stopPropagation();
     try {
-      let wish = JSON.parse(localStorage.getItem('kalatech_wishlist') || '[]');
+      let wish = JSON.parse(localStorage.getItem('ShilpSetu_wishlist') || '[]');
       if (wishlistIds.includes(prod.id)) {
         wish = wish.filter((w: any) => w.productId !== prod.id);
         setWishlistIds(wishlistIds.filter((id) => id !== prod.id));
@@ -43,7 +43,7 @@ export function BuyerHome() {
         wish.push({ productId: prod.id, product: prod, addedAt: new Date().toISOString() });
         setWishlistIds([...wishlistIds, prod.id]);
       }
-      localStorage.setItem('kalatech_wishlist', JSON.stringify(wish));
+      localStorage.setItem('ShilpSetu_wishlist', JSON.stringify(wish));
       window.dispatchEvent(new Event('cart-updated'));
     } catch {}
   };
@@ -51,14 +51,14 @@ export function BuyerHome() {
   const addToCart = (e: React.MouseEvent, prod: Product) => {
     e.stopPropagation();
     try {
-      const cart = JSON.parse(localStorage.getItem('kalatech_cart') || '[]');
+      const cart = JSON.parse(localStorage.getItem('ShilpSetu_cart') || '[]');
       const existing = cart.find((item: any) => item.productId === prod.id);
       if (existing) {
         existing.quantity += 1;
       } else {
         cart.push({ productId: prod.id, product: prod, quantity: 1, addedAt: new Date().toISOString() });
       }
-      localStorage.setItem('kalatech_cart', JSON.stringify(cart));
+      localStorage.setItem('ShilpSetu_cart', JSON.stringify(cart));
       window.dispatchEvent(new Event('cart-updated'));
     } catch {}
   };
@@ -253,7 +253,7 @@ export function BuyerHome() {
       {/* Trust & Heritage Pillars */}
       <section className="bg-stone-100 rounded-3xl p-8 sm:p-10 border border-stone-200">
         <h2 className="text-xl font-bold text-stone-900 font-['Rozha_One',serif] text-center mb-8">
-          The ShilpSetu (KALAtech) Fair-Trade Guarantee
+          The ShilpSetu (ShilpSetu) Fair-Trade Guarantee
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">

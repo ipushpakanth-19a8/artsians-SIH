@@ -69,7 +69,7 @@ export const GovernmentMarketplaceModal: React.FC<GovernmentMarketplaceModalProp
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           product_id: product.id,
-          bpp_id: 'bpp.kalatech.rural.in',
+          bpp_id: 'bpp.ShilpSetu.rural.in',
           provider_id: product.artisan_id,
         }),
       });
@@ -119,15 +119,15 @@ export const GovernmentMarketplaceModal: React.FC<GovernmentMarketplaceModalProp
       domain: "nic2004:52110",
       action: "on_search",
       core_version: "1.2.0",
-      bpp_id: "bpp.kalatech.rural.in",
-      bpp_uri: "https://api.kalatech.in/beckn/bpp",
+      bpp_id: "bpp.ShilpSetu.rural.in",
+      bpp_uri: "https://api.ShilpSetu.in/beckn/bpp",
       transaction_id: "c29d91f8-00a1-42e1",
       ttl: "PT30S"
     },
     message: {
       catalog: {
         "bpp/descriptor": {
-          name: "KALAtech Direct Artisan Handcraft BPP"
+          name: "ShilpSetu Direct Artisan Handcraft BPP"
         },
         "bpp/providers": [
           {
@@ -342,7 +342,7 @@ export const GovernmentMarketplaceModal: React.FC<GovernmentMarketplaceModalProp
               <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-1.5 text-xs">
                 <div className="flex justify-between">
                   <span className="text-stone-500">Registered BPP Provider:</span>
-                  <strong className="text-stone-800 font-mono">bpp.kalatech.rural.in</strong>
+                  <strong className="text-stone-800 font-mono">bpp.ShilpSetu.rural.in</strong>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-stone-500">Beckn Domain:</span>
@@ -438,7 +438,7 @@ export const GovernmentMarketplaceModal: React.FC<GovernmentMarketplaceModalProp
 
         {/* Modal Footer */}
         <div className="px-6 py-3 bg-stone-100 border-t border-stone-200 flex items-center justify-between text-xs text-stone-500">
-          <span>KALAtech Institutional Gateway v1.2</span>
+          <span>ShilpSetu Institutional Gateway v1.2</span>
           <button
             onClick={onClose}
             className="px-4 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold rounded-xl transition-colors"

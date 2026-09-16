@@ -35,12 +35,12 @@ export function BuyerLayout() {
   useEffect(() => {
     const shouldOpen =
       sessionStorage.getItem('open_buyer_tutorial') === 'true' ||
-      !sessionStorage.getItem('kalatech_seen_buyer_tour') ||
+      !sessionStorage.getItem('ShilpSetu_seen_buyer_tour') ||
       isFirstTimeBuyer;
 
     if (shouldOpen) {
       setManualTourOpen(true);
-      sessionStorage.setItem('kalatech_seen_buyer_tour', 'true');
+      sessionStorage.setItem('ShilpSetu_seen_buyer_tour', 'true');
       sessionStorage.removeItem('open_buyer_tutorial');
     }
   }, [user, isFirstTimeBuyer]);
@@ -58,9 +58,9 @@ export function BuyerLayout() {
 
   const updateCounts = () => {
     try {
-      const cart = JSON.parse(localStorage.getItem('kalatech_cart') || '[]');
+      const cart = JSON.parse(localStorage.getItem('ShilpSetu_cart') || '[]');
       setCartCount(cart.reduce((s: number, i: any) => s + (i.quantity || 1), 0));
-      const wish = JSON.parse(localStorage.getItem('kalatech_wishlist') || '[]');
+      const wish = JSON.parse(localStorage.getItem('ShilpSetu_wishlist') || '[]');
       setWishlistCount(wish.length);
     } catch {}
   };
@@ -119,7 +119,7 @@ export function BuyerLayout() {
                     ShilpSetu
                   </span>
                   <span className="px-1.5 py-0.5 text-[9px] font-bold bg-amber-500/20 text-amber-800 border border-amber-500/30 rounded tracking-wide uppercase">
-                    KALAtech
+                    ShilpSetu
                   </span>
                 </div>
                 <span className="text-[10px] text-amber-700 font-bold tracking-wider uppercase">
@@ -421,10 +421,10 @@ export function BuyerLayout() {
               SS
             </div>
             <span className="text-white font-bold font-['Rozha_One',serif]">ShilpSetu</span>
-            <span className="text-amber-400 text-[11px] font-semibold">(KALAtech)</span>
+            <span className="text-amber-400 text-[11px] font-semibold">(ShilpSetu)</span>
             <span>— Empowering Indian Artisans, Fair Trade Direct to Buyers</span>
           </div>
-          <p>© 2026 ShilpSetu (KALAtech). Built with pride for Indian Handicrafts.</p>
+          <p>© 2026 ShilpSetu (ShilpSetu). Built with pride for Indian Handicrafts.</p>
         </div>
       </footer>
 

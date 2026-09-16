@@ -1,7 +1,8 @@
 import React from 'react';
-import { Volume2, VolumeX, Smartphone, Monitor, ShieldCheck, Sparkles, ShoppingBag, Hammer } from 'lucide-react';
+import { Volume2, VolumeX, Smartphone, Monitor, ShieldCheck, Sparkles, ShoppingBag, Hammer, MapPin, Globe, RotateCcw } from 'lucide-react';
 import { LanguageCode } from '../types';
 import { translations, speakText, stopSpeaking } from '../lib/i18n';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface HeaderProps {
   currentRole: 'artisan' | 'buyer' | 'audit' | 'mobile-design';
@@ -26,6 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
   setIsSpeaking,
   onOpenEvaluatorTour
 }) => {
+  const { selectedState, selectedLanguageName, openLanguageModal } = useLanguage();
   const t = translations[language];
 
   const handleAudioGuide = () => {
@@ -39,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
         : currentRole === 'buyer'
         ? `${t.browseCatalog}. ${t.searchCrafts}`
         : currentRole === 'mobile-design'
-        ? "ShilpSetu Native Mobile App Design by KALAtech with offline-first vernacular voice architecture."
+        ? "ShilpSetu Native Mobile App Design by ShilpSetu with offline-first vernacular voice architecture."
         : `${t.evaluatorDefense}. AI audit trail and pricing benchmarks.`;
       speakText(speech, language);
       setTimeout(() => setIsSpeaking(false), 8000);
@@ -63,7 +65,7 @@ export const Header: React.FC<HeaderProps> = ({
                     ShilpSetu
                   </span>
                   <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-md tracking-wide uppercase">
-                    KALAtech
+                    ShilpSetu
                   </span>
                   <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full tracking-wide">
                     Mobile-First PWA (Rural Android Ready)
@@ -155,14 +157,28 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </nav>
 
-          {/* Right: Language Switcher & Device Toggle */}
+          {/* Right: State & Language Switcher & Device Toggle */}
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            {/* Language Switch */}
-            <div className="flex items-center bg-stone-950/70 border border-stone-800 rounded-xl p-0.5 text-xs">
+            {/* Current State & Language Selector Pill */}
+            <button
+              id="header-state-lang-selector-btn"
+              onClick={() => openLanguageModal('state')}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-stone-900 border border-stone-800 hover:border-amber-500/60 text-xs text-stone-200 transition-all group shadow-sm"
+              title="Change State & Language"
+            >
+              <MapPin className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+              <span className="font-bold text-amber-300">{selectedState}</span>
+              <span className="text-stone-600">•</span>
+              <Globe className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+              <span className="font-bold text-white">{selectedLanguageName}</span>
+            </button>
+
+            {/* Quick Language Switch */}
+            <div className="hidden lg:flex items-center bg-stone-950/70 border border-stone-800 rounded-xl p-0.5 text-xs">
               <button
                 id="lang-en-btn"
                 onClick={() => setLanguage('en')}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
+                className={`px-2 py-0.5 rounded-lg font-semibold transition-all ${
                   language === 'en' ? 'bg-stone-800 text-amber-400 font-bold' : 'text-stone-400 hover:text-stone-200'
                 }`}
               >
@@ -171,7 +187,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 id="lang-hi-btn"
                 onClick={() => setLanguage('hi')}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
+                className={`px-2 py-0.5 rounded-lg font-semibold transition-all ${
                   language === 'hi' ? 'bg-stone-800 text-amber-400 font-bold' : 'text-stone-400 hover:text-stone-200'
                 }`}
               >
@@ -180,11 +196,19 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 id="lang-te-btn"
                 onClick={() => setLanguage('te')}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
+                className={`px-2 py-0.5 rounded-lg font-semibold transition-all ${
                   language === 'te' ? 'bg-stone-800 text-amber-400 font-bold' : 'text-stone-400 hover:text-stone-200'
                 }`}
               >
                 తెలుగు
+              </button>
+              <button
+                id="lang-more-btn"
+                onClick={() => openLanguageModal('language')}
+                className="px-1.5 py-0.5 text-[10px] font-bold text-amber-400/80 hover:text-amber-300"
+                title="More Indian Languages"
+              >
+                More...
               </button>
             </div>
 

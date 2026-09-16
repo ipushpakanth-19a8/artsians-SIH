@@ -3,14 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Camera, Upload, Sparkles, CheckCircle2, ArrowRight, ArrowLeft,
   Volume2, RotateCcw, Edit3, Globe, Tag, DollarSign, Eye, RefreshCw,
-  AlertCircle, ShieldCheck, Check, Mic
+  AlertCircle, ShieldCheck, Check
 } from 'lucide-react';
 import { useLanguage } from '../../lib/LanguageContext';
 import { translations, speakText } from '../../lib/i18n';
 import { formatINR } from '../../lib/billingService';
 import { useTutorial } from '../tutorial/TutorialContext';
 import { ShowMeButton } from '../tutorial/ContextualHelp';
-import { VoiceProductFormAssistant, CollectedProductDetails } from './VoiceProductFormAssistant';
 
 const SAMPLE_PRESETS = [
   {
@@ -78,21 +77,6 @@ export function AddHandicraft() {
   // Guided 4-Step flow: 1: Photo -> 2: Studio -> 3: Understanding -> 4: Description
   const initialStep = Number(searchParams.get('step')) || 1;
   const [step, setStep] = useState<number>(initialStep);
-
-  // 3 Entry modes: 'voice' | 'capture' | 'manual'
-  const [entryMode, setEntryMode] = useState<'voice' | 'capture' | 'manual'>('voice');
-
-  const handleVoiceDetailsComplete = (d: CollectedProductDetails) => {
-    setTitle(d.title);
-    setCraftType(d.craftType);
-    setMaterial(d.material);
-    setCategory(d.category);
-    setMaterialCost(d.materialCost);
-    if (!rawImage) {
-      handleSelectPreset(SAMPLE_PRESETS[0]);
-    }
-    setStep(3); // Advance to craft understanding & pricing review
-  };
 
   // Images state
   const [rawImage, setRawImage] = useState<string>('');
@@ -367,80 +351,54 @@ export function AddHandicraft() {
             </div>
 
             <button
-              onClick={() => handleListen('Step 1: Choose how you want to add your handicraft. You can speak details by voice, capture with your camera, or enter manually.')}
+              onClick={() => handleListen(
+                language === 'hi'
+                  ? 'पहला चरण: अपने मोबाइल कैमरे से उत्पाद की फ़ोटो लें या गैलरी से चुनें। AI बैकग्राउंड और रोशनी खुद सुधार देगा।'
+                  : language === 'te'
+                  ? 'దశ 1: మీ మొబైల్ కెమెరాతో ఉత్పత్తి ఫోటో తీయండి లేదా గ్యాలరీ నుండి ఎంచుకోండి. AI కాంతిని మెరుగుపరుస్తుంది.'
+                  : language === 'ta'
+                  ? 'படி 1: உங்கள் கைவினைப் பொருளை கேமராவில் படம் எடுக்கவும் அல்லது கேலரியில் இருந்து தேர்வு செய்யவும். AI பின்னணியையும் வெளிச்சத்தையும் தானாகவே சரிசெய்யும்.'
+                  : language === 'kn'
+                  ? 'ಹಂತ 1: ನಿಮ್ಮ ಕರಕುಶಲ ವಸ್ತುವಿನ ಫೋಟೋವನ್ನು ಕ್ಯಾಮೆರಾದಿಂದ ತೆಗೆಯಿರಿ ಅಥವಾ ಗ್ಯಾಲರಿಯಿಂದ ಆಯ್ಕೆಮಾಡಿ. AI ಹಿನ್ನೆಲೆ ಮತ್ತು ಬೆಳಕನ್ನು ಸುಧಾರಿಸುತ್ತದೆ.'
+                  : language === 'ml'
+                  ? 'ഘട്ടം 1: നിങ്ങളുടെ കരകൗశല ഉൽപ്പന്നത്തിന്റെ ഫോട്ടോ ക്യാമറ വഴി എടുക്കുക അല്ലെങ്കിൽ ഗാലറിയിൽ നിന്ന് തിരഞ്ഞെടുക്കുക. AI പശ്ചാത്തಲവും വെളിച്ചവും മെച്ചപ്പെടുത്തും.'
+                  : language === 'mr'
+                  ? 'पायरी 1: आपल्या हस्तकलेचा फोटो कॅमेऱ्याने काढा किंवा गॅलरीतून निवडा. AI पार्श्वभूमी आणि प्रकाश सुधारेल.'
+                  : language === 'gu'
+                  ? 'પગલું 1: તમારા હસ્તકલાનો ફોટો કૅમેરાથી લો અથવા ગેલેરીમાંથી પસંદ કરો. AI બેકગ્રાઉન્ડ અને લાઇટિંગ સુધારશે.'
+                  : language === 'bn'
+                  ? 'ধাপ 1: আপনার হস্তশিল্পের ছবি ক্যামেরায় তুলুন বা গ্যালারি থেকে নির্বাচন করুন। AI ব্যাকগ্রাউন্ড ও আলো উন্নত করবে।'
+                  : language === 'or'
+                  ? 'ପଦକ୍ଷେପ 1: ନିଜ ହସ୍ତଶିଳ୍ପର ଫଟୋ କ୍ୟାମେରାରେ ନିଅନ୍ତୁ କିମ୍ବା ଗ୍ୟାଲେରୀରୁ ବାଛନ୍ତୁ। AI ପୃଷ୍ଠଭୂମି ଓ ଆଲୋକ ସୁଧାରିବ।'
+                  : language === 'pa'
+                  ? 'ਕਦਮ 1: ਆਪਣੇ ਦਸਤਕਾਰੀ ਦੀ ਫੋਟੋ ਕੈਮਰੇ ਨਾਲ ਲਓ ਜਾਂ ਗੈਲਰੀ ਵਿੱਚੋਂ ਚੁਣੋ। AI ਬੈਕਗ੍ਰਾਊਂਡ ਅਤੇ ਰੋਸ਼ਨੀ ਸੁਧਾਰੇਗਾ।'
+                  : language === 'as'
+                  ? 'পদক্ষেপ ১: আপোনাৰ হস্তশিল্পৰ ফটো কেমেৰাৰে তোলক বা গেলেৰীৰ পৰা বাছক। AI বেকগ্ৰাউণ্ড আৰু পোহৰ উন্নত কৰিব।'
+                  : 'Step 1: Take a photo of your handicraft using your phone camera or select from gallery. AI will automatically enhance the background and lighting.'
+              )}
               className="artisan-listen-btn cursor-pointer self-start sm:self-auto"
             >
               <Volume2 className="w-4 h-4" />
-              <span>Listen 🔊</span>
+              <span>{t.listenToGuide || 'Listen 🔊'}</span>
             </button>
           </div>
 
-          {/* 3 Entry Modes (Section 6) */}
-          <div className="grid grid-cols-3 gap-2 p-1.5 rounded-2xl bg-[#faf7f2] border border-[#eadfd4]">
-            <button
-              type="button"
-              onClick={() => setEntryMode('voice')}
-              className={`py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                entryMode === 'voice'
-                  ? 'bg-[#9c4124] text-white shadow-xs'
-                  : 'text-stone-700 hover:bg-stone-200/60'
-              }`}
-            >
-              <Mic className="w-4 h-4" />
-              <span>🎙️ By Voice</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setEntryMode('capture')}
-              className={`py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                entryMode === 'capture'
-                  ? 'bg-[#9c4124] text-white shadow-xs'
-                  : 'text-stone-700 hover:bg-stone-200/60'
-              }`}
-            >
-              <Camera className="w-4 h-4" />
-              <span>📸 Camera</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setEntryMode('manual')}
-              className={`py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                entryMode === 'manual'
-                  ? 'bg-[#9c4124] text-white shadow-xs'
-                  : 'text-stone-700 hover:bg-stone-200/60'
-              }`}
-            >
-              <span>⌨️ Manual</span>
-            </button>
-          </div>
-
-          {/* Voice-First Conversational Assistant */}
-          {entryMode === 'voice' ? (
-            <div className="pt-2">
-              <VoiceProductFormAssistant
-                language={language}
-                initialValues={{ title, craftType, material, category, materialCost }}
-                onComplete={handleVoiceDetailsComplete}
-              />
-            </div>
-          ) : (
-            <>
-              {/* Hidden inputs */}
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                accept="image/*"
-                className="hidden"
-              />
-              <input
-                type="file"
-                ref={cameraInputRef}
-                onChange={handleFileUpload}
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-              />
+          {/* Hidden inputs */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept="image/*"
+            className="hidden"
+          />
+          <input
+            type="file"
+            ref={cameraInputRef}
+            onChange={handleFileUpload}
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+          />
 
           {/* Large Camera & Upload Trigger Area */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -507,8 +465,6 @@ export function AddHandicraft() {
               ))}
             </div>
           </div>
-            </>
-          )}
         </div>
       )}
 

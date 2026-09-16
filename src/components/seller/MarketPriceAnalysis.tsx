@@ -35,11 +35,21 @@ export function MarketPriceAnalysis() {
   const middlemanPrice = Math.round(totalCost * 0.75); // Traditional exploitative middleman rate
 
   const handleListen = () => {
-    const text = language === 'hi'
-      ? `आपकी कुल लागत ₹${totalCost} है, जिसमें सामग्री और आपकी मजदूरी शामिल है। हमारा AI ₹${recommendedPrice} का उचित विक्रय मूल्य सुझाता है। इससे आपको लगभग ₹${estimatedProfit} का मुनाफ़ा होगा।`
-      : language === 'te'
-      ? `మీ మొత్తం ఖర్చు ₹${totalCost}, ఇందులో ముడి పదార్థాలు మరియు మీ శ్రమ వేతనం ఉన్నాయి. AI సిఫార్సు చేసిన ధర ₹${recommendedPrice}. దీని ద్వారా మీకు సుమారు ₹${estimatedProfit} లాభం లభిస్తుంది.`
-      : `Your total cost is ₹${totalCost}, including materials and your labor time. Our AI recommends a fair price of ₹${recommendedPrice}. This provides you an estimated profit of ₹${estimatedProfit}.`;
+    const textMap: Record<string, string> = {
+      hi: `आपकी कुल लागत ₹${totalCost} है, जिसमें सामग्री और आपकी मजदूरी शामिल है। हमारा AI ₹${recommendedPrice} का उचित विक्रय मूल्य सुझाता है। इससे आपको लगभग ₹${estimatedProfit} का मुनाफ़ा होगा।`,
+      te: `మీ మొత్తం ఖర్చు ₹${totalCost}, ఇందులో ముడి పదార్థాలు మరియు మీ శ్రమ వేతనం ఉన్నాయి. AI సిఫార్సు చేసిన ధర ₹${recommendedPrice}. దీని ద్వారా మీకు సుమారు ₹${estimatedProfit} లాభం లభిస్తుంది.`,
+      ta: `உங்கள் மொத்த செலவு ₹${totalCost}, இதில் மூலப்பொருட்கள் மற்றும் உங்கள் உழைப்பு அடங்கும். எங்கள் AI பரிந்துரைக்கும் நியாயமான விலை ₹${recommendedPrice}. இதன் மூலம் உங்களுக்கு ₹${estimatedProfit} லாபம் கிடைக்கும்.`,
+      kn: `ನಿಮ್ಮ ಒಟ್ಟು ವೆಚ್ಚ ₹${totalCost}, ಇದರಲ್ಲಿ ಕಚ್ಚಾ ಸಾಮಗ್ರಿಗಳು ಮತ್ತು ನಿಮ್ಮ ಶ್ರಮ ಸೇರಿದೆ. AI ಶಿಫಾರಸು ಮಾಡಿದ ನ್ಯಾಯಯುತ ಬೆಲೆ ₹${recommendedPrice}. ಇದರಿಂದ ನಿಮಗೆ ₹${estimatedProfit} ಲಾಭ ದೊರೆಯಲಿದೆ.`,
+      ml: `നിങ്ങളുടെ ആകെ ചെലവ് ₹${totalCost} ആണ്. ഞങ്ങളുടെ AI നിർദ്ദേശിക്കുന്ന ന്യായമായ വില ₹${recommendedPrice}. ഇതിലൂടെ ₹${estimatedProfit} ലാഭം ലഭിക്കും.`,
+      mr: `तुमचा एकूण खर्च ₹${totalCost} आहे, ज्यामध्ये कच्चा माल आणि तुमची मजुरी समाविष्ट आहे. आमचे AI ₹${recommendedPrice} ची योग्य किंमत सुचवते. यातून तुम्हाला अंदाजे ₹${estimatedProfit} नफा होईल.`,
+      gu: `તમારો કુલ ખર્ચ ₹${totalCost} છે, જેમાં સામગ્રી અને તમારી મહેનત શામેલ છે. અમારી AI ₹${recommendedPrice} ની યોગ્ય કિંમત સૂચવે છે. જેનાથી તમને આશરે ₹${estimatedProfit} નો નફો થશે.`,
+      bn: `আপনার মোট খরচ ₹${totalCost}, যার মধ্যে উপকরণ এবং আপনার শ্রম অন্তর্ভুক্ত। আমাদের AI ₹${recommendedPrice} ন্যায্য মূল্য প্রস্তাব করছে। এতে আপনার প্রায় ₹${estimatedProfit} লাভ হবে।`,
+      or: `ଆପଣଙ୍କର ମୋଟ ଖର୍ଚ୍ଚ ₹${totalCost}, ଯେଉଁଥିରେ ସାମଗ୍ରୀ ଏବଂ ଆପଣଙ୍କ ଶ୍ରମ ଅନ୍ତର୍ଭୁକ୍ତ। ଆମର AI ₹${recommendedPrice} ଉଚିତ ମୂଲ୍ୟ ସୁପାରିଶ କରେ। ଏହାଦ୍ୱାରା ପ୍ରାୟ ₹${estimatedProfit} ଲାଭ ହେବ।`,
+      pa: `ਤੁਹਾਡੀ ਕੁੱਲ ਲਾਗਤ ₹${totalCost} ਹੈ। ਸਾਡਾ AI ₹${recommendedPrice} ਦੀ ਉਚਿਤ ਕੀਮਤ ਸੁਝਾਉਂਦਾ ਹੈ। ਇਸ ਨਾਲ ਤੁਹਾਨੂੰ ਲਗਭਗ ₹${estimatedProfit} ਦਾ ਮੁਨਾਫਾ ਹੋਵੇਗਾ।`,
+      as: `আপোনাৰ মুঠ খৰচ ₹${totalCost}। আমাৰ AI য়ে ₹${recommendedPrice} ন্যায্য মূল্যৰ পৰামৰ്শ দিয়ে। ইয়াৰ দ্বাৰা আপোনাৰ প্ৰায় ₹${estimatedProfit} লাভ হ'ব।`,
+      en: `Your total cost is ₹${totalCost}, including materials and your labor time. Our AI recommends a fair price of ₹${recommendedPrice}. This provides you an estimated profit of ₹${estimatedProfit}.`
+    };
+    const text = textMap[language] || textMap.en;
     speakText(text, language);
   };
 

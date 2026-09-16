@@ -22,15 +22,15 @@ const ONBOARDING_STEPS: StepConfig[] = [
   {
     phase: 'welcome',
     stepIndex: 0,
-    titleEn: 'Welcome to ShilpSetu KALAtech',
-    titleHi: 'शिल्पसेतु KALAtech में आपका स्वागत है',
-    titleTe: 'శిల్పసేతు KALAtech కు స్వాగతం',
+    titleEn: 'Welcome to ShilpSetu ShilpSetu',
+    titleHi: 'शिल्पसेतु ShilpSetu में आपका स्वागत है',
+    titleTe: 'శిల్పసేతు ShilpSetu కు స్వాగతం',
     voiceEn:
-      'Welcome to KALAtech. Connect directly with authentic heritage craftspeople across India.',
+      'Welcome to ShilpSetu. Connect directly with authentic heritage craftspeople across India.',
     voiceHi:
-      'KALAtech में आपका स्वागत है। यह मंच आपको सीधे पूरे भारत के वास्तविक पारंपरिक शिल्पकारों से जोड़ता है।',
+      'ShilpSetu में आपका स्वागत है। यह मंच आपको सीधे पूरे भारत के वास्तविक पारंपरिक शिल्पकारों से जोड़ता है।',
     voiceTe:
-      'KALAtech కు స్వాగతం. ఈ వేదిక మిమ్మల్ని భారతదేశంలోని నిజమైన సాంప్రదాయ కళాకారులతో నేరుగా కలుపుతుంది.',
+      'ShilpSetu కు స్వాగతం. ఈ వేదిక మిమ్మల్ని భారతదేశంలోని నిజమైన సాంప్రదాయ కళాకారులతో నేరుగా కలుపుతుంది.',
     durationMs: 5500,
   },
   {

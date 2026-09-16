@@ -68,7 +68,7 @@ export function AdminApp() {
               <span className="font-extrabold text-white font-['Rozha_One',serif]">ShilpSetu</span>
               <span className="px-1.5 py-0.2 bg-red-600 text-white rounded text-[9px] font-black uppercase">ADMIN</span>
             </div>
-            <p className="text-[10px] text-slate-400 font-semibold tracking-wider">KALAtech Governance</p>
+            <p className="text-[10px] text-slate-400 font-semibold tracking-wider">ShilpSetu Governance</p>
           </div>
         </div>
 
@@ -115,7 +115,7 @@ export function AdminApp() {
             <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-red-600 flex items-center justify-center text-white font-bold text-xs">AD</div>
-                <span className="font-bold text-white font-['Rozha_One',serif]">ShilpSetu Admin <span className="text-red-400 text-xs font-sans font-normal">(KALAtech)</span></span>
+                <span className="font-bold text-white font-['Rozha_One',serif]">ShilpSetu Admin <span className="text-red-400 text-xs font-sans font-normal">(ShilpSetu)</span></span>
               </div>
               <button onClick={() => setSidebarOpen(false)} className="text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />

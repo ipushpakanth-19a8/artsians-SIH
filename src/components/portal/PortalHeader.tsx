@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Volume2, Sparkles, LogIn, ChevronDown, User, Store } from 'lucide-react';
+import { Volume2, Sparkles, LogIn, ChevronDown, User, Store, MapPin, Globe } from 'lucide-react';
 import { LanguageCode } from '../../types';
 import { PORTAL_TRANSLATIONS } from '../../lib/portalI18n';
 import { SihStoryDemoModal } from '../common/SihStoryDemoModal';
 import { useTutorial } from '../tutorial/TutorialContext';
+import { useLanguage } from '../../lib/LanguageContext';
 
 interface PortalHeaderProps {
   language: LanguageCode;
@@ -22,6 +23,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
   onOpenBuyerSignIn,
   onOpenSellerSignIn,
 }) => {
+  const { selectedState, selectedLanguageName, openLanguageModal } = useLanguage();
   const t = PORTAL_TRANSLATIONS[language];
   const [showStoryModal, setShowStoryModal] = useState(false);
   const [showSignInDropdown, setShowSignInDropdown] = useState(false);
@@ -45,7 +47,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                   {language === 'te' ? 'శిల్పసేతు' : 'शिल्पसेतु'}
                 </span>
                 <span className="px-1.5 py-0.5 text-[9px] font-extrabold bg-[#fdf2e9] text-[#9c4124] border border-[#f8d7c2] rounded-md tracking-wide uppercase">
-                  KALAtech
+                  ShilpSetu
                 </span>
               </div>
               <span className="text-[11px] sm:text-xs text-stone-500 font-medium truncate max-w-[200px] sm:max-w-md">
@@ -152,8 +154,22 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
               </button>
             )}
 
-            {/* Simple Language Switcher */}
-            <div className="flex items-center bg-white p-1 rounded-xl border border-[#eadfd4]">
+            {/* State & Language Indicator Pill */}
+            <button
+              id="portal-header-state-lang-btn"
+              onClick={() => openLanguageModal('state')}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-[#eadfd4] hover:border-[#9c4124] text-xs font-bold transition-all shadow-xs cursor-pointer"
+              title="Change State or Language"
+            >
+              <MapPin className="w-3.5 h-3.5 text-[#9c4124]" />
+              <span className="text-[#9c4124]">{selectedState}</span>
+              <span className="text-stone-300">•</span>
+              <Globe className="w-3.5 h-3.5 text-stone-600" />
+              <span className="text-stone-700">{selectedLanguageName}</span>
+            </button>
+
+            {/* Quick Language Switcher */}
+            <div className="hidden lg:flex items-center bg-white p-1 rounded-xl border border-[#eadfd4]">
               {(
                 [
                   { code: 'en' as const, label: 'English', short: 'EN' },
@@ -166,7 +182,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                   <button
                     key={langItem.code}
                     onClick={() => onSelectLanguage(langItem.code)}
-                    className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    className={`px-2 py-0.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                       isSelected
                         ? 'bg-[#9c4124] text-white shadow-xs'
                         : 'text-stone-600 hover:text-stone-900 hover:bg-[#f5efeb]'
@@ -178,6 +194,14 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                   </button>
                 );
               })}
+              <button
+                id="portal-lang-more-btn"
+                onClick={() => openLanguageModal('language')}
+                className="px-1.5 py-0.5 text-[10px] font-bold text-[#9c4124] hover:underline"
+                title="All Indian Languages"
+              >
+                More
+              </button>
             </div>
           </div>
         </div>

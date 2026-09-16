@@ -81,7 +81,7 @@ export const MobileAppDesign: React.FC<MobileAppDesignProps> = ({
               <span>SIH Flagship • Mobile-First Low-Literacy Architecture</span>
             </div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black font-['Rozha_One',serif] tracking-tight text-white">
-              KALAtech Native Mobile App Design
+              ShilpSetu Native Mobile App Design
             </h1>
             <p className="text-stone-300 text-xs sm:text-sm leading-relaxed">
               Designed specifically for marginalized rural Indian artisans with voice-first Vernacular UI (Hindi/Telugu), 48px+ touch targets, instant on-device AI camera cataloging, and direct buyer WhatsApp commerce.
@@ -159,7 +159,7 @@ export const MobileAppDesign: React.FC<MobileAppDesignProps> = ({
                   <span>Interactive Device Controls</span>
                 </h3>
                 <p className="text-xs text-stone-500 mt-1">
-                  Experience how a rural weaver or pottery artisan interacts with KALAtech on their handheld phone.
+                  Experience how a rural weaver or pottery artisan interacts with ShilpSetu on their handheld phone.
                 </p>
               </div>
 
@@ -843,7 +843,7 @@ export const MobileAppDesign: React.FC<MobileAppDesignProps> = ({
                   कलाटेक हस्तशिल्प
                 </p>
                 <p className="font-['Rozha_One',serif] text-xl font-black text-stone-800">
-                  KALAtech Heritage
+                  ShilpSetu Heritage
                 </p>
                 <p className="text-[11px] text-stone-500 font-sans">
                   Rozha One (Google Fonts) — Authentic Indian serif display inspired by historical woodblock carved signboards.

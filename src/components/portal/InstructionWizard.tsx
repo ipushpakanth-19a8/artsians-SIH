@@ -75,7 +75,7 @@ export const InstructionWizard: React.FC<InstructionWizardProps> = ({
                 <Sparkles className="w-4 h-4" />
               </div>
               <div className="text-left">
-                <p className="text-xs font-bold text-stone-900">KALA Mitra AI</p>
+                <p className="text-xs font-bold text-stone-900">ShilpSetu AI</p>
                 <p className="text-[10px] text-indigo-700 font-semibold">Writing Craft Story & GI Origin...</p>
               </div>
             </div>

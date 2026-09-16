@@ -32,11 +32,26 @@ export function SellerDashboard() {
   }, []);
 
   const handleListenSummary = () => {
-    const text = language === 'hi'
-      ? `नमस्ते ${artisanName} जी। आपके पास ${dashData?.productsCount || 8} उत्पाद सूचीबद्ध हैं, ${dashData?.ordersCount || 14} कुल ऑर्डर्स आए हैं, और इस महीने आपकी सीधी कमाई ₹${dashData?.totalOrderRevenue || 28450} रही है। तीन नए ऑर्डर्स भेजने के लिए तैयार हैं।`
-      : language === 'te'
-      ? `నమస్కారం ${artisanName} గారు. మీకు ${dashData?.productsCount || 8} ఉత్పత్తులు లిస్ట్ చేయబడ్డాయి, ${dashData?.ordersCount || 14} ఆర్డర్లు వచ్చాయి, మరియు ఈ నెల మీ ఆదాయం ₹${dashData?.totalOrderRevenue || 28450}. మూడు కొత్త ఆర్డర్లు పంపడానికి సిద్ధంగా ఉన్నాయి.`
-      : `Good morning ${artisanName}. You have ${dashData?.productsCount || 8} products listed, ${dashData?.ordersCount || 14} total orders received, and your direct earnings this month are ₹${dashData?.totalOrderRevenue || 28450}. 3 pending orders are waiting to be packed and shipped.`;
+    const products = dashData?.productsCount || 8;
+    const orders = dashData?.ordersCount || 14;
+    const revenue = dashData?.totalOrderRevenue || 28450;
+
+    const summaryMap: Record<string, string> = {
+      hi: `नमस्ते ${artisanName} जी। आपके पास ${products} उत्पाद सूचीबद्ध हैं, ${orders} कुल ऑर्डर्स आए हैं, और इस महीने आपकी सीधी कमाई ₹${revenue} रही है। तीन नए ऑर्डर्स भेजने के लिए तैयार हैं।`,
+      te: `నమస్కారం ${artisanName} గారు. మీకు ${products} ఉత్పత్తులు లిస్ట్ చేయబడ్డాయి, ${orders} ఆర్డర్లు వచ్చాయి, మరియు ఈ నెల మీ ఆదాయం ₹${revenue}. మూడు కొత్త ఆర్డర్లు పంపడానికి సిద్ధంగా ఉన్నాయి.`,
+      ta: `வணக்கம் ${artisanName} அவர்களே. உங்களிடம் ${products} கைவினைப் பொருட்கள் பட்டியலிடப்பட்டுள்ளன, ${orders} ஆர்டர்கள் வந்துள்ளன, மற்றும் இந்த மாத வருமானம் ₹${revenue}. 3 புதிய ஆர்டர்கள் அனுப்ப தயாராக உள்ளன.`,
+      kn: `ನಮಸ್ಕಾರ ${artisanName} ಅವರೇ. ನಿಮ್ಮಲ್ಲಿ ${products} ಕರಕುಶಲ ವಸ್ತುಗಳು ಪಟ್ಟಿಯಾಗಿವೆ, ${orders} ಒಟ್ಟು ಆದೇಶಗಳು ಬಂದಿವೆ, ಮತ್ತು ಈ ತಿಂಗಳ ಆದಾಯ ₹${revenue}. 3 ಹೊಸ ಆದೇಶಗಳು ರವಾನೆಗೆ ಸಿದ್ಧವಾಗಿವೆ.`,
+      ml: `നമസ്കാരം ${artisanName}. നിങ്ങളുടെ ${products} ഉൽപ്പന്നങ്ങൾ ലിസ്റ്റ് ചെയ്തിട്ടുണ്ട്, ${orders} ഓർഡറുകൾ ലഭിച്ചു, ഈ മാസത്തെ വരുമാനം ₹${revenue}. 3 പുതിയ ഓർഡറുകൾ അയക്കാൻ തയ്യാറാണ്.`,
+      mr: `नमस्कार ${artisanName} जी. तुमची ${products} हस्तकला उत्पादने सूचीबद्ध आहेत, ${orders} एकूण मागण्या आल्या आहेत, आणि या महिन्याची कमाई ₹${revenue} आहे. 3 नवीन मागण्या पाठवण्यासाठी सज्ज आहेत.`,
+      gu: `નમસ્તે ${artisanName} જી. તમારા ${products} ઉત્પાદનો સૂચિબદ્ધ છે, ${orders} કુલ ઓર્ડર મળ્યા છે, અને આ મહિનાની કમાણી ₹${revenue} છે. 3 નવા ઓર્ડર મોકલવા તૈયાર છે.`,
+      bn: `নমস্কার ${artisanName} বাবু। আপনার ${products}টি হস্তশিল্প তালিকাভুক্ত রয়েছে, ${orders}টি মোট অর্ডার এসেছে, এবং এই মাসের উপার্জন ₹${revenue}। ৩টি নতুন অর্ডার পাঠানোর জন্য প্রস্তুত রয়েছে।`,
+      or: `ନମସ୍କାର ${artisanName} ବାବୁ। ଆପଣଙ୍କର ${products} ଟି ହସ୍ତଶିଳ୍ପ ତାଲିକାଭୁକ୍ତ ହୋଇଛି, ${orders} ଟି ଅର୍ଡର ମିଳିଛି, ଏବଂ ଏହି ମାସର ଆୟ ₹${revenue}। ୩ଟି ନୂଆ ଅର୍ଡର ପଠାଇବା ପାଇଁ ପ୍ରସ୍ତୁତ।`,
+      pa: `ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ ${artisanName} ਜੀ। ਤੁਹਾਡੇ ${products} ਉਤਪਾਦ ਸੂਚੀਬੱਧ ਹਨ, ${orders} ਕੁੱਲ ਆਰਡਰ ਪ੍ਰਾਪਤ ਹੋਏ ਹਨ, ਅਤੇ ਇਸ ਮਹੀਨੇ ਦੀ ਕਮਾਈ ₹${revenue} ਹੈ। 3 ਨਵੇਂ ਆਰਡਰ ਭੇਜਣ ਲਈ ਤਿਆਰ ਹਨ।`,
+      as: `নমস্কাৰ ${artisanName} ডাঙৰীয়া। আপোনাৰ ${products} টা হস্তশিল্প তালিকাভুক্ত কৰা হৈছে, ${orders} টা অৰ্ডাৰ লাভ কৰিছে, আৰু এই মাহৰ উপাৰ্জন ₹${revenue}। ৩টা নতুন অৰ্ডাৰ প্ৰেৰণৰ বাবে সাজু হৈছে।`,
+      en: `Good morning ${artisanName}. You have ${products} products listed, ${orders} total orders received, and your direct earnings this month are ₹${revenue}. 3 pending orders are waiting to be packed and shipped.`
+    };
+
+    const text = summaryMap[language] || summaryMap.en;
     speakText(text, language);
   };
 
@@ -93,21 +108,13 @@ export function SellerDashboard() {
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fdf2e9] text-[#9c4124] text-xs font-black uppercase tracking-wider mb-2 border border-[#f8d7c2]">
-            <span>{language === 'hi' ? 'डिजिटल व्यापार सहायक' : language === 'te' ? 'డిజిటల్ వ్యాపార సహాయకుడు' : 'Digital Business Assistant'}</span>
+            <span>{t.digitalBusinessAssistant}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-[#262220] font-['Rozha_One',serif] tracking-tight">
-            {language === 'hi'
-              ? `शुभ प्रभात, ${artisanName} जी 👋`
-              : language === 'te'
-              ? `శుభోదయం, ${artisanName} గారు 👋`
-              : `Good morning, ${artisanName} 👋`}
+            {t.goodMorningGreeting}, {artisanName} 👋
           </h1>
           <p className="text-sm text-stone-600 font-medium mt-1">
-            {language === 'hi'
-              ? 'यहाँ आपकी आज की दुकान का विवरण और मुख्य कार्य उपलब्ध हैं।'
-              : language === 'te'
-              ? 'ఇక్కడ మీ నేటి వ్యాపార వివరాలు మరియు ముఖ్యమైన పనులు ఉన్నాయి.'
-              : 'Here is your artisan business snapshot and quick actions for today.'}
+            {t.dashboardSubtitle}
           </p>
         </div>
 
@@ -119,7 +126,7 @@ export function SellerDashboard() {
             title="Listen to your business summary"
           >
             <Volume2 className="w-4 h-4" />
-            <span>{language === 'hi' ? 'आज का विवरण सुनें 🔊' : language === 'te' ? 'నేటి సారాంశం వినండి 🔊' : 'Listen to Summary 🔊'}</span>
+            <span>{t.listenToSummary}</span>
           </button>
         </div>
       </div>
@@ -131,10 +138,10 @@ export function SellerDashboard() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-[#262220] flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-[#9c4124]" />
-            <span>{language === 'hi' ? 'व्यापार का हाल' : language === 'te' ? 'వ్యాపార స్థితి' : 'Business Snapshot'}</span>
+            <span>{t.businessSnapshot}</span>
           </h2>
           <span className="text-xs text-stone-500 font-semibold">
-            {language === 'hi' ? 'सीधी बिक्री • 0% कमीशन' : language === 'te' ? 'ప్రత్యక్ష అమ్మకాలు' : 'Direct Sales • Zero Commission'}
+            {t.directSalesZeroCommission}
           </span>
         </div>
 
@@ -144,7 +151,7 @@ export function SellerDashboard() {
             <div className="w-9 h-9 rounded-xl bg-amber-50 text-[#9c4124] flex items-center justify-center mb-2.5 font-bold">
               <Package className="w-5 h-5" />
             </div>
-            <p className="text-xs text-stone-500 font-bold">{language === 'hi' ? 'दर्ज उत्पाद' : language === 'te' ? 'ఉత్పత్తులు' : 'Products Listed'}</p>
+            <p className="text-xs text-stone-500 font-bold">{t.productsListed}</p>
             <p className="text-xl sm:text-2xl font-black text-[#262220] mt-0.5">{dashData?.productsCount || 8}</p>
             <span className="text-[10px] text-emerald-700 font-bold mt-1 block">Active online</span>
           </div>
@@ -154,18 +161,18 @@ export function SellerDashboard() {
             <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center mb-2.5 font-bold">
               <ShoppingCart className="w-5 h-5" />
             </div>
-            <p className="text-xs text-stone-500 font-bold">{language === 'hi' ? 'कुल ऑर्डर्स' : language === 'te' ? 'మొత్తం ఆర్డర్లు' : 'Total Orders'}</p>
+            <p className="text-xs text-stone-500 font-bold">{t.totalOrdersReceived}</p>
             <p className="text-xl sm:text-2xl font-black text-[#262220] mt-0.5">{dashData?.ordersCount || 14}</p>
             <span className="text-[10px] text-blue-700 font-bold mt-1 block">All fulfilled directly</span>
           </div>
 
           {/* 3. Direct Revenue */}
           <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#eadfd4] shadow-xs">
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center mb-2.5 font-bold">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center mb-2.5 font-bold">
               <DollarSign className="w-5 h-5" />
             </div>
-            <p className="text-xs text-stone-500 font-bold">{language === 'hi' ? 'सीधी कमाई' : language === 'te' ? 'ప్రత్యక్ష ఆదాయం' : 'Net Revenue'}</p>
-            <p className="text-xl sm:text-2xl font-black text-purple-900 mt-0.5">{formatINR(dashData?.totalOrderRevenue || 28450)}</p>
+            <p className="text-xs text-stone-500 font-bold">{t.netRevenue}</p>
+            <p className="text-xl sm:text-2xl font-black text-emerald-950 mt-0.5">{formatINR(dashData?.totalOrderRevenue || 28450)}</p>
             <span className="text-[10px] text-emerald-700 font-bold mt-1 block">100% bank settled</span>
           </div>
 
@@ -174,7 +181,7 @@ export function SellerDashboard() {
             <div className="w-9 h-9 rounded-xl bg-orange-100 text-orange-800 flex items-center justify-center mb-2.5 font-bold">
               <Clock className="w-5 h-5" />
             </div>
-            <p className="text-xs text-orange-950 font-bold">{language === 'hi' ? 'बाकी ऑर्डर्स' : language === 'te' ? 'పెండింగ్ ఆర్డర్లు' : 'Pending Orders'}</p>
+            <p className="text-xs text-orange-950 font-bold">{t.pendingOrders}</p>
             <p className="text-xl sm:text-2xl font-black text-orange-800 mt-0.5">3</p>
             <span className="text-[10px] text-orange-700 font-bold mt-1 block">Pack & dispatch</span>
           </div>
@@ -184,7 +191,7 @@ export function SellerDashboard() {
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-2.5 font-bold">
               <Eye className="w-5 h-5" />
             </div>
-            <p className="text-xs text-stone-500 font-bold">{language === 'hi' ? 'उत्पाद देखे गए' : language === 'te' ? 'వీక్షణలు' : 'Product Views'}</p>
+            <p className="text-xs text-stone-500 font-bold">{t.productViews}</p>
             <p className="text-xl sm:text-2xl font-black text-[#262220] mt-0.5">482</p>
             <span className="text-[10px] text-emerald-700 font-bold mt-1 block">+18% this week</span>
           </div>
@@ -202,7 +209,7 @@ export function SellerDashboard() {
       <div>
         <h2 className="text-lg font-bold text-[#262220] mb-4 flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-[#c85a32]" />
-          <span>{language === 'hi' ? 'त्वरित कार्य' : language === 'te' ? 'శీఘ్ర చర్యలు' : 'Quick Actions'}</span>
+          <span>{t.quickActions}</span>
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -217,10 +224,10 @@ export function SellerDashboard() {
             </div>
             <div className="flex-1">
               <h3 className="font-extrabold text-base leading-tight">
-                {language === 'hi' ? '+ नया उत्पाद जोड़ें' : language === 'te' ? '+ ఉత్పత్తిని జోడించండి' : '+ Add Product'}
+                {t.addProductAction}
               </h3>
               <p className="text-xs text-amber-100/90 mt-0.5">
-                {language === 'hi' ? 'फ़ोटो खींचकर AI से विवरण बनाएं' : language === 'te' ? 'ఫోటో తీసి AI తో జాబితా చేయండి' : '4-step guided AI photo listing flow'}
+                {t.addProductDesc}
               </p>
             </div>
             <ArrowRight className="w-5 h-5 text-white/70 group-hover:translate-x-1 transition-transform" />
@@ -236,10 +243,10 @@ export function SellerDashboard() {
             </div>
             <div className="flex-1">
               <h3 className="font-extrabold text-base leading-tight">
-                {language === 'hi' ? '📷 उत्पाद स्कैन करें' : language === 'te' ? '📷 ఉత్పత్తిని స్కాన్ చేయండి' : '📷 Scan Product'}
+                {t.scanProduct}
               </h3>
               <p className="text-xs text-stone-500 mt-0.5">
-                {language === 'hi' ? 'मोबाइल कैमरे से सीधे फ़ोटो लें' : language === 'te' ? 'కెమెరాతో నేరుగా ఫోటో తీయండి' : 'Capture instant mobile photo'}
+                {t.scanProductDesc}
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-stone-400 group-hover:translate-x-1 transition-transform" />
@@ -255,10 +262,10 @@ export function SellerDashboard() {
             </div>
             <div className="flex-1">
               <h3 className="font-extrabold text-base leading-tight">
-                {language === 'hi' ? '✨ फ़ोटो बेहतर बनाएं' : language === 'te' ? '✨ ఫోటోను మెరుగుపరచండి' : '✨ Improve Photo'}
+                {t.improvePhoto}
               </h3>
               <p className="text-xs text-stone-500 mt-0.5">
-                {language === 'hi' ? 'स्टूडियो रोशनी व बैकग्राउंड साफ़' : language === 'te' ? 'స్టూడియో లైటింగ్ & క్లీన్ బ్యాక్‌గ్రౌండ్' : 'Before/After Studio enhancer'}
+                {t.improvePhotoDesc}
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-stone-400 group-hover:translate-x-1 transition-transform" />
@@ -274,10 +281,10 @@ export function SellerDashboard() {
             </div>
             <div className="flex-1">
               <h3 className="font-extrabold text-base leading-tight">
-                {language === 'hi' ? '💰 सही मूल्य जानें' : language === 'te' ? '💰 సరసమైన ధర తెలుసుకోండి' : '💰 Check Fair Price'}
+                {t.checkFairPrice}
               </h3>
               <p className="text-xs text-stone-500 mt-0.5">
-                {language === 'hi' ? 'मजदूरी + लागत का सच्चा हिसाब' : language === 'te' ? 'శ్రమ వేతనం & వ్యయం లెక్కింపు' : 'What Should I Charge? Calculator'}
+                {t.checkFairPriceDesc}
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-stone-400 group-hover:translate-x-1 transition-transform" />
@@ -293,10 +300,10 @@ export function SellerDashboard() {
             </div>
             <div className="flex-1">
               <h3 className="font-extrabold text-base leading-tight">
-                {language === 'hi' ? '📦 ऑर्डर्स प्रबंधित करें' : language === 'te' ? '📦 ఆర్డర్లను నిర్వహించండి' : '📦 Manage Orders'}
+                {t.manageOrdersAction}
               </h3>
               <p className="text-xs text-stone-500 mt-0.5">
-                {language === 'hi' ? '3 ऑर्डर्स पैकिंग व डिलीवरी हेतु तैयार' : language === 'te' ? '3 ఆర్డర్లు పంపడానికి సిద్ధంగా ఉన్నాయి' : 'Track visual delivery timeline'}
+                {t.manageOrdersDesc}
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-stone-400 group-hover:translate-x-1 transition-transform" />
@@ -305,17 +312,17 @@ export function SellerDashboard() {
           {/* Action 6: View Earnings */}
           <button
             onClick={() => navigate('/seller/sales')}
-            className="p-5 rounded-2xl bg-white border border-[#eadfd4] text-[#262220] flex items-center gap-4 text-left shadow-xs hover:border-purple-600 hover:bg-[#fdfbf7] transition-all active:scale-[0.98] cursor-pointer group"
+            className="p-5 rounded-2xl bg-white border border-[#eadfd4] text-[#262220] flex items-center gap-4 text-left shadow-xs hover:border-emerald-700 hover:bg-[#fdfbf7] transition-all active:scale-[0.98] cursor-pointer group"
           >
-            <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0">
               <BarChart3 className="w-6 h-6" />
             </div>
             <div className="flex-1">
               <h3 className="font-extrabold text-base leading-tight">
-                {language === 'hi' ? '📊 मेरी कमाई देखें' : language === 'te' ? '📊 ఆదాయం చూడండి' : '📊 View Earnings'}
+                {t.viewEarnings}
               </h3>
               <p className="text-xs text-stone-500 mt-0.5">
-                {language === 'hi' ? 'बिचौलियों के बिना मुनाफ़ा व बिल' : language === 'te' ? 'దళారులు లేని లాభం & బిల్లులు' : 'Monthly trajectory & invoice bills'}
+                {t.viewEarningsDesc}
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-stone-400 group-hover:translate-x-1 transition-transform" />
@@ -331,18 +338,14 @@ export function SellerDashboard() {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-lg font-bold text-[#262220]">
-                {language === 'hi' ? 'ग्राहकों की पसंद • बाज़ार का रुझान' : language === 'te' ? 'వినియోగదారుల ఆసక్తి • మార్కెట్ ట్రెండ్స్' : 'What Customers Are Looking For'}
+                {t.customerTrends}
               </span>
               <span className="text-[10px] font-extrabold bg-[#fdf2e9] text-[#9c4124] border border-[#f8d7c2] px-2 py-0.5 rounded-full uppercase">
                 Live Trend
               </span>
             </div>
             <p className="text-xs text-stone-500 mt-0.5">
-              {language === 'hi'
-                ? 'यह रुझान कारीगरों को यह तय करने में मदद करता है कि अगला क्या बनाएं।'
-                : language === 'te'
-                ? 'తదుపరి ఏ వస్తువులు తయారు చేయాలో నిర్ణయించడంలో ఇది సహాయపడుతుంది.'
-                : 'Actionable demand trends so you know what crafts will sell best this season.'}
+              {t.customerTrendsDesc}
             </p>
           </div>
 
@@ -397,15 +400,11 @@ export function SellerDashboard() {
             <div className="flex items-center gap-2">
               <Building2 className="w-5 h-5 text-[#9c4124]" />
               <h2 className="text-lg font-bold text-[#262220]">
-                {language === 'hi' ? 'आपके लिए सरकारी एवं संस्थागत सहायता' : language === 'te' ? 'మీ కోసం అందుబాటులో ఉన్న మద్దతు & పథకాలు' : 'Support Available For You'}
+                {t.supportAvailable}
               </h2>
             </div>
             <p className="text-xs text-stone-500 mt-0.5">
-              {language === 'hi'
-                ? 'कारीगरों के लिए सरल भाषा में सरकारी योजनाएं, ऋण व प्रदर्शनी स्टॉल।'
-                : language === 'te'
-                ? 'కళాకారుల కోసం సులభమైన భాషలో ప్రభుత్వ పథకాలు, రుణాలు మరియు స్టాళ్లు.'
-                : 'Government schemes, subsidized credit and fair exhibition grants explained simply.'}
+              {t.supportDesc}
             </p>
           </div>
 
@@ -447,28 +446,28 @@ export function SellerDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                 <div className="bg-white p-3.5 rounded-xl border border-[#eadfd4]">
                   <strong className="block text-stone-900 font-bold mb-1">
-                    {language === 'hi' ? 'यह क्या है?' : language === 'te' ? 'ఇది ఏమిటి?' : 'What is it?'}
+                    {t.whatIsIt}
                   </strong>
                   <p className="text-stone-600 leading-relaxed">{current.what}</p>
                 </div>
 
                 <div className="bg-white p-3.5 rounded-xl border border-[#eadfd4]">
                   <strong className="block text-stone-900 font-bold mb-1">
-                    {language === 'hi' ? 'कौन आवेदन कर सकता है?' : language === 'te' ? 'ఎవరు దరఖాస్తు చేసుకోవచ్చు?' : 'Who can apply?'}
+                    {t.whoCanApply}
                   </strong>
                   <p className="text-stone-600 leading-relaxed">{current.who}</p>
                 </div>
 
                 <div className="bg-white p-3.5 rounded-xl border border-[#eadfd4]">
                   <strong className="block text-stone-900 font-bold mb-1">
-                    {language === 'hi' ? 'क्या दस्तावेज़ चाहिए?' : language === 'te' ? 'ఏ పత్రాలు అవసరం?' : 'What do you need?'}
+                    {t.whatDoYouNeed}
                   </strong>
                   <p className="text-stone-600 leading-relaxed">{current.needs}</p>
                 </div>
 
                 <div className="bg-white p-3.5 rounded-xl border border-[#eadfd4]">
                   <strong className="block text-stone-900 font-bold mb-1">
-                    {language === 'hi' ? 'आवेदन कैसे करें?' : language === 'te' ? 'ఎలా దరఖాస్తు చేయాలి?' : 'How to apply?'}
+                    {t.howToApply}
                   </strong>
                   <p className="text-stone-600 leading-relaxed">{current.apply}</p>
                 </div>
@@ -492,11 +491,7 @@ export function SellerDashboard() {
                 Artisan Saathi • कला साथी AI
               </h3>
               <p className="text-xs text-amber-100">
-                {language === 'hi'
-                  ? 'आपके व्यापार का सच्चा साथी — पूछें कोई भी सवाल'
-                  : language === 'te'
-                  ? 'మీ వ్యాపార మిత్రుడు — ఏ ప్రశ్ననైనా అడగండి'
-                  : 'Your practical craft business companion — tap any question below:'}
+                {t.artisanSaathiDesc}
               </p>
             </div>
           </div>
@@ -505,7 +500,7 @@ export function SellerDashboard() {
             onClick={() => navigate('/seller/customer-care')}
             className="px-4 py-2 rounded-xl bg-white text-[#9c4124] text-xs font-extrabold hover:bg-amber-50 transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
           >
-            <span>Open Full Saathi</span>
+            <span>{t.openFullSaathi}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>

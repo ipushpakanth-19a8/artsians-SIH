@@ -35,7 +35,7 @@ export function ProductPage() {
       .catch(() => setLoading(false));
 
     try {
-      const wish = JSON.parse(localStorage.getItem('kalatech_wishlist') || '[]');
+      const wish = JSON.parse(localStorage.getItem('ShilpSetu_wishlist') || '[]');
       setIsWishlisted(wish.some((w: any) => w.productId === id));
     } catch {}
   }, [id]);
@@ -60,7 +60,7 @@ export function ProductPage() {
 
   const toggleWishlist = () => {
     try {
-      let wish = JSON.parse(localStorage.getItem('kalatech_wishlist') || '[]');
+      let wish = JSON.parse(localStorage.getItem('ShilpSetu_wishlist') || '[]');
       if (isWishlisted) {
         wish = wish.filter((w: any) => w.productId !== product.id);
         setIsWishlisted(false);
@@ -68,21 +68,21 @@ export function ProductPage() {
         wish.push({ productId: product.id, product, addedAt: new Date().toISOString() });
         setIsWishlisted(true);
       }
-      localStorage.setItem('kalatech_wishlist', JSON.stringify(wish));
+      localStorage.setItem('ShilpSetu_wishlist', JSON.stringify(wish));
       window.dispatchEvent(new Event('cart-updated'));
     } catch {}
   };
 
   const handleAddToCart = () => {
     try {
-      const cart = JSON.parse(localStorage.getItem('kalatech_cart') || '[]');
+      const cart = JSON.parse(localStorage.getItem('ShilpSetu_cart') || '[]');
       const existing = cart.find((item: any) => item.productId === product.id);
       if (existing) {
         existing.quantity += quantity;
       } else {
         cart.push({ productId: product.id, product, quantity, addedAt: new Date().toISOString() });
       }
-      localStorage.setItem('kalatech_cart', JSON.stringify(cart));
+      localStorage.setItem('ShilpSetu_cart', JSON.stringify(cart));
       window.dispatchEvent(new Event('cart-updated'));
       setAddedToast(true);
       setTimeout(() => setAddedToast(false), 2500);
@@ -268,7 +268,7 @@ export function ProductPage() {
                       message: `Inquiry for bulk order of ${product.title}. Requesting sample & GST commercial invoice terms.`
                     })
                   }).then(r => r.json()).then(() => {
-                    alert('B2B RFQ quotation request sent directly to artisan via KALAtech B2B Network!');
+                    alert('B2B RFQ quotation request sent directly to artisan via ShilpSetu B2B Network!');
                   }).catch(() => {
                     alert('Enquiry submitted.');
                   });

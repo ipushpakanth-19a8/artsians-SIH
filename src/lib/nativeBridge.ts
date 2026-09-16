@@ -10,7 +10,7 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import { PushNotifications } from '@capacitor/push-notifications';
 
 /**
- * ShilpSetu (KALAtech) Native Bridge Service
+ * ShilpSetu (ShilpSetu) Native Bridge Service
  * Handles platform detection, native hardware access, secure storage,
  * and dynamic production API routing between web and native mobile.
  */

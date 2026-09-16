@@ -14,7 +14,7 @@ import { SellerOnboarding } from './onboarding/SellerOnboarding';
 import { SellerAuthModal } from '../auth/SellerAuthModal';
 
 export function SellerLayout() {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, selectedState, selectedLanguageName, openLanguageModal } = useLanguage();
   const { user, logout, login } = useAuth();
   const { startJourney, journeyPoints, currentLevel } = useTutorial();
   const navigate = useNavigate();
@@ -33,12 +33,12 @@ export function SellerLayout() {
   useEffect(() => {
     const shouldOpen =
       sessionStorage.getItem('open_seller_tutorial') === 'true' ||
-      !sessionStorage.getItem('kalatech_seen_seller_tour') ||
+      !sessionStorage.getItem('ShilpSetu_seen_seller_tour') ||
       isFirstTimeSeller;
 
     if (shouldOpen) {
       setManualTourOpen(true);
-      sessionStorage.setItem('kalatech_seen_seller_tour', 'true');
+      sessionStorage.setItem('ShilpSetu_seen_seller_tour', 'true');
       sessionStorage.removeItem('open_seller_tutorial');
     }
   }, [user, isFirstTimeSeller]);
@@ -73,15 +73,40 @@ export function SellerLayout() {
   }, []);
 
   const navItems = [
-    { to: '/seller', icon: LayoutDashboard, label: language === 'hi' ? 'डैशबोर्ड' : language === 'te' ? 'డాష్‌బోర్డ్' : 'Dashboard', end: true },
-    { to: '/seller/handicrafts', icon: Package, label: language === 'hi' ? 'मेरे उत्पाद' : language === 'te' ? 'నా ఉత్పత్తులు' : 'My Products' },
-    { to: '/seller/add', icon: PlusCircle, label: language === 'hi' ? '+ नया उत्पाद जोड़ें' : language === 'te' ? '+ కొత్త ఉత్పత్తి' : '+ Add Product' },
-    { to: '/seller/market-analysis', icon: BarChart3, label: language === 'hi' ? 'उचित मूल्य सहायक' : language === 'te' ? 'సరసమైన ధర కాలిక్యులేటర్' : 'Fair Price Assistant' },
-    { to: '/seller/create-bill', icon: FileText, label: language === 'hi' ? 'बिल बनाएं' : language === 'te' ? 'బిల్లు చేయండి' : 'Create Bill' },
-    { to: '/seller/orders', icon: ShoppingCart, label: language === 'hi' ? 'ऑर्डर्स' : language === 'te' ? 'ఆర్డర్లు' : 'Orders' },
-    { to: '/seller/sales', icon: TrendingUp, label: language === 'hi' ? 'मेरी कमाई' : language === 'te' ? 'నా ఆదాయం' : 'My Earnings' },
-    { to: '/seller/customer-care', icon: Sparkles, label: language === 'hi' ? 'कला साथी (AI)' : language === 'te' ? 'కళా సాథీ (AI)' : 'Artisan Saathi (AI)' },
+    { to: '/seller', icon: LayoutDashboard, label: t.sellerDashboard || 'Dashboard', end: true },
+    { to: '/seller/handicrafts', icon: Package, label: t.myHandicrafts || 'My Products' },
+    { to: '/seller/add', icon: PlusCircle, label: `+ ${t.addHandicraft || 'Add Product'}` },
+    { to: '/seller/market-analysis', icon: BarChart3, label: t.marketPriceAnalysis || 'Fair Price Assistant' },
+    { to: '/seller/create-bill', icon: FileText, label: t.createBill || 'Create Bill' },
+    { to: '/seller/orders', icon: ShoppingCart, label: t.orders || 'Orders' },
+    { to: '/seller/sales', icon: TrendingUp, label: t.salesHistory || 'My Earnings' },
+    { to: '/seller/customer-care', icon: Sparkles, label: t.customerCare ? `${t.customerCare} (AI)` : 'Artisan Saathi (AI)' },
   ];
+
+  const artisanSubtitle =
+    language === 'hi'
+      ? 'कारीगर डिजिटल सहायक'
+      : language === 'te'
+      ? 'కళాకారుల డిజిటల్ సహాయకుడు'
+      : language === 'ta'
+      ? 'கைவினைஞர் டிஜிட்டல் உதவியாளர்'
+      : language === 'kn'
+      ? 'ಕರಕುಶಲಕರ್ಮಿ ಡಿಜಿಟಲ್ ಸಹಾಯಕ'
+      : language === 'ml'
+      ? 'കരകൗശല ഡിജിറ്റൽ സഹായി'
+      : language === 'mr'
+      ? 'कारागीर डिजिटल सहाय्यक'
+      : language === 'gu'
+      ? 'કારીગર ડિજિટલ સહાયક'
+      : language === 'bn'
+      ? 'কারিগর ডিজিটাল সহকারী'
+      : language === 'or'
+      ? 'କାରିଗର ଡିଜିଟାଲ୍ ସହାୟକ'
+      : language === 'pa'
+      ? 'ਕਾਰੀਗਰ ਡਿਜੀਟਲ ਸਹਾਇਕ'
+      : language === 'as'
+      ? 'কাৰিকৰ ডিজিটেল সহায়ক'
+      : 'Artisan Business Assistant';
 
   const handleLogout = () => {
     logout();
@@ -109,11 +134,11 @@ export function SellerLayout() {
               <div className="flex items-center gap-1.5">
                 <span className="font-black text-[#262220] font-['Rozha_One',serif] text-base">ShilpSetu</span>
                 <span className="px-1.5 py-0.2 text-[9px] font-extrabold bg-[#fdf2e9] text-[#9c4124] border border-[#f8d7c2] rounded uppercase">
-                  KALAtech
+                  ShilpSetu
                 </span>
               </div>
-              <p className="text-[11px] text-[#9c4124] font-bold">
-                {language === 'hi' ? 'कारीगर डिजिटल सहायक' : language === 'te' ? 'కళాకారుల డిజిటల్ సహాయకుడు' : 'Artisan Business Assistant'}
+              <p className="text-[11px] text-[#9c4124] font-bold truncate max-w-[170px]">
+                {artisanSubtitle}
               </p>
             </div>
           </div>
@@ -166,23 +191,35 @@ export function SellerLayout() {
 
         {/* Footer actions in sidebar */}
         <div className="p-3 border-t border-[#eadfd4] bg-[#faf7f2]/60">
-          <div className="flex items-center justify-between gap-1 mb-3 bg-white p-1 rounded-xl border border-[#eadfd4]">
-            <span className="text-[10px] font-extrabold text-stone-500 uppercase px-1 flex items-center gap-1">
-              <Globe className="w-3 h-3 text-[#9c4124]" />
-              Lang
-            </span>
-            <div className="flex items-center gap-1">
+          <div className="flex flex-col gap-1.5 mb-3 bg-white p-2 rounded-xl border border-[#eadfd4]">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-extrabold text-stone-500 uppercase px-0.5 flex items-center gap-1">
+                <Globe className="w-3 h-3 text-[#9c4124]" />
+                {t.selectLanguage || 'Language'}
+              </span>
+              <span className="text-[10px] font-black text-[#9c4124] bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md">
+                {selectedLanguageName}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-1">
               {(['en', 'hi', 'te'] as LanguageCode[]).map((l) => (
                 <button
                   key={l}
                   onClick={() => setLanguage(l)}
-                  className={`px-2 py-1 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex-1 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     language === l ? 'bg-[#9c4124] text-white shadow-xs' : 'text-stone-600 hover:bg-[#f5efeb]'
                   }`}
                 >
                   {l === 'en' ? 'EN' : l === 'hi' ? 'हिं' : 'తె'}
                 </button>
               ))}
+              <button
+                onClick={() => openLanguageModal('language')}
+                className="px-2 py-1 rounded-lg text-xs font-bold text-[#9c4124] hover:bg-[#fdf2e9] border border-[#f8d7c2] cursor-pointer transition-colors"
+                title="View all 12 Indian Languages"
+              >
+                + More
+              </button>
             </div>
           </div>
 
@@ -217,7 +254,7 @@ export function SellerLayout() {
                 </div>
                 <div>
                   <span className="font-bold text-[#262220] font-['Rozha_One',serif]">ShilpSetu</span>
-                  <span className="text-[10px] text-[#9c4124] block font-semibold">KALAtech Assistant</span>
+                  <span className="text-[10px] text-[#9c4124] block font-semibold">ShilpSetu Assistant</span>
                 </div>
               </div>
               <button onClick={() => setSidebarOpen(false)} className="p-1 text-stone-500 hover:text-stone-800">
@@ -282,29 +319,26 @@ export function SellerLayout() {
               <span>{language === 'hi' ? 'गाइड' : 'Tour'}</span>
             </button>
 
-            {/* Artisan Journey Pill on Mobile */}
-            <button
-              onClick={startJourney}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold cursor-pointer shadow-2xs"
-              title="Artisan Journey"
-            >
-              <span>🌱</span>
-              <span className="font-mono text-[10px] bg-amber-200/70 px-1.5 py-0.5 rounded font-black">L{currentLevel}</span>
-            </button>
-
-            {/* Quick Language Pills on Mobile */}
+            {/* Quick Language Pills on Mobile with All Indian Languages trigger */}
             <div className="flex items-center bg-white p-0.5 rounded-lg border border-[#eadfd4]">
               {(['en', 'hi', 'te'] as LanguageCode[]).map((l) => (
                 <button
                   key={l}
                   onClick={() => setLanguage(l)}
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                    language === l ? 'bg-[#9c4124] text-white' : 'text-stone-600'
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
+                    language === l ? 'bg-[#9c4124] text-white' : 'text-stone-600 hover:bg-stone-100'
                   }`}
                 >
                   {l === 'en' ? 'EN' : l === 'hi' ? 'हिं' : 'తె'}
                 </button>
               ))}
+              <button
+                onClick={() => openLanguageModal('language')}
+                className="px-1.5 py-0.5 rounded text-[10px] font-black text-[#9c4124] hover:bg-amber-50 cursor-pointer"
+                title="All 12 Indian Languages"
+              >
+                🌐+
+              </button>
             </div>
           </div>
         </header>
@@ -317,11 +351,11 @@ export function SellerLayout() {
             </span>
             <span className="text-stone-300">•</span>
             <span className="text-xs font-bold text-[#9c4124]">
-              {language === 'hi' ? 'दुकान प्रबंधन व बिक्री' : language === 'te' ? 'దుకాణ నిర్వహణ' : 'Shop Management & Sales'}
+              {artisanSubtitle}
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             {/* Dedicated Step-by-Step Voice Assistance Tutorial Button */}
             <button
               onClick={() => setManualTourOpen(true)}
@@ -329,7 +363,7 @@ export function SellerLayout() {
               title="Voice step-by-step tutorial on how to use the app"
             >
               <Volume2 className="w-4 h-4 animate-bounce" />
-              <span>{language === 'hi' ? '🔊 ऐप कैसे चलाएं (आवाज़ गाइड)' : language === 'te' ? '🔊 యాప్ ఎలా ఉపయోగించాలి (వాయిస్ గైడ్)' : '🔊 How to Use App (Voice Tour)'}</span>
+              <span>{language === 'hi' ? '🔊 आवाज़ गाइड' : language === 'te' ? '🔊 వాయిస్ గైడ్' : '🔊 Voice Tour'}</span>
             </button>
 
             {/* Artisan Journey Voice Tutorial Launch Button */}
@@ -345,12 +379,60 @@ export function SellerLayout() {
               </span>
             </button>
 
-            {/* Switch to Buyer Marketplace with Step-by-Step Voice Guide */}
+            {/* State & Language Indicator Pill (Exact match with Landing Portal) */}
+            <button
+              id="seller-header-state-lang-btn"
+              onClick={() => openLanguageModal('state')}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-[#eadfd4] hover:border-[#9c4124] text-xs font-bold transition-all shadow-xs cursor-pointer"
+              title="Change State or Language"
+            >
+              <span className="text-[#9c4124] font-extrabold flex items-center gap-1">
+                📍 {selectedState}
+              </span>
+              <span className="text-stone-300">•</span>
+              <Globe className="w-3.5 h-3.5 text-stone-600" />
+              <span className="text-stone-700">{selectedLanguageName}</span>
+            </button>
+
+            {/* Quick Language Switcher on Desktop Top Bar */}
+            <div className="flex items-center bg-white p-1 rounded-xl border border-[#eadfd4]">
+              {(
+                [
+                  { code: 'en' as const, label: 'EN' },
+                  { code: 'hi' as const, label: 'हिं' },
+                  { code: 'te' as const, label: 'తె' },
+                ]
+              ).map((langItem) => {
+                const isSelected = language === langItem.code;
+                return (
+                  <button
+                    key={langItem.code}
+                    onClick={() => setLanguage(langItem.code)}
+                    className={`px-2 py-0.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#9c4124] text-white shadow-xs'
+                        : 'text-stone-600 hover:text-stone-900 hover:bg-[#f5efeb]'
+                    }`}
+                  >
+                    {langItem.label}
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => openLanguageModal('language')}
+                className="px-1.5 py-0.5 text-[10px] font-bold text-[#9c4124] hover:underline cursor-pointer"
+                title="All 12 Indian Languages"
+              >
+                More...
+              </button>
+            </div>
+
+            {/* Switch to Buyer Marketplace */}
             <button
               onClick={() => {
                 login('buyer');
                 sessionStorage.setItem('open_buyer_tutorial', 'true');
-                sessionStorage.removeItem('kalatech_seen_buyer_tour');
+                sessionStorage.removeItem('ShilpSetu_seen_buyer_tour');
                 navigate('/buyer');
               }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-50 hover:text-emerald-800 text-stone-700 text-xs font-bold transition-colors border border-[#eadfd4] cursor-pointer shadow-2xs"
@@ -385,7 +467,7 @@ export function SellerLayout() {
             }
           >
             <Home className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px]">{language === 'hi' ? 'होम' : language === 'te' ? 'హోమ్' : 'Home'}</span>
+            <span className="text-[10px]">{t.home || (language === 'hi' ? 'होम' : language === 'te' ? 'హోమ్' : 'Home')}</span>
           </NavLink>
 
           {/* 2. Products */}
@@ -399,7 +481,7 @@ export function SellerLayout() {
             }
           >
             <Package className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px]">{language === 'hi' ? 'उत्पाद' : language === 'te' ? 'ఉత్పత్తులు' : 'Products'}</span>
+            <span className="text-[10px]">{t.myHandicrafts || (language === 'hi' ? 'उत्पाद' : language === 'te' ? 'ఉత్పత్తులు' : 'Products')}</span>
           </NavLink>
 
           {/* 3. Elevated + ADD Button */}
@@ -415,7 +497,7 @@ export function SellerLayout() {
               <PlusCircle className="w-6 h-6" />
             </div>
             <span className="text-[10px] font-extrabold text-[#9c4124] mt-0.5">
-              {language === 'hi' ? '+ जोड़ें' : language === 'te' ? '+ జోడించు' : '+ Add'}
+              {t.addHandicraft ? `+ ${t.addHandicraft.replace(/^\+\s*/, '')}` : (language === 'hi' ? '+ जोड़ें' : language === 'te' ? '+ జోడించు' : '+ Add')}
             </span>
           </NavLink>
 
@@ -430,7 +512,7 @@ export function SellerLayout() {
             }
           >
             <ShoppingCart className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px]">{language === 'hi' ? 'ऑर्डर्स' : language === 'te' ? 'ఆర్డర్లు' : 'Orders'}</span>
+            <span className="text-[10px]">{t.orders || (language === 'hi' ? 'ऑर्डर्स' : language === 'te' ? 'ఆర్డర్లు' : 'Orders')}</span>
           </NavLink>
 
           {/* 5. Artisan Saathi (AI Business Mentor) */}
@@ -443,7 +525,7 @@ export function SellerLayout() {
             }
           >
             <Sparkles className="w-5 h-5 mb-0.5 text-amber-600" />
-            <span className="text-[10px]">{language === 'hi' ? 'साथी AI' : language === 'te' ? 'సాథీ AI' : 'Saathi'}</span>
+            <span className="text-[10px]">{language === 'hi' ? 'साथी AI' : language === 'te' ? 'సాథీ AI' : 'Saathi AI'}</span>
           </NavLink>
         </nav>
       </div>

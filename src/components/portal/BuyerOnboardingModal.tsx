@@ -36,17 +36,17 @@ export const BuyerOnboardingModal: React.FC<BuyerOnboardingModalProps> = ({
   const signInVoiceFields: VoiceFormFieldConfig[] = useMemo(() => [
     {
       key: 'identifier',
-      label: language === 'hi' ? 'ईमेल या मोबाइल' : language === 'te' ? 'ఈమెయిల్ లేదా మొబైల్' : 'Email or Mobile',
-      type: 'text',
+      label: language === 'hi' ? '10 अंकों का मोबाइल' : language === 'te' ? '10 అంకెల మొబైల్' : '10-Digit Mobile',
+      type: 'tel',
       prompts: {
-        en: 'Please speak your email or mobile number.',
-        hi: 'कृपया अपना ईमेल या मोबाइल नंबर बोलें।',
-        te: 'దయచేసి మీ ఈమెయిల్ లేదా మొబైల్ నంబర్ చెప్పండి.',
+        en: 'Please speak your 10-digit mobile number.',
+        hi: 'कृपया अपना 10 अंकों का मोबाइल नंबर बोलें।',
+        te: 'దయచేసి మీ 10 అంకెల మొబైల్ నంబర్ చెప్పండి.',
       },
       sampleFallback: {
-        en: 'buyer@culturecurate.in',
-        hi: 'buyer@culturecurate.in',
-        te: 'buyer@culturecurate.in',
+        en: '9444077889',
+        hi: '9444077889',
+        te: '9444077889',
       },
     },
     {
@@ -95,21 +95,6 @@ export const BuyerOnboardingModal: React.FC<BuyerOnboardingModalProps> = ({
         en: '9444077889',
         hi: '9444077889',
         te: '9444077889',
-      },
-    },
-    {
-      key: 'identifier',
-      label: language === 'hi' ? 'ईमेल' : language === 'te' ? 'ఈమెయిల్' : 'Email Address',
-      type: 'email',
-      prompts: {
-        en: 'Please speak your email address.',
-        hi: 'कृपया अपना ईमेल पता बोलें।',
-        te: 'దయచేసి మీ ఈమెయిల్ చెప్పండి.',
-      },
-      sampleFallback: {
-        en: 'buyer@culturecurate.in',
-        hi: 'buyer@culturecurate.in',
-        te: 'buyer@culturecurate.in',
       },
     },
     {
@@ -181,10 +166,11 @@ export const BuyerOnboardingModal: React.FC<BuyerOnboardingModalProps> = ({
     setErrorMsg('');
     try {
       voice.stopAssistant();
+      const cleanPhone = (phone || "").replace(/[^0-9]/g, "");
       const res = await signupBuyer({
         name,
-        email: identifier,
-        phone,
+        email: `${cleanPhone}@buyer.in`,
+        phone: cleanPhone,
         password,
         confirmPassword: password,
       });
@@ -331,14 +317,15 @@ export const BuyerOnboardingModal: React.FC<BuyerOnboardingModalProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-stone-800 mb-1">
-                  Email or Mobile
+                  10-Digit Mobile Number
                 </label>
                 <div className="relative">
                   <input
-                    type="text"
+                    type="tel"
                     required
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
+                    placeholder="9444077889"
                     className="w-full pl-3.5 pr-10 py-3 bg-white border-2 border-stone-300 focus:border-emerald-500 rounded-xl text-sm font-semibold text-stone-900"
                   />
                   <button
@@ -451,28 +438,6 @@ export const BuyerOnboardingModal: React.FC<BuyerOnboardingModalProps> = ({
                   <button
                     type="button"
                     onClick={() => voice.recordSingleField('phone')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-stone-400 hover:text-emerald-700 cursor-pointer"
-                  >
-                    <Mic className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    required
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    className="w-full pl-3.5 pr-10 py-2.5 bg-white border-2 border-stone-300 focus:border-emerald-500 rounded-xl text-sm font-semibold text-stone-900"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => voice.recordSingleField('identifier')}
                     className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-stone-400 hover:text-emerald-700 cursor-pointer"
                   >
                     <Mic className="w-4 h-4" />

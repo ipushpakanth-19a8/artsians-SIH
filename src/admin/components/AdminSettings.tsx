@@ -64,7 +64,7 @@ export function AdminSettings() {
             </div>
             <div className="flex justify-between py-1 border-b border-slate-800/80">
               <span className="text-slate-500">Authorized Email:</span>
-              <span className="font-mono text-slate-200">{adminUser?.email || 'admin@kalatech.gov.in'}</span>
+              <span className="font-mono text-slate-200">{adminUser?.email || 'admin@ShilpSetu.gov.in'}</span>
             </div>
             <div className="flex justify-between py-1 border-b border-slate-800/80">
               <span className="text-slate-500">Verified Role:</span>

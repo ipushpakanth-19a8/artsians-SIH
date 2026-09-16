@@ -4,6 +4,8 @@ import { formatINR } from '../../lib/billingService';
 import { useLanguage } from '../../lib/LanguageContext';
 import { translations } from '../../lib/i18n';
 import { ShieldCheck, Award, Printer, Volume2, VolumeX, Sparkles, CheckCircle2 } from 'lucide-react';
+import { getSpeechLocale } from '../../config/languages';
+import { getVoicePrompts } from '../../config/voicePrompts';
 
 interface BillPreviewProps {
   bill: Bill;
@@ -44,24 +46,31 @@ export function BillPreview({ bill }: BillPreviewProps) {
 
     window.speechSynthesis.cancel();
 
-    let text = '';
     const formattedRec = formatINR(recommendedFairPrice);
     const formattedMat = formatINR(materialCost);
     const formattedWage = formatINR(fairHourlyWage);
     const formattedLabor = formatINR(laborValue);
 
-    if (language === 'hi') {
-      text = `आपकी अनुशंसित उचित कीमत ${formattedRec} है। आपने सामग्री पर ${formattedMat} खर्च किए। आपने ${laborHours} घंटे काम किया। ${formattedWage} प्रति घंटे की उचित मजदूरी पर, आपके काम का मूल्य ${formattedLabor} है। शेष राशि आवश्यक मार्जिन और व्यावसायिक खर्चों को कवर करती है। आपकी अनुशंसित उचित कीमत ${formattedRec} है।`;
-    } else if (language === 'te') {
-      text = `మీ సిఫార్సు చేయబడిన సరసమైన ధర ${formattedRec}. మీరు ముడిసరుకుపై ${formattedMat} ఖర్చు చేశారు. మీరు ${laborHours} గంటలు పనిచేశారు. గంటకు ${formattedWage} సరసమైన వేతనంతో మీ శ్రమ విలువ ${formattedLabor}. మిగిలిన మొత్తం మార్జిన్ మరియు వ్యాపార ఖర్చులను భర్తీ చేస్తుంది. మీ సిఫార్సు చేయబడిన సరసమైన ధర ${formattedRec}.`;
-    } else {
-      text = `Your recommended fair price is ${formattedRec}. You spent ${formattedMat} on materials. You worked for ${laborHours} hours. At a fair wage of ${formattedWage} per hour, your labor value is ${formattedLabor}. The remaining amount covers the configured margin and business expenses. Your recommended fair price is ${formattedRec}.`;
-    }
+    const prompts = getVoicePrompts(language);
+    const text = prompts.explainFairPrice(
+      formattedRec,
+      formattedMat,
+      laborHours,
+      formattedWage
+    );
 
     const utterance = new SpeechSynthesisUtterance(text);
-    if (language === 'hi') utterance.lang = 'hi-IN';
-    else if (language === 'te') utterance.lang = 'te-IN';
-    else utterance.lang = 'en-IN';
+    utterance.lang = getSpeechLocale(language);
+
+    if ('getVoices' in window.speechSynthesis) {
+      const voices = window.speechSynthesis.getVoices();
+      const match = voices.find(
+        (v) =>
+          v.lang.toLowerCase() === utterance.lang.toLowerCase() ||
+          v.lang.toLowerCase().replace('_', '-').startsWith(language)
+      );
+      if (match) utterance.voice = match;
+    }
 
     utterance.rate = 0.90;
     utterance.onstart = () => setIsSpeaking(true);
@@ -81,7 +90,7 @@ export function BillPreview({ bill }: BillPreviewProps) {
               SS
             </div>
             <span className="text-2xl font-black text-stone-900 font-['Rozha_One',serif]">ShilpSetu</span>
-            <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-900 rounded border border-amber-300 uppercase">KALAtech</span>
+            <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-900 rounded border border-amber-300 uppercase">ShilpSetu</span>
           </div>
           <p className="text-xs text-stone-500 font-medium tracking-wide">
             Official Indian Handicraft Artisan Valuation & Invoice
@@ -338,7 +347,7 @@ export function BillPreview({ bill }: BillPreviewProps) {
           <Award className="w-8 h-8 text-amber-600" />
           <div>
             <p className="font-bold text-stone-800">Verified Handicraft Origin</p>
-            <p>Protected by ShilpSetu (KALAtech) Fair Pricing & Provenance protocol.</p>
+            <p>Protected by ShilpSetu (ShilpSetu) Fair Pricing & Provenance protocol.</p>
           </div>
         </div>
 

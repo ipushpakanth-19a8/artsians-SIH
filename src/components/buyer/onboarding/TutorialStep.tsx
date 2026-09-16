@@ -60,7 +60,7 @@ export const TutorialStep: React.FC<TutorialStepProps> = ({
           </div>
         );
 
-      case 'step1': // Welcome to KALAtech
+      case 'step1': // Welcome to ShilpSetu
         return (
           <div className="grid grid-cols-3 gap-3 p-4 bg-stone-900/60 rounded-2xl border border-amber-500/25">
             <div className="flex flex-col items-center p-3 bg-white/5 rounded-xl border border-white/10 text-center">

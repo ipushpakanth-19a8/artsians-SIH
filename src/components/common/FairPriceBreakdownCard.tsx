@@ -6,6 +6,8 @@ import {
 import { useLanguage } from '../../lib/LanguageContext';
 import { formatINR } from '../../lib/billingService';
 import { FairPricingResponse, LanguageCode } from '../../types';
+import { getRecognitionLocale, getSpeechLocale } from '../../config/languages';
+import { getVoicePrompts } from '../../config/voicePrompts';
 
 interface FairPriceBreakdownCardProps {
   pricing: FairPricingResponse;
@@ -84,29 +86,26 @@ export const FairPriceBreakdownCard: React.FC<FairPriceBreakdownCardProps> = ({
     if (lang === 'te' && pricing.explanation?.telugu) {
       return pricing.explanation.telugu;
     }
-    if (pricing.explanation?.english) {
-      return pricing.explanation.english;
-    }
 
-    // Fallback template
     const formattedFair = formatINR(pricing.recommendedFairPrice);
     const formattedMat = formatINR(pricing.materialCost);
     const formattedWage = formatINR(pricing.fairHourlyWage);
     const formattedLabor = formatINR(pricing.laborValue);
 
-    if (lang === 'hi') {
-      return `आपकी अनुशंसित उचित कीमत ${formattedFair} है। आपने सामग्री पर ${formattedMat} खर्च किए। आपने ${pricing.laborHours} घंटे काम किया। ${formattedWage} प्रति घंटे की उचित मजदूरी पर, आपके काम का मूल्य ${formattedLabor} है। शेष राशि आवश्यक मार्जिन और व्यावसायिक खर्चों को कवर करती है।`;
-    }
-    if (lang === 'te') {
-      return `మీ సిఫార్సు చేయబడిన సరసమైన ధర ${formattedFair}. మీరు ముడిసరుకుపై ${formattedMat} ఖర్చు చేశారు. మీరు ${pricing.laborHours} గంటలు పనిచేశారు. గంటకు ${formattedWage} సరసమైన వేతనంతో మీ శ్రమ విలువ ${formattedLabor}. మిగిలిన మొత్తం మార్జిన్ మరియు వ్యాపార ఖర్చులను భర్తీ చేస్తుంది.`;
-    }
-    return `Your recommended fair price is ${formattedFair}. You spent ${formattedMat} on materials. You worked for ${pricing.laborHours} hours. At a fair wage of ${formattedWage} per hour, your labor value is ${formattedLabor}. The remaining amount covers the configured margin and business expenses. Your recommended fair price is ${formattedFair}.`;
+    const prompts = getVoicePrompts(lang);
+    return prompts.explainFairPrice(
+      formattedFair,
+      formattedMat,
+      pricing.laborHours,
+      formattedWage
+    );
   };
 
   // Speak explanation using Web Speech API
   const handleExplainFairPrice = () => {
+    const langToUse = selectedLanguage || language;
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      alert(getExplanationText(language));
+      alert(getExplanationText(langToUse));
       return;
     }
 
@@ -117,15 +116,18 @@ export const FairPriceBreakdownCard: React.FC<FairPriceBreakdownCardProps> = ({
     }
 
     window.speechSynthesis.cancel();
-    const textToSpeak = getExplanationText(language);
+    const textToSpeak = getExplanationText(langToUse);
     const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = getSpeechLocale(langToUse);
 
-    if (language === 'hi') {
-      utterance.lang = 'hi-IN';
-    } else if (language === 'te') {
-      utterance.lang = 'te-IN';
-    } else {
-      utterance.lang = 'en-IN';
+    if ('getVoices' in window.speechSynthesis) {
+      const voices = window.speechSynthesis.getVoices();
+      const match = voices.find(
+        (v) =>
+          v.lang.toLowerCase() === utterance.lang.toLowerCase() ||
+          v.lang.toLowerCase().replace('_', '-').startsWith(langToUse)
+      );
+      if (match) utterance.voice = match;
     }
 
     utterance.rate = 0.90; // Slower cadence for rural comprehension
@@ -154,10 +156,12 @@ export const FairPriceBreakdownCard: React.FC<FairPriceBreakdownCardProps> = ({
     }
 
     try {
+      const langToUse = selectedLanguage || language;
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = false;
-      recognition.lang = language === 'hi' ? 'hi-IN' : language === 'te' ? 'te-IN' : 'en-IN';
+      recognition.lang = getRecognitionLocale(langToUse);
+      console.log(`[VOICE] Language: ${langToUse}, Recognition Locale: ${recognition.lang}`);
 
       recognition.onstart = () => {
         setIsListeningVoice(true);
@@ -271,7 +275,7 @@ export const FairPriceBreakdownCard: React.FC<FairPriceBreakdownCardProps> = ({
   const labels = {
     en: {
       title: 'FAIR PRICE BREAKDOWN',
-      subtitle: 'Transparent, living-wage calculation protectively certified by KALAtech',
+      subtitle: 'Transparent, living-wage calculation protectively certified by ShilpSetu',
       rawMaterial: 'Raw Material',
       yourWork: 'Your Work',
       perHour: '/hour',

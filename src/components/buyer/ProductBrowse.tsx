@@ -46,7 +46,7 @@ export function ProductBrowse() {
       .catch(() => setLoading(false));
 
     try {
-      const wish = JSON.parse(localStorage.getItem('kalatech_wishlist') || '[]');
+      const wish = JSON.parse(localStorage.getItem('ShilpSetu_wishlist') || '[]');
       setWishlistIds(wish.map((w: any) => w.productId));
     } catch {}
   }, []);
@@ -54,7 +54,7 @@ export function ProductBrowse() {
   const toggleWishlist = (e: React.MouseEvent, prod: Product) => {
     e.stopPropagation();
     try {
-      let wish = JSON.parse(localStorage.getItem('kalatech_wishlist') || '[]');
+      let wish = JSON.parse(localStorage.getItem('ShilpSetu_wishlist') || '[]');
       if (wishlistIds.includes(prod.id)) {
         wish = wish.filter((w: any) => w.productId !== prod.id);
         setWishlistIds(wishlistIds.filter((id) => id !== prod.id));
@@ -62,7 +62,7 @@ export function ProductBrowse() {
         wish.push({ productId: prod.id, product: prod, addedAt: new Date().toISOString() });
         setWishlistIds([...wishlistIds, prod.id]);
       }
-      localStorage.setItem('kalatech_wishlist', JSON.stringify(wish));
+      localStorage.setItem('ShilpSetu_wishlist', JSON.stringify(wish));
       window.dispatchEvent(new Event('cart-updated'));
     } catch {}
   };

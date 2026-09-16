@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingBag, X, Eye, EyeOff, Sparkles, AlertCircle, ArrowRight, ShieldCheck, HelpCircle, Mic } from 'lucide-react';
+import { ShoppingBag, X, Sparkles, AlertCircle, ArrowRight, ShieldCheck, HelpCircle, Mic, CheckCircle2, RotateCcw, KeyRound, Edit3 } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
 import { useLanguage } from '../../lib/LanguageContext';
 import { translations } from '../../lib/i18n';
@@ -17,61 +17,68 @@ interface BuyerAuthModalProps {
 
 export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: BuyerAuthModalProps) {
   const { language, setLanguage } = useLanguage();
-  const { loginBuyer, signupBuyer } = useAuth();
+  const { sendOtp, verifyOtp, login } = useAuth();
   const navigate = useNavigate();
   const t = translations[language];
 
   const [tab, setTab] = useState<'signin' | 'signup'>(defaultTab);
-  const [showPassword, setShowPassword] = useState(false);
+  const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
-  // Sign In Form State
-  const [signInIdentifier, setSignInIdentifier] = useState('');
-  const [signInPassword, setSignInPassword] = useState('');
-
-  // Sign Up Form State
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  // Form Fields
   const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [fullName, setFullName] = useState('');
   const [location, setLocation] = useState('');
   const [state, setState] = useState('Karnataka');
   const [address, setAddress] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Fields configured for voice input
-  const signInFields: VoiceFormFieldConfig[] = useMemo(() => [
+  // Resend Countdown
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  // Voice Form Configuration
+  const phoneFields: VoiceFormFieldConfig[] = useMemo(() => [
     {
-      key: 'signInIdentifier',
-      label: language === 'hi' ? 'ईमेल या मोबाइल नंबर' : language === 'te' ? 'ఈమెయిల్ లేదా మొబైల్' : 'Email or Mobile Number',
-      type: 'text',
+      key: 'phone',
+      label: language === 'hi' ? 'खरीदार मोबाइल नंबर' : language === 'te' ? 'కొనుగోలుదారు మొబైల్' : 'Mobile Number',
+      type: 'tel',
       prompts: {
-        en: 'Please speak your registered email address or 10-digit mobile number.',
-        hi: 'कृपया अपना पंजीकृत ईमेल पता या 10 अंकों का मोबाइल नंबर बोलें।',
-        te: 'దయచేసి మీ రిజిస్టర్డ్ ఈమెయిల్ లేదా 10 అంకెల మొబైల్ నంబర్ చెప్పండి.',
+        en: 'Please speak your registered 10-digit mobile number.',
+        hi: 'कृपया अपना पंजीकृत 10 अंकों का मोबाइल नंबर बोलें।',
+        te: 'దయచేసి మీ 10 అంకెల మొబైల్ నంబర్ చెప్పండి.',
       },
       sampleFallback: {
-        en: 'buyer@culturecurate.in',
-        hi: 'buyer@culturecurate.in',
-        te: 'buyer@culturecurate.in',
+        en: '9444077889',
+        hi: '9444077889',
+        te: '9444077889',
       },
     },
+  ], [language]);
+
+  const otpFields: VoiceFormFieldConfig[] = useMemo(() => [
     {
-      key: 'signInPassword',
-      label: language === 'hi' ? 'पासवर्ड' : language === 'te' ? 'పాస్వర్డ్' : 'Password',
-      type: 'password',
+      key: 'otp',
+      label: language === 'hi' ? '6-अंकों का OTP' : language === 'te' ? '6 అంకెల OTP' : '6-Digit OTP',
+      type: 'text',
       prompts: {
-        en: 'Now please speak your password.',
-        hi: 'अब अपना पासवर्ड बोलें।',
-        te: 'ఇప్పుడు మీ పాస్వర్డ్ చెప్పండి.',
+        en: 'Please speak the 6 digit OTP. For demo, speak 123456.',
+        hi: 'कृपया 6 अंकों का ओटीपी बोलें। डेमो के लिए 123456 बोलें।',
+        te: 'దయచేసి 6 అంకెల ఓటీపీని చెప్పండి. డెమో కోసం 123456 చెప్పండి.',
       },
       sampleFallback: {
-        en: 'Buyer@123456',
-        hi: 'Buyer@123456',
-        te: 'Buyer@123456',
+        en: '123456',
+        hi: '123456',
+        te: '123456',
       },
     },
   ], [language]);
@@ -93,21 +100,6 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
       },
     },
     {
-      key: 'email',
-      label: language === 'hi' ? 'ईमेल पता' : language === 'te' ? 'ఈమెయిల్' : 'Email Address',
-      type: 'email',
-      prompts: {
-        en: 'Please speak your email address.',
-        hi: 'कृपया अपना ईमेल पता बोलें।',
-        te: 'దయచేసి మీ ఈమెయిల్ చెప్పండి.',
-      },
-      sampleFallback: {
-        en: 'buyer@culturecurate.in',
-        hi: 'buyer@culturecurate.in',
-        te: 'buyer@culturecurate.in',
-      },
-    },
-    {
       key: 'phone',
       label: language === 'hi' ? 'मोबाइल नंबर' : language === 'te' ? 'మొబైల్ నంబర్' : 'Mobile Number',
       type: 'tel',
@@ -124,7 +116,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
     },
     {
       key: 'location',
-      label: language === 'hi' ? 'शहर' : language === 'te' ? 'నగరం' : 'City or Location',
+      label: language === 'hi' ? 'शहर / जिला' : language === 'te' ? 'నగరం' : 'City',
       type: 'text',
       prompts: {
         en: 'Please speak your city name.',
@@ -137,36 +129,15 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
         te: 'బెంగళూరు',
       },
     },
-    {
-      key: 'password',
-      label: language === 'hi' ? 'पासवर्ड' : language === 'te' ? 'పాస్వర్డ్' : 'Password',
-      type: 'password',
-      prompts: {
-        en: 'Please speak your desired password.',
-        hi: 'कृपया अपना पासवर्ड बोलें।',
-        te: 'దయచేసి మీ పాస్వర్డ్ చెప్పండి.',
-      },
-      sampleFallback: {
-        en: 'Buyer@123456',
-        hi: 'Buyer@123456',
-        te: 'Buyer@123456',
-      },
-    },
   ], [language]);
 
-  const activeFields = tab === 'signin' ? signInFields : signUpFields;
+  const activeFields = step === 'otp' ? otpFields : tab === 'signin' ? phoneFields : signUpFields;
 
   const handleFieldFilled = (key: string, value: string) => {
-    if (key === 'signInIdentifier') setSignInIdentifier(value);
-    if (key === 'signInPassword') setSignInPassword(value);
+    if (key === 'phone') setPhone(value.replace(/[^0-9]/g, ''));
+    if (key === 'otp') setOtp(value.replace(/[^0-9]/g, ''));
     if (key === 'fullName') setFullName(value);
-    if (key === 'email') setEmail(value);
-    if (key === 'phone') setPhone(value);
     if (key === 'location') setLocation(value);
-    if (key === 'password') {
-      setPassword(value);
-      setConfirmPassword(value);
-    }
   };
 
   const voice = useVoiceFormAssistant({
@@ -177,65 +148,55 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
 
   if (!isOpen) return null;
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Step 1: Send OTP
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setError(null);
-    if (!signInIdentifier.trim()) {
-      setError(t.validEmailRequired);
-      return;
-    }
-    if (!signInPassword) {
-      setError(t.passwordMinLength);
-      return;
-    }
-
-    setLoading(true);
-    const res = await loginBuyer(signInIdentifier.trim(), signInPassword);
-    setLoading(false);
-    if (res.success) {
-      voice.stopAssistant();
-      setShowLanguageModal(true);
-    } else {
-      setError(res.error || 'Failed to sign in. Please check your credentials.');
-    }
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if (!fullName.trim() || fullName.trim().length < 2) {
-      setError(t.nameRequired);
-      return;
-    }
-    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      setError(t.validEmailRequired);
-      return;
-    }
     const cleanPhone = phone.replace(/[^0-9]/g, '');
     if (cleanPhone.length !== 10) {
       setError(t.validMobileRequired);
       return;
     }
-    if (!password || password.length < 6) {
-      setError(t.passwordMinLength);
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError(t.passwordsMustMatch);
+
+    if (tab === 'signup' && (!fullName.trim() || fullName.trim().length < 2)) {
+      setError(t.nameRequired);
       return;
     }
 
     setLoading(true);
-    const res = await signupBuyer({
-      name: fullName.trim(),
-      email: email.trim(),
+    const res = await sendOtp(cleanPhone, 'buyer');
+    setLoading(false);
+
+    if (res.success) {
+      setStep('otp');
+      setResendCooldown(30);
+      setOtp('123456'); // Pre-fill demo OTP for fast tester validation
+    } else {
+      setError(res.error || 'Failed to send OTP. Please check your mobile number.');
+    }
+  };
+
+  // Step 2: Verify OTP
+  const handleVerifyOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setError(null);
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const cleanOtp = otp.replace(/[^0-9]/g, '');
+
+    if (cleanOtp.length < 4) {
+      setError('Please enter the 6-digit OTP code (Demo: 123456)');
+      return;
+    }
+
+    setLoading(true);
+    const res = await verifyOtp({
       phone: cleanPhone,
-      password,
-      confirmPassword,
+      otp: cleanOtp,
+      role: 'buyer',
+      name: fullName.trim() || undefined,
       location: location.trim() || undefined,
       state,
-      address: address.trim() || undefined,
+      business_name: address.trim() || undefined,
     });
     setLoading(false);
 
@@ -243,23 +204,28 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
       voice.stopAssistant();
       setShowLanguageModal(true);
     } else {
-      setError(res.error || 'Registration failed. Please review the form.');
+      setError(res.error || 'Invalid OTP code. Please enter 123456.');
     }
   };
 
   const handleLanguageChosen = (chosenLang: LanguageCode) => {
     setLanguage(chosenLang);
     sessionStorage.setItem('open_buyer_tutorial', 'true');
-    sessionStorage.removeItem('kalatech_seen_buyer_tour');
+    sessionStorage.removeItem('ShilpSetu_seen_buyer_tour');
     setShowLanguageModal(false);
     onClose();
     navigate('/buyer');
   };
 
-  const handleQuickDemoFill = () => {
-    setSignInIdentifier('buyer@culturecurate.in');
-    setSignInPassword('Buyer@123456');
+  const handleQuickDemoFill = async () => {
+    setPhone('9444077889');
     setError(null);
+    setLoading(true);
+    await sendOtp('9444077889', 'buyer');
+    setLoading(false);
+    setStep('otp');
+    setResendCooldown(30);
+    setOtp('123456');
   };
 
   return (
@@ -282,82 +248,100 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
             </div>
             <div>
               <h2 className="text-xl font-black font-['Rozha_One',serif]">
-                {tab === 'signin' ? t.buyerSignInTitle : t.buyerSignUpTitle}
+                {step === 'otp'
+                  ? t.enterOtp
+                  : tab === 'signin'
+                  ? t.buyerSignInTitle
+                  : t.buyerSignUpTitle}
               </h2>
-              <p className="text-emerald-100 text-xs">Direct Artisan Heritage Marketplace</p>
+              <p className="text-emerald-100 text-xs">
+                {step === 'otp'
+                  ? '🔒 Passwordless OTP Verification'
+                  : 'Direct Artisan Heritage Marketplace • No Password Required'}
+              </p>
             </div>
           </div>
 
-          {/* Tab Switcher */}
-          <div className="flex bg-black/20 p-1 rounded-xl mt-4">
-            <button
-              onClick={() => {
-                voice.stopAssistant();
-                setTab('signin');
-                setError(null);
-              }}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                tab === 'signin' ? 'bg-white text-stone-900 shadow' : 'text-emerald-100 hover:text-white'
-              }`}
-            >
-              {t.signIn}
-            </button>
-            <button
-              onClick={() => {
-                voice.stopAssistant();
-                setTab('signup');
-                setError(null);
-              }}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                tab === 'signup' ? 'bg-white text-stone-900 shadow' : 'text-emerald-100 hover:text-white'
-              }`}
-            >
-              {t.signUp}
-            </button>
-          </div>
+          {/* Tab Switcher (Only in Phone Step) */}
+          {step === 'phone' && (
+            <div className="flex bg-black/20 p-1 rounded-xl mt-4">
+              <button
+                onClick={() => {
+                  voice.stopAssistant();
+                  setTab('signin');
+                  setError(null);
+                }}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  tab === 'signin' ? 'bg-white text-stone-900 shadow' : 'text-emerald-100 hover:text-white'
+                }`}
+              >
+                {t.signIn}
+              </button>
+              <button
+                onClick={() => {
+                  voice.stopAssistant();
+                  setTab('signup');
+                  setError(null);
+                }}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  tab === 'signup' ? 'bg-white text-stone-900 shadow' : 'text-emerald-100 hover:text-white'
+                }`}
+              >
+                {t.signUp}
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Scrollable Form Content */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-4">
-          {/* Active Voice Assistant Banner */}
+        {/* Modal Body */}
+        <div className="p-6 overflow-y-auto space-y-4">
+          {/* Quick Demo Fill Button (Only in Phone Step) */}
+          {step === 'phone' && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleQuickDemoFill}
+                className="flex-1 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+                <span>⚡ {t.quickDemoLogin} (9444077889)</span>
+              </button>
+            </div>
+          )}
+
+          {/* Voice Assistant Status Bar */}
           <VoiceAssistBanner
+            voice={voice}
             language={language}
-            isListening={voice.isListening}
-            isSpeaking={voice.isSpeaking}
-            activeFieldKey={voice.activeFieldKey}
-            statusMessage={voice.statusMessage}
-            transcript={voice.transcript}
-            onStop={voice.stopAssistant}
+            fields={activeFields}
           />
 
-          {/* Voice Assistance Master Button */}
+          {/* Interactive Voice Helper Button */}
           <button
             type="button"
             onClick={voice.startGuidedFlow}
-            className="w-full py-2.5 px-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 hover:from-amber-100 hover:to-orange-100 border-2 border-amber-300 text-amber-950 font-black text-xs sm:text-sm flex items-center justify-between shadow-xs transition-all active:scale-[0.99] cursor-pointer group"
+            className="w-full py-2.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 hover:from-emerald-100 hover:to-teal-100 border-2 border-emerald-300 text-emerald-950 font-black text-xs sm:text-sm flex items-center justify-between shadow-xs transition-all active:scale-[0.99] cursor-pointer group"
           >
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
                 <Mic className="w-4 h-4" />
               </div>
               <div className="text-left">
                 <span className="block leading-tight font-extrabold text-stone-900 text-xs sm:text-sm">
                   {language === 'hi'
-                    ? '🎙️ बोलकर लॉगिन विवरण भरें (Voice Assist)'
+                    ? '🎙️ बोलकर विवरण भरें (आवाज़ सहायक)'
                     : language === 'te'
-                    ? '🎙️ వాయిస్ ద్వారా వివరాలు నమోదు చేయండి'
+                    ? '🎙️ వాయిస్ అసిస్టెంట్ ద్వారా వివరాలు నమోదు'
                     : '🎙️ Voice Assist Login Details'}
                 </span>
-                <span className="text-[10px] text-amber-800 font-bold block">
-                  {language === 'hi'
-                    ? 'बटन दबाकर बोलें - सहायक अपने आप भरेगा'
-                    : language === 'te'
-                    ? 'మాట్లాడండి - వివరాలు ఆటోమేటిక్‌గా నమోదు అవుతాయి'
-                    : 'Click to speak and auto-fill details'}
+                <span className="text-[10px] text-emerald-800 font-bold block">
+                  {step === 'otp'
+                    ? (language === 'hi' ? 'ओटीपी बोलें (डेमो: 123456)' : 'Speak 6-digit OTP (Demo: 123456)')
+                    : (language === 'hi' ? 'क्लिक करें और 10 अंकों का मोबाइल नंबर बोलें' : 'Speak your 10-digit mobile number')}
                 </span>
               </div>
             </div>
-            <span className="bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 shadow-2xs">
+            <span className="bg-emerald-700 hover:bg-emerald-800 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 shadow-2xs">
               {language === 'hi' ? 'आवाज़ से भरें' : language === 'te' ? 'వాయిస్' : 'Speak'}
             </span>
           </button>
@@ -369,298 +353,311 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
             </div>
           )}
 
-          {tab === 'signin' ? (
-            <form onSubmit={handleSignIn} className="space-y-4">
-              {/* Identifier Input with Field Mic */}
+          {/* ========================================================= */}
+          {/* STEP 2: OTP VERIFICATION (NO PASSWORD NEEDED)              */}
+          {/* ========================================================= */}
+          {step === 'otp' ? (
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
+              {/* Phone number badge with edit button */}
+              <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center">
+                    <KeyRound className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-semibold text-stone-500 block">OTP sent to mobile</span>
+                    <span className="text-sm font-black text-stone-900 font-mono tracking-wide">+91 {phone}</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep('phone');
+                    setError(null);
+                  }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-stone-300 text-stone-700 text-xs font-bold hover:bg-stone-50 cursor-pointer"
+                >
+                  <Edit3 className="w-3 h-3" />
+                  <span>{language === 'hi' ? 'बदलें' : 'Change'}</span>
+                </button>
+              </div>
+
+              {/* Demo OTP Banner */}
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs text-emerald-900">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Demo OTP code is <strong className="font-mono text-sm font-black text-emerald-700">123456</strong></span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOtp('123456')}
+                  className="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer"
+                >
+                  Auto-Fill
+                </button>
+              </div>
+
+              {/* OTP Input */}
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1.5">{t.emailOrMobile}</label>
+                <label className="block text-xs font-bold text-stone-700 mb-1.5">
+                  {t.enterOtp}
+                </label>
                 <div className="relative">
                   <input
                     type="text"
                     required
-                    value={signInIdentifier}
-                    onChange={(e) => setSignInIdentifier(e.target.value)}
-                    placeholder="e.g. buyer@culturecurate.in or 9444077889"
-                    className={`w-full pl-3.5 pr-11 py-2.5 bg-stone-50 border rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all ${
-                      voice.activeFieldKey === 'signInIdentifier'
-                        ? 'border-amber-500 ring-2 ring-amber-300 bg-amber-50/50'
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+                    placeholder="123456"
+                    className={`w-full pl-4 pr-11 py-3 bg-stone-50 border rounded-xl text-stone-900 text-center tracking-[0.4em] font-mono text-xl font-black focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all ${
+                      voice.activeFieldKey === 'otp'
+                        ? 'border-emerald-500 ring-2 ring-emerald-300 bg-emerald-50/50'
                         : 'border-stone-300'
                     }`}
                   />
                   <button
                     type="button"
-                    onClick={() => voice.recordSingleField('signInIdentifier')}
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all cursor-pointer ${
-                      voice.activeFieldKey === 'signInIdentifier' && voice.isListening
+                    onClick={() => voice.recordSingleField('otp')}
+                    className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all cursor-pointer ${
+                      voice.activeFieldKey === 'otp' && voice.isListening
                         ? 'bg-red-500 text-white animate-pulse'
-                        : 'text-stone-400 hover:text-amber-700 hover:bg-amber-100/60'
+                        : 'text-stone-400 hover:text-emerald-700 hover:bg-emerald-100/60'
                     }`}
-                    title={language === 'hi' ? 'ईमेल या मोबाइल बोलें' : 'Speak email or mobile'}
+                    title={language === 'hi' ? 'ओटीपी बोलें' : 'Speak OTP'}
                   >
                     <Mic className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Password Input with Field Mic */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-bold text-stone-700">{t.password}</label>
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotModal(true)}
-                    className="text-xs text-emerald-700 hover:underline font-semibold"
-                  >
-                    {t.forgotPassword}
-                  </button>
-                </div>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={signInPassword}
-                    onChange={(e) => setSignInPassword(e.target.value)}
-                    placeholder="Enter password"
-                    className={`w-full pl-3.5 pr-20 py-2.5 bg-stone-50 border rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all ${
-                      voice.activeFieldKey === 'signInPassword'
-                        ? 'border-amber-500 ring-2 ring-amber-300 bg-amber-50/50'
-                        : 'border-stone-300'
-                    }`}
-                  />
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => voice.recordSingleField('signInPassword')}
-                      className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                        voice.activeFieldKey === 'signInPassword' && voice.isListening
-                          ? 'bg-red-500 text-white animate-pulse'
-                          : 'text-stone-400 hover:text-amber-700 hover:bg-amber-100/60'
-                      }`}
-                      title={language === 'hi' ? 'पासवर्ड बोलें' : 'Speak password'}
-                    >
-                      <Mic className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="p-1.5 text-stone-400 hover:text-stone-600"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
+              {/* Verify Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+                className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-emerald-700/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                {loading ? t.loading : t.signIn}
-                <ArrowRight className="w-4 h-4" />
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <span>{language === 'hi' ? 'सत्यापित करें और खरीदारी करें' : 'Verify & Browse Marketplace'}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
 
-              {/* Quick Demo Fill Helper */}
-              <div className="pt-3 border-t border-stone-200">
-                <button
-                  type="button"
-                  onClick={handleQuickDemoFill}
-                  className="w-full py-2 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                  {t.quickDemoLogin} (Anita Deshmukh • Bengaluru)
-                </button>
+              {/* Resend Link */}
+              <div className="text-center pt-1">
+                {resendCooldown > 0 ? (
+                  <span className="text-xs text-stone-500 font-medium">
+                    Resend OTP in <strong className="font-mono text-stone-700">{resendCooldown}s</strong>
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleSendOtp()}
+                    className="inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:underline font-bold cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>{t.resendOtp}</span>
+                  </button>
+                )}
               </div>
             </form>
           ) : (
-            <form onSubmit={handleSignUp} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">{t.fullName} *</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Anita Deshmukh"
-                    className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => voice.recordSingleField('fullName')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-amber-700"
-                  >
-                    <Mic className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            /* ========================================================= */
+            /* STEP 1: ENTER PHONE (SIGN IN OR SIGN UP)                  */
+            /* ========================================================= */
+            tab === 'signin' ? (
+              <form onSubmit={handleSendOtp} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Email *</label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="buyer@culturecurate.in"
-                      className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => voice.recordSingleField('email')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-amber-700"
-                    >
-                      <Mic className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Mobile (10 digits) *</label>
+                  <label className="block text-xs font-bold text-stone-700 mb-1.5">{t.emailOrMobile}</label>
                   <div className="relative">
                     <input
                       type="tel"
                       required
                       maxLength={10}
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder="e.g. 9444077889"
+                      className={`w-full pl-3.5 pr-11 py-3 bg-stone-50 border rounded-xl text-stone-900 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all ${
+                        voice.activeFieldKey === 'phone'
+                          ? 'border-emerald-500 ring-2 ring-emerald-300 bg-emerald-50/50'
+                          : 'border-stone-300'
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => voice.recordSingleField('phone')}
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all cursor-pointer ${
+                        voice.activeFieldKey === 'phone' && voice.isListening
+                          ? 'bg-red-500 text-white animate-pulse'
+                          : 'text-stone-400 hover:text-emerald-700 hover:bg-emerald-100/60'
+                      }`}
+                      title={language === 'hi' ? 'मोबाइल नंबर बोलें' : 'Speak mobile number'}
+                    >
+                      <Mic className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-stone-500 mt-1">
+                    No password required. Instant OTP login.
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-emerald-700/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {loading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span>{t.sendOtp}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+
+                <div className="text-center pt-2">
+                  <p className="text-xs text-stone-500">
+                    {t.noAccount}{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTab('signup');
+                        setError(null);
+                      }}
+                      className="text-emerald-700 font-bold hover:underline"
+                    >
+                      {t.createAccount}
+                    </button>
+                  </p>
+                </div>
+              </form>
+            ) : (
+              /* Buyer Sign Up Tab */
+              <form onSubmit={handleSendOtp} className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Full Name *</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="e.g. Anita Deshmukh"
+                      className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => voice.recordSingleField('fullName')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-emerald-700"
+                    >
+                      <Mic className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Mobile Number (10 digits) *</label>
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      required
+                      maxLength={10}
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
                       placeholder="9444077889"
                       className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <button
                       type="button"
                       onClick={() => voice.recordSingleField('phone')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-amber-700"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-emerald-700"
                     >
                       <Mic className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">{t.locationCity}</label>
-                  <div className="relative">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">City</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        placeholder="Bengaluru"
+                        className="w-full pl-3 pr-8 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => voice.recordSingleField('location')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-emerald-700"
+                      >
+                        <Mic className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">State</label>
                     <input
                       type="text"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      placeholder="e.g. Bengaluru"
-                      className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      value={state}
+                      onChange={(e) => setState(e.target.value)}
+                      placeholder="Karnataka"
+                      className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
-                    <button
-                      type="button"
-                      onClick={() => voice.recordSingleField('location')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-amber-700"
-                    >
-                      <Mic className="w-4 h-4" />
-                    </button>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">{t.state}</label>
-                  <input
-                    type="text"
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                    placeholder="e.g. Karnataka"
-                    className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">Delivery Address</label>
-                <input
-                  type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Street address, apartment, locality"
-                  className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full mt-2 py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-emerald-700/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {loading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span>{t.sendOtp}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">{t.password} *</label>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Min 6 characters"
-                    className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
+                <div className="text-center pt-1">
+                  <p className="text-xs text-stone-500">
+                    {t.haveAccount}{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTab('signin');
+                        setError(null);
+                      }}
+                      className="text-emerald-700 font-bold hover:underline"
+                    >
+                      {t.signIn}
+                    </button>
+                  </p>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">{t.confirmPassword} *</label>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Re-enter password"
-                    className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
-              >
-                {loading ? t.loading : t.createAccount}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
+              </form>
+            )
           )}
-        </div>
 
-        {/* Footer info */}
-        <div className="bg-stone-50 border-t border-stone-200 px-6 py-3 flex items-center justify-between text-[11px] text-stone-500">
-          <span className="flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            100% Proceeds to Artisans • Fair Trade Certified
-          </span>
-          <button
-            onClick={() => {
-              voice.stopAssistant();
-              setTab(tab === 'signin' ? 'signup' : 'signin');
-              setError(null);
-            }}
-            className="text-emerald-700 font-bold hover:underline cursor-pointer"
-          >
-            {tab === 'signin' ? t.noAccount : t.haveAccount}
-          </button>
-        </div>
-      </div>
-
-      {/* Forgot Password Dialog */}
-      {showForgotModal && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
-            <h3 className="font-bold text-stone-900 text-base flex items-center gap-2">
-              <HelpCircle className="w-5 h-5 text-emerald-600" />
-              Password Reset Assistance
-            </h3>
-            <p className="text-xs text-stone-600 leading-relaxed">
-              If you forgot your password, please contact the KALAtech buyer support desk at <span className="font-semibold text-emerald-700">support@kalatech.gov.in</span> with your registered mobile or email.
-            </p>
-            <p className="text-xs text-stone-500">
-              Demo credentials: <code className="bg-stone-100 px-2 py-0.5 rounded font-mono text-stone-800">buyer@culturecurate.in / Buyer@123456</code>
-            </p>
-            <button
-              onClick={() => setShowForgotModal(false)}
-              className="w-full py-2 bg-stone-900 text-white rounded-xl text-xs font-bold cursor-pointer"
-            >
-              Understood
-            </button>
+          {/* Direct Benefits Footnote */}
+          <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
+            <span className="flex items-center gap-1 font-medium">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              100% Authentic GI & Artisan Direct
+            </span>
+            <span className="text-emerald-700 font-bold">Encrypted OTP Access</span>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Language Selection Modal upon Login */}
       {showLanguageModal && (

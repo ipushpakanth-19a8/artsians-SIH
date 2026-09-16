@@ -52,7 +52,7 @@ export function AdminReports() {
       title: 'Artisan & Seller Cluster Registry',
       desc: 'Complete export of verified master artisans, GI craft traditions, mobile contacts, and onboarding status.',
       endpoint: '/api/admin/sellers',
-      filename: 'kalatech-artisan-registry',
+      filename: 'ShilpSetu-artisan-registry',
       badge: 'Artisans',
     },
     {
@@ -60,7 +60,7 @@ export function AdminReports() {
       title: 'Direct Marketplace Order Ledger',
       desc: 'Transaction audit of all direct sales with 0% platform commission, payment IDs, and fulfillment tracking.',
       endpoint: '/api/admin/orders',
-      filename: 'kalatech-orders-ledger',
+      filename: 'ShilpSetu-orders-ledger',
       badge: 'Orders',
     },
     {
@@ -68,7 +68,7 @@ export function AdminReports() {
       title: 'Finalized Invoices & Cost Breakdown',
       desc: 'Financial audit report of material, labor, and logistical costs compared to market benchmarks.',
       endpoint: '/api/admin/bills',
-      filename: 'kalatech-invoices-audit',
+      filename: 'ShilpSetu-invoices-audit',
       badge: 'Invoices',
     },
     {
@@ -76,7 +76,7 @@ export function AdminReports() {
       title: 'National Market Price Benchmarks',
       desc: 'Curated price benchmarks by craft category and region, with recommended target prices.',
       endpoint: '/api/admin/market-prices',
-      filename: 'kalatech-market-benchmarks',
+      filename: 'ShilpSetu-market-benchmarks',
       badge: 'Benchmarks',
     },
   ];

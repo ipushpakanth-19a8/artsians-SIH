@@ -27,7 +27,7 @@ export function AdminLogin() {
   };
 
   const handleQuickSeedFill = () => {
-    setEmail('admin@kalatech.gov.in');
+    setEmail('admin@ShilpSetu.gov.in');
     setPassword('Admin@123456');
     setError(null);
   };
@@ -54,7 +54,7 @@ export function AdminLogin() {
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-['Rozha_One',serif] tracking-tight">
             ShilpSetu <span className="text-red-500 font-sans text-xl font-bold">Admin</span>
           </h1>
-          <p className="text-slate-400 text-xs mt-1">KALAtech Platform Governance & Enterprise Cluster Management</p>
+          <p className="text-slate-400 text-xs mt-1">ShilpSetu Platform Governance & Enterprise Cluster Management</p>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-950/60 border border-red-800/40 rounded-full text-red-400 text-[11px] font-semibold mt-3">
             <Lock className="w-3 h-3" />
             Restricted Access • Authorized Personnel Only
@@ -81,7 +81,7 @@ export function AdminLogin() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@kalatech.gov.in"
+                placeholder="admin@ShilpSetu.gov.in"
                 className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors"
               />
             </div>
@@ -133,7 +133,7 @@ export function AdminLogin() {
                 className="w-full py-2 bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
               >
                 <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-                Fill Seed Credentials (admin@kalatech.gov.in)
+                Fill Seed Credentials (admin@ShilpSetu.gov.in)
               </button>
             </div>
           </form>
@@ -141,7 +141,7 @@ export function AdminLogin() {
 
         {/* Security Notice */}
         <div className="mt-6 text-center text-slate-500 text-xs">
-          <p>Protected by ShilpSetu (KALAtech) Role-Based Access Control (RBAC).</p>
+          <p>Protected by ShilpSetu (ShilpSetu) Role-Based Access Control (RBAC).</p>
           <p className="mt-0.5 text-slate-600">All administrative sessions are logged for audit compliance.</p>
         </div>
       </div>

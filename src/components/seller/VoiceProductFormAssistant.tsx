@@ -18,7 +18,10 @@ import {
   Tag
 } from 'lucide-react';
 import { LanguageCode } from '../../types';
+import { getRecognitionLocale, getSpeechLocale } from '../../config/languages';
+import { getVoicePrompts } from '../../config/voicePrompts';
 import { normalizeSpokenDigits } from '../../lib/useVoiceFormAssistant';
+import { t } from '../../i18n';
 
 export interface CollectedProductDetails {
   title: string;
@@ -48,84 +51,202 @@ type AssistantState =
 
 interface QuestionConfig {
   key: keyof CollectedProductDetails;
-  label: string;
+  labelKey: string;
   icon: string;
   prompts: {
     en: string;
     hi: string;
     te: string;
+    ta?: string;
+    kn?: string;
+    ml?: string;
+    mr?: string;
+    gu?: string;
+    bn?: string;
+    or?: string;
+    pa?: string;
+    as?: string;
+    [key: string]: string | undefined;
   };
 }
+
+export const CONFIRM_SPEECH: Record<LanguageCode, string> = {
+  en: 'I understood these details. Would you like to save them?',
+  hi: 'मैंने ये सभी विवरण समझ लिए हैं। क्या आप इन्हें सहेजना चाहते हैं?',
+  te: 'నేను ఈ వివరాలను అర్థం చేసుకున్నాను. మీరు వీటిని సేవ్ చేయాలనుకుంటున్నారా?',
+  ta: 'நான் இந்த விவரங்களை புரிந்து கொண்டேன். நீங்கள் இவற்றை சேமிக்க விரும்புகிறீர்களா?',
+  kn: 'ನಾನು ಈ ವಿವರಗಳನ್ನು ಅರ್ಥಮಾಡಿಕೊಂಡಿದ್ದೇನೆ. ನೀವು ಇವುಗಳನ್ನು ಉಳಿಸಲು ಬಯಸುವಿರಾ?',
+  ml: 'ഞാൻ ഈ വിവരങ്ങൾ മനസ്സിലാക്കി. നിങ്ങൾ ഇവ സംരക്ഷിക്കാൻ ആഗ്രഹിക്കുന്നുണ്ടോ?',
+  mr: 'मला हे सर्व तपशील समजले आहेत. आपण हे जतन करू इच्छिता?',
+  gu: 'મેં આ બધી વિગતો સમજી લીધી છે. શું તમે તેને સાચવવા માંગો છો?',
+  bn: 'আমি এই সমস্ত বিবরণ বুঝতে পেরেছি। আপনি কি এগুলো সংরক্ষণ করতে চান?',
+  or: 'ମୁଁ ଏହି ସମସ୍ତ ବିବରଣୀ ବୁଝିପାରିଲି। ଆପଣ ଏହାକୁ ସଂରକ୍ଷଣ କରିବାକୁ ଚାହାଁନ୍ତି କି?',
+  pa: 'ਮੈਂ ਇਹ ਸਾਰੇ ਵੇਰਵੇ ਸਮਝ ਲਏ ਹਨ। ਕੀ ਤੁਸੀਂ ਇਹਨਾਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?',
+  as: 'মই এই সকলো বিৱৰণ বুজি পালোঁ। আপুনি এইবোৰ সংৰক্ষণ কৰিব বিচাৰে নেকি?',
+};
+
+export const ASSISTANT_TITLES: Record<LanguageCode, string> = {
+  en: 'Voice Product Questionnaire',
+  hi: 'आवाज़ से उत्पाद विवरण भरें',
+  te: 'వాయిస్ ఉత్పత్తి సహాయకుడు',
+  ta: 'குரல் மூலம் கைவினை விவரங்கள்',
+  kn: 'ಧ್ವನಿ ಮೂಲಕ ಉತ್ಪನ್ನ ವಿವರಣೆ',
+  ml: 'ശബ്ദം വഴി ഉൽപ്പന്ന വിവരങ്ങൾ',
+  mr: 'आवाजाद्वारे उत्पादन तपशील भरा',
+  gu: 'અવાજ દ્વારા ઉત્પાદન વિગત ભરો',
+  bn: 'কণ্ঠস্বরের মাধ্যমে পণ্যের বিবরণ',
+  or: 'ଭଏସ୍ ମାଧ୍ୟମରେ ଉତ୍ପାଦ ବିବରଣୀ',
+  pa: 'ਆਵਾਜ਼ ਰਾਹੀਂ ਉਤਪਾਦ ਦੇ ਵੇਰਵੇ',
+  as: 'কণ্ঠৰে সামগ্ৰীৰ বিৱৰণ দিয়ক',
+};
+
+export const SUMMARY_TITLES: Record<LanguageCode, string> = {
+  en: 'PRODUCT DETAILS SUMMARY',
+  hi: 'उत्पाद विवरण सारांश',
+  te: 'ఉత్పత్తి వివరాల సారాంశం',
+  ta: 'தயாரிப்பு விவரங்களின் சுருக்கம்',
+  kn: 'ಉತ್ಪನ್ನ ವಿವರಗಳ ಸಾರಾಂಶ',
+  ml: 'ഉൽപ്പന്ന വിവര സംഗ്രഹം',
+  mr: 'उत्पादन तपशील सारांश',
+  gu: 'ઉત્પાદન વિગત સારાંશ',
+  bn: 'পণ্যের বিবরণ সংক্ষিপ্তসার',
+  or: 'ଉତ୍ପାଦ ବିବରଣୀ ସାରାଂଶ',
+  pa: 'ਉਤਪਾਦ ਦੇ ਵੇਰਵੇ ਦਾ ਸਾਰ',
+  as: 'সামগ্ৰীৰ বিৱৰণ সাৰাংশ',
+};
 
 const QUESTIONS: QuestionConfig[] = [
   {
     key: 'title',
-    label: 'Product Name',
+    labelKey: 'productName',
     icon: '🏷️',
     prompts: {
       en: 'What is the name of your handicraft?',
       hi: 'आपके हस्तशिल्प का नाम क्या है?',
       te: 'మీ చేతివృత్తి వస్తువు పేరు ఏమిటి?',
+      ta: 'உங்கள் கைவினைப் பொருளின் பெயர் என்ன?',
+      kn: 'ನಿಮ್ಮ ಕರಕುಶಲ ವಸ್ತುವಿನ ಹೆಸರು ಏನು?',
+      ml: 'നിങ്ങളുടെ കരകൗശല ഉൽപ്പന്നത്തിന്റെ പേര് എന്താണ്?',
+      mr: 'आपल्या हस्तकला उत्पादनाचे नाव काय आहे?',
+      gu: 'તમારા હસ્તકલા ઉત્પાદનનું નામ શું છે?',
+      bn: 'আপনার হস্তশিল্প পণ্যের নাম কী?',
+      or: 'ଆପଣଙ୍କ ହସ୍ତଶିଳ୍ପ ଉତ୍ପାଦର ନାମ କ’ଣ?',
+      pa: 'ਤੁਹਾਡੇ ਉਤਪਾਦ ਦਾ ਨਾਮ ਕੀ ਹੈ?',
+      as: 'আপোনাৰ হস্তশিল্প সামগ্ৰীৰ নাম কি?',
     },
   },
   {
     key: 'craftType',
-    label: 'Craft Type',
+    labelKey: 'craftType',
     icon: '🎨',
     prompts: {
       en: 'What type of craft is it?',
       hi: 'यह किस प्रकार का शिल्प है?',
       te: 'ఇది ఏ రకమైన కళ లేదా చేతివృత్తి?',
+      ta: 'நீங்கள் செய்யும் கைவினைப் பணியின் பெயரைச் சொல்லுங்கள்.',
+      kn: 'ನೀವು ಮಾಡುವ ಕರಕುಶಲ ಕೆಲಸದ ಹೆಸರನ್ನು ಹೇಳಿ.',
+      ml: 'നിങ്ങൾ ചെയ്യുന്ന കരകൗശല ജോലിയുടെ പേര് പറയുക.',
+      mr: 'आपण करत असलेल्या हस्तकलेचे नाव सांगा.',
+      gu: 'તમે કરતા હસ્તકલા કામનું નામ કહો.',
+      bn: 'আপনি যে হস্তশিল্পের কাজ করেন তার নাম বলুন।',
+      or: 'ଆପଣ କରୁଥିବା ହସ୍ତଶିଳ୍ପ କାର୍ଯ୍ୟର ନାମ କୁହନ୍ତୁ।',
+      pa: 'ਆਪਣੇ ਦਸਤਕਾਰੀ ਦੇ ਕੰਮ ਦਾ ਨਾਮ ਦੱਸੋ।',
+      as: 'আপুনি কৰা হস্তশিল্পৰ কামৰ নাম কওক।',
     },
   },
   {
     key: 'material',
-    label: 'Material',
+    labelKey: 'material',
     icon: '🧵',
     prompts: {
       en: 'What material is used?',
       hi: 'इसमें किस सामग्री का उपयोग किया गया है?',
       te: 'దీని తయారీలో ఏ మెటీరియల్ ఉపయోగించారు?',
+      ta: 'இதைத் தயாரிக்க என்ன பொருள் பயன்படுத்தப்பட்டது?',
+      kn: 'ಇದನ್ನು ಮಾಡಲು ಯಾವ ಸಾಮಗ್ರಿ ಬಳಸಲಾಗಿದೆ?',
+      ml: 'ഇത് നിർമ്മിക്കാൻ എന്താണ് ഉപയോഗിച്ചത്?',
+      mr: 'हे बनवण्यासाठी कोणते साहित्य वापरले आहे?',
+      gu: 'આ બનાવવા માટે કઈ સામગ્રી વાપરવામાં આવી છે?',
+      bn: 'এটি তৈরিতে কী উপাদান ব্যবহার করা হয়েছে?',
+      or: 'ଏହା ତିଆରି କରିବା ପାଇଁ କେଉଁ ସାମଗ୍ରୀ ବ୍ୟବହାର ହୋଇଛି?',
+      pa: 'ਇਸਨੂੰ ਬਣਾਉਣ ਲਈ ਕਿਹੜੀ ਸਮੱਗਰੀ ਵਰਤੀ ਗਈ ਹੈ?',
+      as: 'এইটো তৈয়াৰ কৰিবলৈ কি সামগ্ৰী ব্যৱহাৰ কৰা হৈছে?',
     },
   },
   {
     key: 'category',
-    label: 'Category',
+    labelKey: 'productCategory',
     icon: '📦',
     prompts: {
       en: 'What is the product category?',
       hi: 'इसकी उत्पाद श्रेणी क्या है?',
       te: 'ఉత్పత్తి కేటగిరీ ఏమిటి?',
+      ta: 'தயாரிப்பு வகை என்ன?',
+      kn: 'ಉತ್ಪನ್ನದ ವರ್ಗ ಯಾವುದು?',
+      ml: 'ഉൽപ്പന്ന വിഭാഗം ഏതാണ്?',
+      mr: 'उत्पादनाची श्रेणी कोणती आहे?',
+      gu: 'ઉત્પાદન શ્રેણી કઈ છે?',
+      bn: 'পণ্যের বিভাগ কী?',
+      or: 'ସାମଗ୍ରୀର ବିଭାଗ କ’ଣ?',
+      pa: 'ਉਤਪਾਦ ਦੀ ਸ਼੍ਰੇਣੀ ਕਿਹੜੀ ਹੈ?',
+      as: 'সামগ্ৰীৰ বিভাগ কি?',
     },
   },
   {
     key: 'region',
-    label: 'Region / Tradition',
+    labelKey: 'regionPrompt',
     icon: '📍',
     prompts: {
-      en: 'Which region or craft tradition is it associated with?',
-      hi: 'यह किस क्षेत्र या शिल्प परंपरा से जुड़ा है?',
-      te: 'ఇది ఏ ప్రాంతం లేదా కళా సంప్రదాయానికి చెందినది?',
+      en: 'Which region or craft tradition is it from?',
+      hi: 'यह किस क्षेत्र या गाँव से है?',
+      te: 'ఈ కళ ఏ ప్రాంతం లేదా గ్రామానికి చెందినది?',
+      ta: 'இந்தக் கைவினை எந்தப் பகுதி அல்லது கிராமத்தைச் சேர்ந்தது?',
+      kn: 'ಈ ಕರಕುಶಲ ವಸ್ತು ಯಾವ ಪ್ರದೇಶದ್ದು?',
+      ml: 'ഇത് ഏത് പ്രദേശത്തെ അല്ലെങ്കിൽ ഗ്രാമത്തിലെ കലയാണ്?',
+      mr: 'ही कला कोणत्या भागातील किंवा गावातील आहे?',
+      gu: 'આ કળા કયા પ્રદેશ કે ગામની છે?',
+      bn: 'এই শিল্পটি কোন অঞ্চলের বা গ্রামের?',
+      or: 'ଏହି କଳା କେଉଁ ଅଞ୍ଚଳ କିମ୍ବା ଗ୍ରାମର?',
+      pa: 'ਇਹ ਕਲਾ ਕਿਸ ਖੇਤਰ ਜਾਂ ਪਿੰਡ ਦੀ ਹੈ?',
+      as: 'এই শিল্প কোন অঞ্চল বা গাঁৱৰ?',
     },
   },
   {
     key: 'laborHours',
-    label: 'Labor Hours',
+    labelKey: 'laborHours',
     icon: '⏱️',
     prompts: {
       en: 'How many hours did you spend making it?',
       hi: 'इसे बनाने में आपको कितने घंटे लगे?',
       te: 'దీన్ని తయారు చేయడానికి మీకు ఎన్ని గంటలు పట్టింది?',
+      ta: 'இதை செய்ய எத்தனை மணி நேரம் ஆனது?',
+      kn: 'ಇದನ್ನು ಮಾಡಲು ಎಷ್ಟು ಗಂಟೆಗಳು ಬೇಕಾಯಿತು?',
+      ml: 'ഇത് ഉണ്ടാക്കാൻ എത്ര മണിക്കൂർ എടുത്തു?',
+      mr: 'हे उत्पादन तयार करण्यासाठी किती तास लागले?',
+      gu: 'આ ઉત્પાદન બનાવવામાં કેટલા કલાક લાગ્યા?',
+      bn: 'এই পণ্য তৈরি করতে কত ঘণ্টা সময় লেগেছে?',
+      or: 'ଏହା ତିଆରି କରିବାକୁ କେତେ ଘଣ୍ଟା ଲାଗିଲା?',
+      pa: 'ਇਸਨੂੰ ਬਣਾਉਣ ਵਿੱਚ ਕਿੰਨੇ ਘੰਟੇ ਲੱਗੇ?',
+      as: 'এই সামগ্ৰী তৈয়াৰ কৰিবলৈ কিমান ঘণ্টা লাগিল?',
     },
   },
   {
     key: 'materialCost',
-    label: 'Material Cost',
+    labelKey: 'materialCost',
     icon: '💰',
     prompts: {
-      en: 'How much did the raw material cost?',
+      en: 'How much did the raw material cost in rupees?',
       hi: 'कच्चे माल पर आपकी कितनी लागत आई?',
       te: 'ముడి పదార్థాలకు ఎంత ఖర్చు అయింది?',
+      ta: 'மூலப்பொருள் செலவு எவ்வளவு?',
+      kn: 'ಕಚ್ಚಾ ವಸ್ತುಗಳ ವೆಚ್ಚ ಎಷ್ಟು?',
+      ml: 'അസംസ്കൃത വസ്തുക്കളുടെ ചെലവ് എത്രയാണ്?',
+      mr: 'कच्च्या मालाचा खर्च किती झाला?',
+      gu: 'કાચા માલનો ખર્ચ કેટલો થયો?',
+      bn: 'কাঁচামালের খরচ কত?',
+      or: 'କଞ୍ଚାମାଲ ଖର୍ଚ୍ଚ କେତେ?',
+      pa: 'ਕੱਚੇ ਮਾਲ ਦੀ ਲਾਗਤ ਕਿੰਨੀ ਹੈ?',
+      as: 'কেঁচামালৰ খৰচ কিমান?',
     },
   },
 ];
@@ -157,10 +278,29 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
 
   const currentQ = QUESTIONS[currentQIndex];
 
+  const getQuestionLabel = (q: QuestionConfig) => {
+    const val = t(q.labelKey as any, language);
+    if (val && val !== q.labelKey) return val;
+    if (q.key === 'title') return 'Product Name';
+    if (q.key === 'craftType') return 'Craft Type';
+    if (q.key === 'material') return 'Material';
+    if (q.key === 'category') return 'Category';
+    if (q.key === 'region') return 'Region / Tradition';
+    if (q.key === 'laborHours') return 'Labor Hours';
+    if (q.key === 'materialCost') return 'Material Cost';
+    return q.labelKey;
+  };
+
   const getQuestionText = (q: QuestionConfig) => {
-    if (language === 'hi') return q.prompts.hi;
-    if (language === 'te') return q.prompts.te;
-    return q.prompts.en;
+    const prompts = getVoicePrompts(language);
+    if (q.key === 'title') return prompts.askProductName || t('productNamePrompt', language);
+    if (q.key === 'craftType') return prompts.askCraft || t('craftTypePrompt', language);
+    if (q.key === 'material') return t('materialPrompt', language);
+    if (q.key === 'category') return t('categoryPrompt', language);
+    if (q.key === 'region') return t('regionPrompt', language);
+    if (q.key === 'laborHours') return prompts.askLaborHours || t('laborHoursPrompt', language);
+    if (q.key === 'materialCost') return prompts.askMaterialCost || t('materialCostPrompt', language);
+    return (q.prompts as any)[language] || q.prompts.en;
   };
 
   // Text-To-Speech with safety
@@ -179,9 +319,18 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
       setAssistantState('SPEAKING_QUESTION');
 
       const utterance = new SpeechSynthesisUtterance(text);
-      if (language === 'hi') utterance.lang = 'hi-IN';
-      else if (language === 'te') utterance.lang = 'te-IN';
-      else utterance.lang = 'en-IN';
+      const targetLocale = getSpeechLocale(language);
+      utterance.lang = targetLocale;
+
+      if ('getVoices' in window.speechSynthesis) {
+        const voices = window.speechSynthesis.getVoices();
+        const match = voices.find(
+          (v) =>
+            v.lang.toLowerCase() === targetLocale.toLowerCase() ||
+            v.lang.toLowerCase().replace('_', '-').startsWith(language)
+        );
+        if (match) utterance.voice = match;
+      }
 
       utterance.rate = 0.92;
       utterance.pitch = 1.02;
@@ -242,7 +391,8 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
         const recognition = new SpeechRecognition();
         recognition.continuous = false;
         recognition.interimResults = true;
-        recognition.lang = language === 'hi' ? 'hi-IN' : language === 'te' ? 'te-IN' : 'en-IN';
+        recognition.lang = getRecognitionLocale(language);
+        console.log(`[VOICE] Language: ${language}, Recognition Locale: ${recognition.lang}`);
 
         recognition.onstart = () => {
           if (isMountedRef.current) {
@@ -313,21 +463,15 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
         }
 
         const norm = normalizeSpokenDigits(spoken);
-        const hoursMatch = norm.match(/(\d+)\s*(hour|hours|ghante|gantalu)/i);
+        const hoursMatch = norm.match(/(\d+)\s*(hour|hours|ghante|घंटे|gantalu|గంటలు|மணி|நேரம்|mani|gante|ಘಂಟೆ|മണിക്കൂർ|taas|तास|કલાક|klak|ঘণ্টਾ|ghanta|ଘଣ୍ଟା|ਘੰਟੇ)/i);
         if (hoursMatch) newDetails.laborHours = Number(hoursMatch[1]);
 
-        const costMatch = norm.match(/(\d+)\s*(rupee|rupees|rs|inr)/i) || norm.match(/(cost|material)\s*(?:is|was)?\s*(\d+)/i);
+        const costMatch = norm.match(/(\d+)\s*(rupee|rupees|rs|inr|रुपये|रूपये|रू|రూపాయలు|రూపాయి|ரூபாய்|roobaai|ರೂಪಾಯಿ|രൂപ|roopa|રૂપિયા|টাকা|taka|ଟଙ୍କା|tanka|ਰੁਪਏ|rupaye|টকা)/i) || norm.match(/(cost|material|kharch|kimat|lagat|dhar|vela|moolya)\s*(?:is|was|=|:)?\s*(\d+)/i);
         if (costMatch) newDetails.materialCost = Number(costMatch[1] || costMatch[2]);
 
         setDetails(newDetails);
         setAssistantState('CONFIRMING');
-        speakText(
-          language === 'hi'
-            ? 'मैंने ये सभी विवरण समझ लिए हैं। क्या आप इन्हें सहेजना चाहते हैं?'
-            : language === 'te'
-            ? 'నేను ఈ వివరాలను అర్థం చేసుకున్నాను. మీరు వీటిని సేవ్ చేయాలనుకుంటున్నారా?'
-            : 'I understood these details. Would you like to save them?'
-        );
+        speakText(CONFIRM_SPEECH[language] || CONFIRM_SPEECH.en);
         return;
       }
 
@@ -364,13 +508,7 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
         } else {
           // All fields collected -> Confirming state!
           setAssistantState('CONFIRMING');
-          speakText(
-            language === 'hi'
-              ? 'मैंने ये सभी विवरण समझ लिए हैं। क्या आप इन्हें सहेजना चाहते हैं?'
-              : language === 'te'
-              ? 'నేను ఈ వివరాలను అర్థం చేసుకున్నాను. మీరు వీటిని సేవ్ చేయాలనుకుంటున్నారా?'
-              : 'I understood these details. Would you like to save them?'
-          );
+          speakText(CONFIRM_SPEECH[language] || CONFIRM_SPEECH.en);
         }
       }, 700);
     },
@@ -394,13 +532,8 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
           processSpokenAnswer(spoken);
         },
         () => {
-          // If speech is unclear: repeat question without skipping
-          const repeatMsg =
-            language === 'hi'
-              ? 'मुझे समझ नहीं आया। कृपया दोबारा बोलें।'
-              : language === 'te'
-              ? 'నాకు స్పష్టంగా వినిపించలేదు. దయచేసి మళ్ళీ చెప్పండి.'
-              : "I didn't understand that. Please say it again.";
+          // If speech is unclear: repeat question in user's chosen language without skipping
+          const repeatMsg = getVoicePrompts(language).unclearSpeech || "I didn't understand that. Please say it again.";
 
           setLastFeedback(repeatMsg);
           speakText(repeatMsg, () => {
@@ -455,11 +588,7 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
           </div>
           <div>
             <h3 className="text-base sm:text-lg font-black text-stone-900 font-['Rozha_One',serif]">
-              {language === 'hi'
-                ? 'आवाज़ से उत्पाद विवरण भरें'
-                : language === 'te'
-                ? 'వాయిస్ ఉత్పత్తి సహాయకుడు'
-                : 'Voice Product Questionnaire'}
+              {ASSISTANT_TITLES[language] || ASSISTANT_TITLES.en}
             </h3>
             <p className="text-xs text-stone-600 font-medium">
               Step-by-step voice guidance • No typing needed
@@ -522,7 +651,7 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
           <div className="p-5 rounded-2xl bg-white border-2 border-amber-300 shadow-sm text-center">
             <span className="text-3xl mb-1 block">{currentQ.icon}</span>
             <span className="text-[11px] font-black text-amber-800 uppercase tracking-wider block mb-1">
-              {currentQ.label}
+              {getQuestionLabel(currentQ)}
             </span>
             <h4 className="text-lg sm:text-xl font-black text-stone-900 leading-snug font-['Rozha_One',serif]">
               "{getQuestionText(currentQ)}"
@@ -533,7 +662,7 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
           <div className="p-4 rounded-2xl bg-white border border-stone-200 shadow-xs">
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-bold text-stone-600 flex items-center gap-1.5">
-                <span>{currentQ.label} (Current Value)</span>
+                <span>{getQuestionLabel(currentQ)}</span>
               </label>
               <span className="text-[10px] text-amber-700 font-extrabold uppercase">
                 Tap to edit manually
@@ -551,7 +680,7 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
                   setDetails({ ...details, [currentQ.key]: val });
                 }}
                 className="flex-1 px-4 py-2.5 rounded-xl border-2 border-amber-300 bg-amber-50/30 text-stone-900 font-extrabold text-base focus:border-amber-600 focus:bg-white"
-                placeholder={`Speak or type ${currentQ.label}`}
+                placeholder={`Speak or type ${getQuestionLabel(currentQ)}`}
               />
 
               <button
@@ -566,7 +695,7 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
                 }}
                 className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs shadow-xs cursor-pointer flex items-center gap-1"
               >
-                <span>Next</span>
+                <span>{t('next', language) || 'Next'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -582,18 +711,10 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
           <div className="p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-400 text-center">
             <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto mb-1" />
             <h4 className="text-base sm:text-lg font-black text-stone-900 font-['Rozha_One',serif]">
-              {language === 'hi'
-                ? 'उत्पाद विवरण सारांश'
-                : language === 'te'
-                ? 'ఉత్పత్తి వివరాల సారాంశం'
-                : 'PRODUCT DETAILS SUMMARY'}
+              {SUMMARY_TITLES[language] || SUMMARY_TITLES.en}
             </h4>
             <p className="text-xs text-stone-600 font-medium">
-              {language === 'hi'
-                ? 'मैंने ये विवरण समझ लिए हैं। क्या आप इन्हें सहेजना चाहते हैं?'
-                : language === 'te'
-                ? 'ఈ వివరాలను సరిచూసుకొని ఆమోదించండి'
-                : 'I understood these details. Would you like to save them?'}
+              {CONFIRM_SPEECH[language] || CONFIRM_SPEECH.en}
             </p>
           </div>
 
@@ -601,42 +722,42 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
           <div className="p-4 bg-white rounded-2xl border-2 border-stone-200 divide-y divide-stone-100 shadow-sm text-sm">
             <div className="py-2 flex items-center justify-between">
               <span className="text-stone-500 font-bold flex items-center gap-1.5">
-                <Tag className="w-4 h-4 text-amber-600" /> Product Name:
+                <Tag className="w-4 h-4 text-amber-600" /> {t('productName', language) || 'Product Name'}:
               </span>
               <span className="font-extrabold text-stone-900">{details.title || 'Handmade Craft'}</span>
             </div>
 
             <div className="py-2 flex items-center justify-between">
               <span className="text-stone-500 font-bold flex items-center gap-1.5">
-                <Layers className="w-4 h-4 text-amber-600" /> Craft Type:
+                <Layers className="w-4 h-4 text-amber-600" /> {t('craftType', language) || 'Craft Type'}:
               </span>
               <span className="font-extrabold text-stone-900">{details.craftType || 'Traditional Craft'}</span>
             </div>
 
             <div className="py-2 flex items-center justify-between">
               <span className="text-stone-500 font-bold flex items-center gap-1.5">
-                <span>🧵</span> Material:
+                <span>🧵</span> {t('material', language) || 'Material'}:
               </span>
               <span className="font-extrabold text-stone-900">{details.material || 'Natural Materials'}</span>
             </div>
 
             <div className="py-2 flex items-center justify-between">
               <span className="text-stone-500 font-bold flex items-center gap-1.5">
-                <Package className="w-4 h-4 text-amber-600" /> Category:
+                <Package className="w-4 h-4 text-amber-600" /> {t('productCategory', language) || 'Category'}:
               </span>
               <span className="font-extrabold text-stone-900">{details.category}</span>
             </div>
 
             <div className="py-2 flex items-center justify-between">
               <span className="text-stone-500 font-bold flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-amber-600" /> Region:
+                <MapPin className="w-4 h-4 text-amber-600" /> {t('craftOrigin', language) || 'Region'}:
               </span>
               <span className="font-extrabold text-stone-900">{details.region}</span>
             </div>
 
             <div className="py-2 flex items-center justify-between">
               <span className="text-stone-500 font-bold flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-amber-600" /> Labor Hours:
+                <Clock className="w-4 h-4 text-amber-600" /> {t('laborHours', language) || 'Labor Hours'}:
               </span>
               <span className="font-extrabold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-md">
                 {details.laborHours} hrs
@@ -645,7 +766,7 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
 
             <div className="py-2 flex items-center justify-between">
               <span className="text-stone-500 font-bold flex items-center gap-1.5">
-                <DollarSign className="w-4 h-4 text-emerald-600" /> Material Cost:
+                <DollarSign className="w-4 h-4 text-emerald-600" /> {t('materialCost', language) || 'Material Cost'}:
               </span>
               <span className="font-black text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-md">
                 ₹{details.materialCost}
@@ -661,7 +782,7 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
               className="py-3.5 px-3 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-98 cursor-pointer"
             >
               <Check className="w-4 h-4 stroke-[3]" />
-              <span>✓ Yes, Save</span>
+              <span>✓ {t('save', language) || 'Yes, Save'}</span>
             </button>
 
             <button
@@ -670,7 +791,7 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
               className="py-3.5 px-3 rounded-2xl font-black text-xs text-stone-800 bg-stone-200 hover:bg-stone-300 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
             >
               <Edit3 className="w-4 h-4" />
-              <span>✏️ Edit</span>
+              <span>✏️ {t('edit', language) || 'Edit'}</span>
             </button>
 
             <button
@@ -679,7 +800,7 @@ export const VoiceProductFormAssistant: React.FC<VoiceProductFormAssistantProps>
               className="py-3.5 px-3 rounded-2xl font-black text-xs text-amber-950 bg-amber-200 hover:bg-amber-300 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>🔄 Speak Again</span>
+              <span>🔄 {t('speakAgain', language) || 'Speak Again'}</span>
             </button>
           </div>
         </div>

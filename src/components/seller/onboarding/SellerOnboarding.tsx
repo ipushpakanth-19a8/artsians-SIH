@@ -18,6 +18,7 @@ import {
 import { useAuth } from '../../../lib/AuthContext';
 import { useLanguage } from '../../../lib/LanguageContext';
 import { LanguageCode } from '../../../types';
+import { getRecognitionLocale, getSpeechLocale } from '../../../config/languages';
 
 interface StepData {
   id: string;
@@ -37,15 +38,15 @@ interface StepData {
 const SELLER_STEPS: StepData[] = [
   {
     id: 'welcome',
-    titleEn: 'Welcome to KALAtech',
-    titleHi: 'KALAtech में आपका स्वागत है',
-    titleTe: 'KALAtech కు స్వాగతం',
+    titleEn: 'Welcome to ShilpSetu',
+    titleHi: 'ShilpSetu में आपका स्वागत है',
+    titleTe: 'ShilpSetu కు స్వాగతం',
     subEn: "Let's explore your handicraft business tools.",
     subHi: 'आइए अपने हस्तशिल्प व्यवसाय टूल देखें।',
     subTe: 'మీ చేతివృత్తి వ్యాపార సాధనాలను తెలుసుకోండి.',
-    voiceEn: 'Welcome to KALAtech. Here is your quick handicraft journey tour. You can say Next, Back, or Skip anytime.',
-    voiceHi: 'KALAtech में आपका स्वागत है। यह आपका हस्तशिल्प दौरा है। आप कभी भी अगला, पीछे या छोड़ें बोल सकते हैं।',
-    voiceTe: 'KALAtech కు స్వాగతం. ఇది మీ హస్తకళల పర్యటన. మీరు ఎప్పుడైనా తరువాత, వెనుకకు లేదా వదిలివేయి అని చెప్పవచ్చు.',
+    voiceEn: 'Welcome to ShilpSetu. Here is your quick handicraft journey tour. You can say Next, Back, or Skip anytime.',
+    voiceHi: 'ShilpSetu में आपका स्वागत है। यह आपका हस्तशिल्प दौरा है। आप कभी भी अगला, पीछे या छोड़ें बोल सकते हैं।',
+    voiceTe: 'ShilpSetu కు స్వాగతం. ఇది మీ హస్తకళల పర్యటన. మీరు ఎప్పుడైనా తరువాత, వెనుకకు లేదా వదిలివేయి అని చెప్పవచ్చు.',
     fallbackDurationMs: 6000,
   },
   {
@@ -85,9 +86,9 @@ const SELLER_STEPS: StepData[] = [
     subEn: 'Automatic heritage story, description, and tags',
     subHi: 'स्वचालित विरासत कहानी, विवरण और सर्च टैग',
     subTe: 'ఆటోమేటిక్ వివరణ, సాంప్రదాయ కథనం మరియు ట్యాగ్‌లు',
-    voiceEn: 'KALAtech can help create your product description from your craft information and image.',
-    voiceHi: 'KALAtech आपकी शिल्प जानकारी और छवि से आपके उत्पाद का विवरण तैयार करने में मदद कर सकता है।',
-    voiceTe: 'KALAtech మీ కళ సమాచారం మరియు చిత్రం నుండి ఉత్పత్తి వివరణను రూపొందించడంలో సహాయపడుతుంది.',
+    voiceEn: 'ShilpSetu can help create your product description from your craft information and image.',
+    voiceHi: 'ShilpSetu आपकी शिल्प जानकारी और छवि से आपके उत्पाद का विवरण तैयार करने में मदद कर सकता है।',
+    voiceTe: 'ShilpSetu మీ కళ సమాచారం మరియు చిత్రం నుండి ఉత్పత్తి వివరణను రూపొందించడంలో సహాయపడుతుంది.',
     fallbackDurationMs: 6500,
   },
   {
@@ -188,7 +189,7 @@ export const SellerOnboarding: React.FC<SellerOnboardingProps> = ({ onComplete }
 
     try {
       await updateSellerOnboarding(true);
-      sessionStorage.setItem('kalatech_seen_seller_tour', 'true');
+      sessionStorage.setItem('ShilpSetu_seen_seller_tour', 'true');
       sessionStorage.removeItem('open_seller_tutorial');
     } catch (err) {
       console.error('Error persisting seller onboarding:', err);
@@ -233,7 +234,8 @@ export const SellerOnboarding: React.FC<SellerOnboardingProps> = ({ onComplete }
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = false;
-      recognition.lang = language === 'hi' ? 'hi-IN' : language === 'te' ? 'te-IN' : 'en-IN';
+      recognition.lang = getRecognitionLocale(language);
+      console.log(`[VOICE] Language: ${language}, Recognition Locale: ${recognition.lang}`);
 
       recognition.onstart = () => setIsListening(true);
 
@@ -295,10 +297,17 @@ export const SellerOnboarding: React.FC<SellerOnboardingProps> = ({ onComplete }
 
       const utterance = new SpeechSynthesisUtterance(text);
       currentUtteranceRef.current = utterance;
+      utterance.lang = getSpeechLocale(language);
 
-      if (language === 'hi') utterance.lang = 'hi-IN';
-      else if (language === 'te') utterance.lang = 'te-IN';
-      else utterance.lang = 'en-IN';
+      if ('getVoices' in window.speechSynthesis) {
+        const voices = window.speechSynthesis.getVoices();
+        const match = voices.find(
+          (v) =>
+            v.lang.toLowerCase() === utterance.lang.toLowerCase() ||
+            v.lang.toLowerCase().replace('_', '-').startsWith(language)
+        );
+        if (match) utterance.voice = match;
+      }
 
       utterance.rate = 0.93;
       utterance.pitch = 1.02;

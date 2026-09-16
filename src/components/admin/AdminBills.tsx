@@ -23,7 +23,7 @@ export function AdminBills() {
         setLoading(false);
       })
       .catch(() => {
-        const stored = JSON.parse(localStorage.getItem('kalatech_bills') || '[]');
+        const stored = JSON.parse(localStorage.getItem('ShilpSetu_bills') || '[]');
         setBills(stored);
         setLoading(false);
       });

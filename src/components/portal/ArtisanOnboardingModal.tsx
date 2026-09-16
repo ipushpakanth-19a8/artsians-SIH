@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Phone, User, MapPin, Sparkles, Volume2, ArrowRight, CheckCircle2, X, ShieldCheck, Globe, Mic, Check, RotateCcw } from 'lucide-react';
+import { Phone, User, Sparkles, Volume2, ArrowRight, CheckCircle2, X, ShieldCheck, Mic, Check, RotateCcw, Edit3, KeyRound, Palette, AlertCircle } from 'lucide-react';
 import { LanguageCode } from '../../types';
-import { PORTAL_TRANSLATIONS, CRAFT_CATEGORIES } from '../../lib/portalI18n';
 import { useAuth } from '../../lib/AuthContext';
 import { useLanguage } from '../../lib/LanguageContext';
 import { normalizeSpokenDigits } from '../../lib/useVoiceFormAssistant';
+import { getRecognitionLocale, getSpeechLocale } from '../../config/languages';
+import { getVoicePrompts } from '../../config/voicePrompts';
 
 interface ArtisanOnboardingModalProps {
   language: LanguageCode;
@@ -14,97 +15,190 @@ interface ArtisanOnboardingModalProps {
   onSpeak?: (text: string) => void;
 }
 
+// Stages of the new seller login & initial profile flow
+type FlowStep =
+  | 'phone_input'
+  | 'phone_confirm'
+  | 'otp_input'
+  | 'name_voice'
+  | 'craft_voice'
+  | 'final_confirm';
+
+// Helper to clean spoken names (remove conversational sentence starters)
+export function extractCleanName(raw: string): string {
+  let cleaned = raw.trim();
+  // English prefixes
+  cleaned = cleaned.replace(/^(my name is|i am called|this is|i am|name is)\s+/i, '');
+  // Hindi prefixes & suffixes
+  cleaned = cleaned.replace(/^(मेरा नाम|नाम है|मैं हूँ|मैं)\s+/i, '');
+  cleaned = cleaned.replace(/\s+(है|हूँ)$/i, '');
+  // Telugu prefixes & suffixes
+  cleaned = cleaned.replace(/^(నా పేరు|నా పేరు ఏమిటంటే|పేరు)\s+/i, '');
+  cleaned = cleaned.replace(/\s+(అండి|గారు)$/i, '');
+  // Remove punctuation
+  cleaned = cleaned.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '');
+  return cleaned.trim();
+}
+
+// Helper to clean spoken craft names
+export function extractCleanCraft(raw: string): string {
+  let cleaned = raw.trim();
+  // English prefixes
+  cleaned = cleaned.replace(/^(i do|my work is|my handicraft is|we make|i make|handicraft work is|it is|i practice)\s+/i, '');
+  // Hindi prefixes & suffixes
+  cleaned = cleaned.replace(/^(मेरा काम|हस्तशिल्प कार्य|हम बनाते हैं|काम है|मैं करता हूँ)\s+/i, '');
+  cleaned = cleaned.replace(/\s+(का काम|करता हूँ|करती हूँ|है)$/i, '');
+  // Telugu prefixes & suffixes
+  cleaned = cleaned.replace(/^(నా పని|మా హస్తకళ పని|మేము చేసే పని|పని)\s+/i, '');
+  cleaned = cleaned.replace(/\s+(చేస్తాను|చేస్తాము|పని)$/i, '');
+  // Remove punctuation
+  cleaned = cleaned.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '');
+  return cleaned.trim();
+}
+
+// Affirmative / Negative detection
+function isAffirmative(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  return (
+    lower.includes('yes') ||
+    lower.includes('confirm') ||
+    lower.includes('correct') ||
+    lower.includes('yeah') ||
+    lower.includes('yup') ||
+    lower.includes('haan') ||
+    lower.includes('ha') ||
+    lower.includes('sahi') ||
+    lower.includes('theek') ||
+    lower.includes('avunu') ||
+    lower.includes('avnu') ||
+    lower.includes('sare') ||
+    lower.includes('sarle')
+  );
+}
+
+function isNegative(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  return (
+    lower.includes('no') ||
+    lower.includes('nope') ||
+    lower.includes('nahi') ||
+    lower.includes('galat') ||
+    lower.includes('wrong') ||
+    lower.includes('kaadu') ||
+    lower.includes('kadu') ||
+    lower.includes('tappu')
+  );
+}
+
 export const ArtisanOnboardingModal: React.FC<ArtisanOnboardingModalProps> = ({
   language,
   isOpen,
   onClose,
-  onSpeak,
 }) => {
-  const t = PORTAL_TRANSLATIONS[language];
-  const { login } = useAuth();
-  const { setLanguage } = useLanguage();
+  const { sendOtp, verifyOtp, saveSellerProfile } = useAuth();
+  const { selectedState, selectedStateCode, languageCode } = useLanguage();
   const navigate = useNavigate();
 
-  // Stages: 'phone_input' -> 'phone_confirm' -> 'otp_input'
-  const [stage, setStage] = useState<'phone_input' | 'phone_confirm' | 'otp_input'>('phone_input');
-  const [phone, setPhone] = useState('9876543210');
-  const [detectedPhone, setDetectedPhone] = useState('9876543210');
-  const [name, setName] = useState('Rameshwar Rao');
-  const [village, setVillage] = useState('Pochampally, Yadadri');
-  const [craft, setCraft] = useState('Weaving');
-  const [preferredLang, setPreferredLang] = useState<LanguageCode>(language);
+  // Primary Step State
+  const [step, setStep] = useState<FlowStep>('phone_input');
 
-  // OTP State
+  // Profile Data
+  const [phone, setPhone] = useState('');
+  const [detectedPhone, setDetectedPhone] = useState('');
   const [otp, setOtp] = useState(['1', '2', '3', '4', '5', '6']);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [sellerName, setSellerName] = useState('');
+  const [handicraftWorkName, setHandicraftWorkName] = useState('');
 
-  // Voice Assistant state
+  // Editing state toggles for manual editing
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingCraft, setIsEditingCraft] = useState(false);
+
+  // Status & Voice Feedback States
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [voiceStatus, setVoiceStatus] = useState<string>('Initializing voice...');
+  const [voiceStatus, setVoiceStatus] = useState<string>('Ready');
   const [heardTranscript, setHeardTranscript] = useState<string>('');
+  const [voiceAvailable, setVoiceAvailable] = useState<boolean>(true);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const recognitionRef = useRef<any>(null);
-  const hasSpokenPhonePromptRef = useRef(false);
-  const hasSpokenConfirmPromptRef = useRef(false);
-  const hasSpokenOtpPromptRef = useRef(false);
+  // Guards to prevent duplicate audio triggers across React re-renders
+  const lastSpokenStepRef = useRef<string>('');
   const isMountedRef = useRef(true);
+  const recognitionRef = useRef<any>(null);
 
-  // TTS Helper in selected language
-  const speakVoice = useCallback((text: string, onEnd?: () => void) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      onEnd?.();
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-    if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
-    }
-
-    setIsSpeaking(true);
-    setVoiceStatus('🔊 Speaking...');
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    if (language === 'hi') utterance.lang = 'hi-IN';
-    else if (language === 'te') utterance.lang = 'te-IN';
-    else utterance.lang = 'en-IN';
-
-    utterance.rate = 0.92;
-    utterance.pitch = 1.0;
-
-    utterance.onstart = () => {
-      if (isMountedRef.current) setIsSpeaking(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      stopAllVoice();
     };
+  }, []);
 
-    utterance.onend = () => {
-      if (isMountedRef.current) {
-        setIsSpeaking(false);
+  // Text-To-Speech (TTS) Engine
+  const speakVoice = useCallback(
+    (text: string, onEnd?: () => void) => {
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+        setVoiceAvailable(false);
         onEnd?.();
+        return;
       }
-    };
 
-    utterance.onerror = (e) => {
-      console.warn('Speech synthesis error:', e);
-      if (isMountedRef.current) {
-        setIsSpeaking(false);
-        onEnd?.();
-      }
-    };
-
-    try {
-      window.speechSynthesis.speak(utterance);
+      window.speechSynthesis.cancel();
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
       }
-    } catch {
-      setIsSpeaking(false);
-      onEnd?.();
-    }
-  }, [language]);
 
-  // Stop all active voice audio & speech recognition
+      setIsSpeaking(true);
+      setVoiceStatus('🔊 Speaking...');
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = getSpeechLocale(language);
+
+      if ('getVoices' in window.speechSynthesis) {
+        const voices = window.speechSynthesis.getVoices();
+        const match = voices.find(
+          (v) =>
+            v.lang.toLowerCase() === utterance.lang.toLowerCase() ||
+            v.lang.toLowerCase().replace('_', '-').startsWith(language)
+        );
+        if (match) utterance.voice = match;
+      }
+      console.log(`[VOICE] Speaking in ${language}, Speech Locale: ${utterance.lang}, Voice: ${utterance.voice?.name || 'Default'}`);
+
+      utterance.rate = 0.92;
+      utterance.pitch = 1.0;
+
+      utterance.onstart = () => {
+        if (isMountedRef.current) setIsSpeaking(true);
+      };
+
+      utterance.onend = () => {
+        if (isMountedRef.current) {
+          setIsSpeaking(false);
+          onEnd?.();
+        }
+      };
+
+      utterance.onerror = (e) => {
+        console.warn('Speech synthesis error:', e);
+        if (isMountedRef.current) {
+          setIsSpeaking(false);
+          onEnd?.();
+        }
+      };
+
+      try {
+        window.speechSynthesis.speak(utterance);
+      } catch {
+        setIsSpeaking(false);
+        onEnd?.();
+      }
+    },
+    [language]
+  );
+
+  // Stop All Active Speech & Listening
   const stopAllVoice = useCallback(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -118,152 +212,165 @@ export const ArtisanOnboardingModal: React.FC<ArtisanOnboardingModalProps> = ({
     setIsListening(false);
   }, []);
 
-  // Listen for speech with Web Speech API
-  const startListening = useCallback((onResult: (text: string) => void, onEnd?: () => void) => {
-    if (typeof window === 'undefined') return;
+  // Speech Recognition (STT) Engine
+  const startListening = useCallback(
+    (onResult: (text: string) => void, onEnd?: () => void) => {
+      if (typeof window === 'undefined') {
+        setVoiceAvailable(false);
+        return;
+      }
 
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const SpeechRecognition =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
-    if (!SpeechRecognition) {
-      setVoiceStatus('Speech recognition unavailable. Please use manual inputs.');
-      return;
-    }
+      if (!SpeechRecognition) {
+        setVoiceAvailable(false);
+        setVoiceStatus('Voice input is unavailable. You can enter the details manually.');
+        onEnd?.();
+        return;
+      }
 
-    stopAllVoice();
+      stopAllVoice();
 
-    try {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = language === 'hi' ? 'hi-IN' : language === 'te' ? 'te-IN' : 'en-IN';
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = getRecognitionLocale(language);
+        console.log(`[VOICE] Language: ${language}, Recognition Locale: ${recognition.lang}`);
 
-      recognition.onstart = () => {
-        if (isMountedRef.current) {
-          setIsListening(true);
-          setVoiceStatus('🎙️ Listening...');
-        }
-      };
+        recognition.onstart = () => {
+          if (isMountedRef.current) {
+            setIsListening(true);
+            setVoiceStatus('🎙️ Listening...');
+          }
+        };
 
-      recognition.onresult = (event: any) => {
-        const transcript = event.results?.[0]?.[0]?.transcript || '';
-        if (isMountedRef.current) {
-          setHeardTranscript(transcript);
-          setVoiceStatus(`✓ Heard: "${transcript}"`);
-          onResult(transcript);
-        }
-      };
+        recognition.onresult = (event: any) => {
+          const transcript = event.results?.[0]?.[0]?.transcript || '';
+          if (isMountedRef.current) {
+            setHeardTranscript(transcript);
+            setVoiceStatus(`✓ Got it: "${transcript}"`);
+            onResult(transcript);
+          }
+        };
 
-      recognition.onerror = (e: any) => {
-        console.warn('Speech recognition error:', e?.error);
-        if (isMountedRef.current) {
-          setIsListening(false);
-          setVoiceStatus('❓ Could not hear clearly. You can speak again or type.');
-          onEnd?.();
-        }
-      };
+        recognition.onerror = (e: any) => {
+          console.warn('Speech recognition error:', e?.error);
+          if (isMountedRef.current) {
+            setIsListening(false);
+            if (e?.error === 'not-allowed') {
+              setVoiceAvailable(false);
+              setVoiceStatus('Voice input is unavailable. You can enter the details manually.');
+            } else {
+              setVoiceStatus('❓ Please repeat');
+            }
+            onEnd?.();
+          }
+        };
 
-      recognition.onend = () => {
-        if (isMountedRef.current) {
-          setIsListening(false);
-          onEnd?.();
-        }
-      };
+        recognition.onend = () => {
+          if (isMountedRef.current) {
+            setIsListening(false);
+            onEnd?.();
+          }
+        };
 
-      recognitionRef.current = recognition;
-      recognition.start();
-    } catch (err) {
-      console.warn('Recognition start exception:', err);
-      setIsListening(false);
-    }
-  }, [language, stopAllVoice]);
+        recognitionRef.current = recognition;
+        recognition.start();
+      } catch (err) {
+        console.warn('Recognition start exception:', err);
+        setIsListening(false);
+        onEnd?.();
+      }
+    },
+    [language, stopAllVoice]
+  );
 
-  // Step 1: Prompt mobile number
-  const promptMobileNumber = useCallback(() => {
-    const promptText =
-      language === 'hi'
-        ? 'कृपया अपना मोबाइल नंबर बोलें।'
-        : language === 'te'
-        ? 'దయచేసి మీ మొబైల్ నంబర్ చెప్పండి.'
-        : 'Please enter your mobile number.';
-
+  // =========================================================================
+  // STEP 1: PHONE NUMBER
+  // =========================================================================
+  const triggerPhoneInput = useCallback(() => {
+    const prompts = getVoicePrompts(language);
     setVoiceStatus('🔊 Asking for mobile number...');
-    speakVoice(promptText, () => {
-      // Start listening for mobile number
+    speakVoice(prompts.askPhone, () => {
       startListening((spoken) => {
         const parsed = normalizeSpokenDigits(spoken);
-        const digitsOnly = parsed.replace(/\D/g, '');
-        const clean = digitsOnly.length > 10 ? digitsOnly.slice(-10) : digitsOnly;
+        const clean = parsed.replace(/\D/g, '').slice(-10);
 
-        if (clean.length >= 10) {
+        if (clean.length === 10) {
           setDetectedPhone(clean);
           setPhone(clean);
-          setStage('phone_confirm');
+          lastSpokenStepRef.current = ''; // Allow confirm step to run
+          setStep('phone_confirm');
         } else if (clean.length > 0) {
           setPhone(clean);
           setDetectedPhone(clean);
-          setVoiceStatus(`Heard ${clean}. Please provide complete 10-digit mobile number.`);
+          speakVoice(prompts.repeatPhone, () => {
+            triggerPhoneInput();
+          });
+        } else {
+          // Empty speech: never skip question
+          speakVoice(prompts.repeatPhone, () => {
+            triggerPhoneInput();
+          });
         }
       });
     });
   }, [language, speakVoice, startListening]);
 
-  // Step 2: Confirm mobile number
-  const promptConfirmNumber = useCallback((numToConfirm: string) => {
-    const spaced = numToConfirm.split('').join(' ');
-    const confirmText =
-      language === 'hi'
-        ? `मैंने सुना ${numToConfirm}। क्या यह सही है? हाँ या नहीं बोलें।`
-        : language === 'te'
-        ? `నేను విన్న నంబర్ ${numToConfirm}. ఇది సరైనదేనా? అవును లేదా కాదు అని చెప్పండి.`
-        : `I heard ${spaced}. Is this correct? Say Yes or No.`;
+  // =========================================================================
+  // STEP 1.5: PHONE NUMBER CONFIRMATION
+  // =========================================================================
+  const triggerPhoneConfirm = useCallback(
+    (num: string) => {
+      const prompts = getVoicePrompts(language);
+      const spaced = num.split('').join(' ');
+      const confirmText = prompts.confirmPhone(spaced);
 
-    setVoiceStatus(`🔊 Confirming mobile number: ${numToConfirm}`);
-    speakVoice(confirmText, () => {
-      startListening((answer) => {
-        const lower = answer.toLowerCase().trim();
-        const isYes =
-          lower.includes('yes') ||
-          lower.includes('correct') ||
-          lower.includes('yeah') ||
-          lower.includes('haan') ||
-          lower.includes('ha') ||
-          lower.includes('sahi') ||
-          lower.includes('avunu') ||
-          lower.includes('avnu') ||
-          lower.includes('ok');
-
-        const isNo =
-          lower.includes('no') ||
-          lower.includes('nahi') ||
-          lower.includes('wrong') ||
-          lower.includes('kaadu') ||
-          lower.includes('kadu');
-
-        if (isYes) {
-          setStage('otp_input');
-        } else if (isNo) {
-          setStage('phone_input');
-          promptMobileNumber();
-        } else {
-          // If unclear, default to letting user tap Yes or No
-          setVoiceStatus(`Heard "${answer}". Please tap Yes or No.`);
-        }
+      setVoiceStatus(`🔊 Confirming mobile number: ${num}`);
+      speakVoice(confirmText, () => {
+        startListening((answer) => {
+          if (isAffirmative(answer)) {
+            handlePhoneConfirmed(num);
+          } else if (isNegative(answer)) {
+            setStep('phone_input');
+            lastSpokenStepRef.current = '';
+          } else {
+            setVoiceStatus(`Heard "${answer}". Please tap Yes or No.`);
+          }
+        });
       });
-    });
-  }, [language, speakVoice, startListening, promptMobileNumber]);
+    },
+    [language, speakVoice, startListening]
+  );
 
-  // Step 3: Prompt for OTP
-  const promptOtp = useCallback(() => {
-    const otpPrompt =
-      language === 'hi'
-        ? 'कृपया छह अंकों का ओटीपी बोलें।'
-        : language === 'te'
-        ? 'దయచేసి ఆరు అంకెల ఓటీపీ చెప్పండి.'
-        : 'Please enter the OTP.';
+  const handlePhoneConfirmed = async (targetPhone: string) => {
+    stopAllVoice();
+    setLoading(true);
+    setErrorMsg('');
+    const clean = targetPhone.replace(/\D/g, '').slice(-10);
+    const res = await sendOtp(clean, 'seller');
+    setLoading(false);
+
+    if (res.success) {
+      setPhone(clean);
+      setOtp(['1', '2', '3', '4', '5', '6']);
+      lastSpokenStepRef.current = '';
+      setStep('otp_input');
+    } else {
+      setErrorMsg(res.error || 'Failed to send OTP.');
+    }
+  };
+
+  // =========================================================================
+  // STEP 2: OTP VERIFICATION
+  // =========================================================================
+  const triggerOtpInput = useCallback(() => {
+    const prompts = getVoicePrompts(language);
 
     setVoiceStatus('🔊 Asking for OTP...');
-    speakVoice(otpPrompt, () => {
+    speakVoice(prompts.askOtp, () => {
       startListening((spokenOtp) => {
         const parsed = normalizeSpokenDigits(spokenOtp);
         const digits = parsed.replace(/\D/g, '').slice(0, 6);
@@ -274,433 +381,860 @@ export const ArtisanOnboardingModal: React.FC<ArtisanOnboardingModalProps> = ({
           }
           setOtp(newOtp);
           if (digits.length === 6) {
-            handleVerifyOtpWithDigits(newOtp.join(''));
+            handleVerifyOtpDigits(newOtp.join(''));
           }
+        } else {
+          // Empty speech: do not skip
+          speakVoice(prompts.repeatOtp, () => {
+            triggerOtpInput();
+          });
         }
       });
     });
   }, [language, speakVoice, startListening, otp]);
 
-  // Trigger state transitions with voice
-  useEffect(() => {
-    if (!isOpen) return;
-    isMountedRef.current = true;
-
-    if (stage === 'phone_input' && !hasSpokenPhonePromptRef.current) {
-      hasSpokenPhonePromptRef.current = true;
-      const t = setTimeout(() => {
-        promptMobileNumber();
-      }, 300);
-      return () => clearTimeout(t);
-    }
-
-    if (stage === 'phone_confirm' && !hasSpokenConfirmPromptRef.current) {
-      hasSpokenConfirmPromptRef.current = true;
-      const t = setTimeout(() => {
-        promptConfirmNumber(detectedPhone || phone);
-      }, 300);
-      return () => clearTimeout(t);
-    }
-
-    if (stage === 'otp_input' && !hasSpokenOtpPromptRef.current) {
-      hasSpokenOtpPromptRef.current = true;
-      const t = setTimeout(() => {
-        promptOtp();
-      }, 300);
-      return () => clearTimeout(t);
-    }
-
-    return () => {
-      stopAllVoice();
-    };
-  }, [isOpen, stage, promptMobileNumber, promptConfirmNumber, promptOtp, detectedPhone, phone, stopAllVoice]);
-
-  const handleVerifyOtpWithDigits = async (fullOtp: string) => {
-    if (fullOtp.length < 6) {
-      setErrorMsg('Please enter all 6 digits of the OTP');
+  const handleVerifyOtpDigits = async (otpCode: string) => {
+    if (otpCode.length < 4) {
+      setErrorMsg('Please enter all 6 digits of the OTP.');
       return;
     }
 
-    setIsVerifying(true);
+    setLoading(true);
     setErrorMsg('');
     stopAllVoice();
 
-    try {
-      const stateMatch = village.split(',').pop()?.trim() || 'Telangana';
-      login('seller', {
-        id: 'art-01',
-        user_id: 'usr-art-01',
-        name: name || 'Rameshwar Rao',
-        category: craft,
-        state: stateMatch,
-        district: village || 'Pochampally',
-        bio: `Master artisan practicing ${craft} traditions with generational expertise.`,
-        experience_years: 25,
-        phone: `+91 ${phone}`,
-        profile_image_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80',
+    const clean = phone.replace(/\D/g, '').slice(-10);
+    const res = await verifyOtp({
+      phone: clean,
+      otp: otpCode,
+      role: 'seller',
+    });
+    setLoading(false);
+
+    if (res.success) {
+      // If returning user already has a name & craft, pre-populate
+      if (res.user?.name && res.user.name !== 'Artisan Craftsperson') {
+        setSellerName(res.user.name);
+      }
+      if (res.user?.craft_type && res.user.craft_type !== 'Weaving') {
+        setHandicraftWorkName(res.user.craft_type);
+      } else if (res.artisan?.category) {
+        setHandicraftWorkName(res.artisan.category);
+      }
+
+      lastSpokenStepRef.current = '';
+      setStep('name_voice');
+    } else {
+      setErrorMsg(res.error || 'Invalid OTP code. Please enter 123456.');
+    }
+  };
+
+  // =========================================================================
+  // STEP 3: SELLER NAME — VOICE ENTRY
+  // =========================================================================
+  const triggerNameVoice = useCallback(() => {
+    const prompts = getVoicePrompts(language);
+
+    setVoiceStatus('🔊 Asking for seller name...');
+    speakVoice(prompts.askName, () => {
+      startListening((spokenName) => {
+        const clean = extractCleanName(spokenName);
+        if (clean.length >= 2) {
+          setSellerName(clean);
+          setVoiceStatus(`✓ Got it: "${clean}"`);
+        } else {
+          // Empty or unclear speech: stay on same question
+          speakVoice(prompts.repeatName, () => {
+            triggerNameVoice();
+          });
+        }
       });
+    });
+  }, [language, speakVoice, startListening]);
 
-      setTimeout(() => {
-        setIsVerifying(false);
-        sessionStorage.setItem('open_seller_tutorial', 'true');
-        sessionStorage.removeItem('kalatech_seen_seller_tour');
-        onClose();
-        navigate('/seller');
-      }, 600);
-    } catch {
-      setIsVerifying(false);
-      setErrorMsg('Verification failed. Please try again.');
+  const handleConfirmName = () => {
+    if (!sellerName.trim()) {
+      setErrorMsg('Please enter or speak your name first.');
+      return;
+    }
+    setErrorMsg('');
+    stopAllVoice();
+    setIsEditingName(false);
+    lastSpokenStepRef.current = '';
+    setStep('craft_voice');
+  };
+
+  // =========================================================================
+  // STEP 4: HANDICRAFT WORK NAME — VOICE ENTRY
+  // =========================================================================
+  const triggerCraftVoice = useCallback(() => {
+    const prompts = getVoicePrompts(language);
+
+    setVoiceStatus('🔊 Asking for handicraft work name...');
+    speakVoice(prompts.askCraft, () => {
+      startListening((spokenCraft) => {
+        const clean = extractCleanCraft(spokenCraft);
+        if (clean.length >= 2) {
+          setHandicraftWorkName(clean);
+          setVoiceStatus(`✓ Got it: "${clean}"`);
+        } else {
+          // Empty or unclear speech: stay on same question
+          speakVoice(prompts.repeatCraft, () => {
+            triggerCraftVoice();
+          });
+        }
+      });
+    });
+  }, [language, speakVoice, startListening]);
+
+  const handleConfirmCraft = () => {
+    if (!handicraftWorkName.trim()) {
+      setErrorMsg('Please enter or speak your craft work name first.');
+      return;
+    }
+    setErrorMsg('');
+    stopAllVoice();
+    setIsEditingCraft(false);
+    lastSpokenStepRef.current = '';
+    setStep('final_confirm');
+  };
+
+  // =========================================================================
+  // STEP 5: FINAL PROFILE CONFIRMATION & SAVE
+  // =========================================================================
+  const triggerFinalConfirm = useCallback(() => {
+    const prompts = getVoicePrompts(language);
+    const summaryPrompt = prompts.confirmSummary(
+      sellerName || 'Artisan',
+      handicraftWorkName || 'Handicrafts'
+    );
+
+    setVoiceStatus('🔊 Confirming seller profile details...');
+    speakVoice(summaryPrompt, () => {
+      startListening((answer) => {
+        if (isAffirmative(answer)) {
+          handleSaveAndContinue();
+        } else if (isNegative(answer)) {
+          setVoiceStatus('You can edit either field below.');
+        }
+      });
+    });
+  }, [language, sellerName, handicraftWorkName, speakVoice, startListening]);
+
+  const handleSaveAndContinue = async () => {
+    stopAllVoice();
+    setLoading(true);
+    setErrorMsg('');
+
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    const res = await saveSellerProfile({
+      phoneNumber: cleanPhone,
+      sellerName: sellerName.trim() || 'Master Craftsperson',
+      handicraftWorkName: handicraftWorkName.trim() || 'Traditional Handicrafts',
+      preferredLanguage: language,
+      preferredLanguageCode: languageCode,
+      state: selectedState,
+      stateCode: selectedStateCode,
+    });
+    setLoading(false);
+
+    if (res.success) {
+      sessionStorage.setItem('open_seller_tutorial', 'true');
+      sessionStorage.removeItem('ShilpSetu_seen_seller_tour');
+      onClose();
+      navigate('/seller');
+    } else {
+      setErrorMsg(res.error || 'Failed to save profile. Please try again.');
     }
   };
 
-  const handleOtpChange = (index: number, val: string) => {
-    if (val.length > 1) val = val.slice(-1);
-    const updated = [...otp];
-    updated[index] = val;
-    setOtp(updated);
+  // =========================================================================
+  // AUTOMATIC VOICE TRIGGERS GUARDED AGAINST RE-RENDERS
+  // =========================================================================
+  useEffect(() => {
+    if (!isOpen) return;
 
-    if (val && index < 5) {
-      const nextInput = document.getElementById(`otp-input-${index + 1}`);
-      nextInput?.focus();
+    if (step === 'phone_input' && lastSpokenStepRef.current !== 'phone_input') {
+      lastSpokenStepRef.current = 'phone_input';
+      const timer = setTimeout(() => triggerPhoneInput(), 400);
+      return () => clearTimeout(timer);
     }
-  };
 
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-input-${index - 1}`);
-      prevInput?.focus();
-    } else if (e.key === 'ArrowLeft' && index > 0) {
-      document.getElementById(`otp-input-${index - 1}`)?.focus();
-    } else if (e.key === 'ArrowRight' && index < 5) {
-      document.getElementById(`otp-input-${index + 1}`)?.focus();
+    if (step === 'phone_confirm' && lastSpokenStepRef.current !== 'phone_confirm') {
+      lastSpokenStepRef.current = 'phone_confirm';
+      const timer = setTimeout(() => triggerPhoneConfirm(detectedPhone || phone), 400);
+      return () => clearTimeout(timer);
     }
-  };
 
-  const handleFillDemo = () => {
-    setName('Rameshwar Rao');
-    setPhone('9876543210');
-    setDetectedPhone('9876543210');
-    setVillage('Pochampally, Yadadri');
-    setCraft('Weaving');
-    setOtp(['1', '2', '3', '4', '5', '6']);
-    setStage('otp_input');
-  };
+    if (step === 'otp_input' && lastSpokenStepRef.current !== 'otp_input') {
+      lastSpokenStepRef.current = 'otp_input';
+      const timer = setTimeout(() => triggerOtpInput(), 400);
+      return () => clearTimeout(timer);
+    }
+
+    if (step === 'name_voice' && lastSpokenStepRef.current !== 'name_voice') {
+      lastSpokenStepRef.current = 'name_voice';
+      const timer = setTimeout(() => triggerNameVoice(), 400);
+      return () => clearTimeout(timer);
+    }
+
+    if (step === 'craft_voice' && lastSpokenStepRef.current !== 'craft_voice') {
+      lastSpokenStepRef.current = 'craft_voice';
+      const timer = setTimeout(() => triggerCraftVoice(), 400);
+      return () => clearTimeout(timer);
+    }
+
+    if (step === 'final_confirm' && lastSpokenStepRef.current !== 'final_confirm') {
+      lastSpokenStepRef.current = 'final_confirm';
+      const timer = setTimeout(() => triggerFinalConfirm(), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    isOpen,
+    step,
+    detectedPhone,
+    phone,
+    triggerPhoneInput,
+    triggerPhoneConfirm,
+    triggerOtpInput,
+    triggerNameVoice,
+    triggerCraftVoice,
+    triggerFinalConfirm,
+  ]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-950/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-stone-50 rounded-3xl border-2 border-amber-400 shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col">
-        {/* Modal Top Bar */}
-        <div className="bg-gradient-to-r from-amber-700 via-orange-700 to-amber-800 text-stone-100 px-5 py-4 flex items-center justify-between shadow-md shrink-0">
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xl">🧑‍🎨</span>
-            <div>
-              <h3 className="font-black text-lg sm:text-xl leading-tight">
-                {language === 'hi'
-                  ? 'कारीगर आवाज़ लॉगिन'
-                  : language === 'te'
-                  ? 'కళాకారుల వాయిస్ లాగిన్'
-                  : 'Artisan Voice Login'}
-              </h3>
-              <p className="text-xs text-amber-200 font-medium">
-                {language === 'hi'
-                  ? 'बोलकर मोबाइल नंबर और ओटीपी दर्ज करें'
-                  : language === 'te'
-                  ? 'వాయిస్ ద్వారా మొబైల్ & ఓటీపీ నమోదు'
-                  : 'Voice-assisted login • Speak or tap to enter'}
-              </p>
-            </div>
-          </div>
-
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-950/75 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
+      <div className="relative w-full max-w-lg bg-stone-50 rounded-3xl border-2 border-amber-300 shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col">
+        {/* Header with trilingual title */}
+        <div className="bg-gradient-to-r from-amber-800 via-[#9c4124] to-[#83341b] px-5 py-4 sm:px-6 sm:py-5 text-white relative shrink-0 shadow-sm">
           <button
             onClick={() => {
               stopAllVoice();
               onClose();
             }}
-            className="p-1.5 rounded-full hover:bg-black/20 text-stone-200 hover:text-white transition-all cursor-pointer"
-            aria-label="Close"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/20 hover:bg-black/30 flex items-center justify-center text-white transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shadow-xs">
+              <Sparkles className="w-6 h-6 text-amber-200" />
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black font-['Rozha_One',serif] tracking-tight">
+                {language === 'te'
+                  ? 'కళాకారుల లాగిన్ & ప్రొఫైల్'
+                  : language === 'hi'
+                  ? 'कारीगर लॉगिन एवं प्रोफ़ाइल'
+                  : 'Artisan Login & Profile Setup'}
+              </h2>
+              <p className="text-amber-100 text-xs font-medium">
+                {language === 'te'
+                  ? 'ధ్వని-ఆధారిత త్వరిత నమోదు'
+                  : language === 'hi'
+                  ? 'आवाज़-आधारित त्वरित सत्यापन'
+                  : 'Voice-First Passwordless Studio Access'}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Live Audio Status Header */}
-        <div className="bg-gradient-to-r from-amber-100 via-orange-100 to-amber-100 border-b border-amber-300 px-4 py-2.5 flex items-center justify-between gap-2 shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-lg bg-amber-600 text-white flex items-center justify-center shadow-2xs shrink-0">
-              {isListening ? (
-                <Mic className="w-4 h-4 animate-ping text-white" />
-              ) : isSpeaking ? (
-                <Volume2 className="w-4 h-4 animate-bounce text-white" />
-              ) : (
-                <Volume2 className="w-4 h-4 text-white" />
-              )}
-            </div>
-            <div className="min-w-0">
-              <span className="text-xs font-black text-amber-950 block truncate">
+        {/* Modal Scrollable Body */}
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
+          {/* Voice Assistant Visual State Indicator */}
+          <div className="p-3 bg-amber-50/90 border border-amber-200/80 rounded-2xl flex items-center justify-between shadow-2xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div
+                className={`w-3 h-3 rounded-full shrink-0 ${
+                  isListening
+                    ? 'bg-red-500 animate-ping'
+                    : isSpeaking
+                    ? 'bg-amber-600 animate-pulse'
+                    : 'bg-emerald-500'
+                }`}
+              />
+              <span className="text-xs font-bold text-stone-800 truncate">
                 {voiceStatus}
               </span>
-              {heardTranscript && (
-                <span className="text-[10px] text-amber-800 font-semibold block truncate">
-                  Heard: "{heardTranscript}"
-                </span>
-              )}
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-200 text-amber-950">
+                {language.toUpperCase()}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                if (stage === 'phone_input') promptMobileNumber();
-                else if (stage === 'phone_confirm') promptConfirmNumber(detectedPhone || phone);
-                else promptOtp();
-              }}
-              className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[11px] font-black shadow-xs transition-all flex items-center gap-1 cursor-pointer"
-            >
-              <span>🔊 Replay</span>
-            </button>
-          </div>
-        </div>
+          {!voiceAvailable && (
+            <div className="p-3 bg-stone-100 border border-stone-300 rounded-xl text-xs text-stone-700 font-medium">
+              Voice input is unavailable. You can enter the details manually below.
+            </div>
+          )}
 
-        {/* Modal Body */}
-        <div className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
           {errorMsg && (
-            <div className="p-3 bg-rose-100 border border-rose-300 rounded-xl text-rose-900 text-xs font-bold flex items-center gap-2">
-              <span>⚠️</span>
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-bold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
-          {/* ======================================================= */}
-          {/* STAGE 1: PHONE INPUT (Voice First + Manual Fallback)   */}
-          {/* ======================================================= */}
-          {stage === 'phone_input' && (
+          {/* ========================================================================= */}
+          {/* STEP 1: PHONE NUMBER INPUT                                                */}
+          {/* ========================================================================= */}
+          {step === 'phone_input' && (
             <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-amber-50/70 border-2 border-amber-300 text-center">
-                <span className="text-3xl mb-1 block">📱</span>
-                <h4 className="text-base sm:text-lg font-black text-stone-900">
-                  {language === 'hi'
-                    ? 'कृपया अपना 10 अंकों का मोबाइल नंबर बोलें'
-                    : language === 'te'
-                    ? 'దయచేసి మీ 10 అంకెల మొబైల్ నంబర్ చెప్పండి'
-                    : 'Please Speak Your 10-Digit Mobile Number'}
-                </h4>
-                <p className="text-xs text-stone-600 mt-1 font-medium">
-                  {language === 'hi'
-                    ? 'उदाहरण: "नौ आठ सात छह पांच चार तीन दो एक शून्य"'
-                    : language === 'te'
-                    ? 'ఉదాహరణ: "తొమ్మిది ఎనిమిది ఏడు ఆరు ఐదు నాలుగు మూడు రెండు ఒకటి సున్నా"'
-                    : 'Say numbers naturally, e.g. "9 8 7 6 5 4 3 2 1 0"'}
-                </p>
-              </div>
+              <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-black text-stone-900 flex items-center gap-1.5">
+                    <Phone className="w-4 h-4 text-[#9c4124]" />
+                    <span>
+                      {language === 'te'
+                        ? '📱 మొబైల్ నంబర్'
+                        : language === 'hi'
+                        ? '📱 मोबाइल नंबर'
+                        : '📱 Mobile Number'}
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      lastSpokenStepRef.current = '';
+                      triggerPhoneInput();
+                    }}
+                    className={`p-1.5 rounded-lg cursor-pointer transition-all ${
+                      isListening ? 'bg-red-500 text-white animate-pulse' : 'text-stone-400 hover:text-[#9c4124]'
+                    }`}
+                    title="Speak Mobile Number"
+                  >
+                    <Mic className="w-4 h-4" />
+                  </button>
+                </div>
 
-              {/* Mobile Number display and manual input */}
-              <div>
-                <label className="block text-xs font-black text-stone-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-amber-600" />
-                  <span>📱 Mobile Number</span>
-                </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-stone-500">
-                    +91
-                  </span>
                   <input
                     type="tel"
                     maxLength={10}
                     value={phone}
-                    onChange={(e) => {
-                      const clean = e.target.value.replace(/\D/g, '').slice(0, 10);
-                      setPhone(clean);
-                      setDetectedPhone(clean);
-                    }}
-                    placeholder="9876543210"
-                    className="w-full pl-14 pr-12 py-3.5 bg-white border-2 border-amber-300 focus:border-amber-600 rounded-2xl text-xl font-black text-stone-900 tracking-wider shadow-inner"
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                    placeholder="e.g. 9876543210"
+                    className="w-full pl-4 pr-10 py-3 bg-stone-50 border-2 border-stone-300 focus:border-[#9c4124] rounded-xl text-base font-black text-stone-900 focus:outline-none"
                   />
+                  {phone.length === 10 && (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 absolute right-3 top-1/2 -translate-y-1/2" />
+                  )}
+                </div>
+
+                <p className="text-xs text-stone-500 font-medium">
+                  {language === 'te'
+                    ? 'ధ్వని లేదా మాన్యువల్ ద్వారా 10 అంకెల మొబైల్ నంబర్ నమోదు చేయండి'
+                    : language === 'hi'
+                    ? 'बोलकर या टाइप करके अपना 10 अंकों का मोबाइल नंबर दर्ज करें'
+                    : 'Speak your number or type 10 digits.'}
+                </p>
+
+                {/* Quick Demo Test Buttons */}
+                <div className="flex flex-wrap gap-2 pt-1">
                   <button
                     type="button"
-                    onClick={promptMobileNumber}
-                    className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all cursor-pointer ${
-                      isListening ? 'bg-red-500 text-white animate-pulse' : 'text-stone-400 hover:text-amber-700 hover:bg-amber-100'
-                    }`}
-                    title="Click to speak mobile number"
+                    onClick={() => {
+                      setPhone('9876543210');
+                      setDetectedPhone('9876543210');
+                      lastSpokenStepRef.current = '';
+                      setStep('phone_confirm');
+                    }}
+                    className="text-xs font-bold text-[#9c4124] bg-amber-50 hover:bg-amber-100 border border-amber-300 px-3 py-1.5 rounded-xl cursor-pointer"
                   >
-                    <Mic className="w-5 h-5" />
+                    ⚡ Demo: 9876543210
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPhone('9848012345');
+                      setDetectedPhone('9848012345');
+                      lastSpokenStepRef.current = '';
+                      setStep('phone_confirm');
+                    }}
+                    className="text-xs font-bold text-[#9c4124] bg-amber-50 hover:bg-amber-100 border border-amber-300 px-3 py-1.5 rounded-xl cursor-pointer"
+                  >
+                    ⚡ Demo: 9848012345 (Rameshwar)
                   </button>
                 </div>
               </div>
 
               <button
                 type="button"
+                disabled={phone.replace(/\D/g, '').length !== 10 || loading}
                 onClick={() => {
-                  if (phone.length >= 10) {
-                    setDetectedPhone(phone);
-                    setStage('phone_confirm');
-                  } else {
-                    setErrorMsg('Please enter or speak a valid 10-digit mobile number');
-                  }
+                  const clean = phone.replace(/\D/g, '').slice(-10);
+                  setDetectedPhone(clean);
+                  lastSpokenStepRef.current = '';
+                  setStep('phone_confirm');
                 }}
-                className="w-full py-3.5 px-6 rounded-2xl font-black text-base text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-900/20 active:scale-98 cursor-pointer"
+                className="w-full py-3.5 rounded-xl bg-[#9c4124] hover:bg-[#83341b] text-white font-black text-sm transition-all shadow-md shadow-[#9c4124]/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                <span>Continue →</span>
+                <span>
+                  {language === 'te'
+                    ? 'కొనసాగించండి'
+                    : language === 'hi'
+                    ? 'आगे बढ़ें'
+                    : 'Continue'}
+                </span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           )}
 
-          {/* ======================================================= */}
-          {/* STAGE 2: PHONE CONFIRM ("I heard 9876543210. Is this correct?") */}
-          {/* ======================================================= */}
-          {stage === 'phone_confirm' && (
-            <div className="space-y-5 text-center">
-              <div className="p-5 rounded-3xl bg-gradient-to-b from-amber-50 to-orange-50/70 border-2 border-amber-400 shadow-sm">
-                <span className="text-3xl mb-1 block">📱</span>
-                <span className="text-xs font-extrabold text-amber-900 uppercase tracking-wider block mb-1">
-                  Mobile Number
+          {/* ========================================================================= */}
+          {/* STEP 1.5: CONFIRM DETECTED NUMBER                                         */}
+          {/* ========================================================================= */}
+          {step === 'phone_confirm' && (
+            <div className="space-y-4">
+              <div className="bg-white p-5 rounded-2xl border border-amber-200 text-center space-y-3">
+                <span className="text-xs font-extrabold uppercase text-amber-800 tracking-wider">
+                  {language === 'te'
+                    ? 'ధృవీకరించండి'
+                    : language === 'hi'
+                    ? 'पुष्टि करें'
+                    : 'Confirm Number'}
                 </span>
-                <div className="text-3xl sm:text-4xl font-black text-stone-950 tracking-wider my-2 font-mono">
+                <p className="text-sm font-semibold text-stone-700">
+                  {language === 'te'
+                    ? `నేను విన్న నంబర్:`
+                    : language === 'hi'
+                    ? `मैंने यह नंबर सुना:`
+                    : `I heard:`}
+                </p>
+                <div className="text-2xl font-mono font-black text-[#9c4124] tracking-wider">
                   +91 {detectedPhone || phone}
                 </div>
-                <p className="text-sm font-bold text-stone-700 mt-2">
-                  {language === 'hi'
-                    ? `मैंने सुना ${detectedPhone || phone}। क्या यह सही है?`
-                    : language === 'te'
-                    ? `నేను విన్న నంబర్ ${detectedPhone || phone}. ఇది సరైనదేనా?`
-                    : `I heard ${detectedPhone || phone}. Is this correct?`}
+                <p className="text-xs font-bold text-stone-600">
+                  {language === 'te'
+                    ? 'ఇది సరైనదేనా?'
+                    : language === 'hi'
+                    ? 'क्या यह सही है?'
+                    : 'Is this correct?'}
                 </p>
+
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={() => handlePhoneConfirmed(detectedPhone || phone)}
+                    className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>
+                      {language === 'te' ? '✓ అవును' : language === 'hi' ? '✓ हाँ' : '✓ Yes'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep('phone_input');
+                      lastSpokenStepRef.current = '';
+                    }}
+                    className="py-3 px-4 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-black text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                    <span>
+                      {language === 'te' ? '✗ కాదు' : language === 'hi' ? '✗ नहीं' : '✗ No'}
+                    </span>
+                  </button>
+                </div>
               </div>
-
-              {/* Yes / No buttons with voice or tap */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    stopAllVoice();
-                    setStage('otp_input');
-                  }}
-                  className="py-4 px-6 rounded-2xl font-black text-lg text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 active:scale-98 cursor-pointer"
-                >
-                  <Check className="w-6 h-6 stroke-[3]" />
-                  <span>{language === 'hi' ? 'हाँ (Yes)' : language === 'te' ? 'అవును (Yes)' : '✓ Yes'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    stopAllVoice();
-                    hasSpokenPhonePromptRef.current = false;
-                    setStage('phone_input');
-                  }}
-                  className="py-4 px-6 rounded-2xl font-black text-lg text-stone-800 bg-stone-200 hover:bg-stone-300 transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
-                >
-                  <RotateCcw className="w-5 h-5" />
-                  <span>{language === 'hi' ? 'नहीं (No)' : language === 'te' ? 'కాదు (No)' : '✗ No'}</span>
-                </button>
-              </div>
-
-              <p className="text-xs text-stone-500 font-medium">
-                You can say "Yes" or "No" into your microphone, or tap the button above.
-              </p>
             </div>
           )}
 
-          {/* ======================================================= */}
-          {/* STAGE 3: OTP INPUT (Voice + Manual fallback)           */}
-          {/* ======================================================= */}
-          {stage === 'otp_input' && (
-            <div className="space-y-4 py-1">
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 mx-auto flex items-center justify-center mb-2">
-                  <ShieldCheck className="w-6 h-6" />
+          {/* ========================================================================= */}
+          {/* STEP 2: OTP VERIFICATION                                                  */}
+          {/* ========================================================================= */}
+          {step === 'otp_input' && (
+            <div className="space-y-4">
+              <div className="bg-white p-5 rounded-2xl border border-stone-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-black text-stone-900 flex items-center gap-1.5">
+                    <KeyRound className="w-4 h-4 text-[#9c4124]" />
+                    <span>
+                      {language === 'te'
+                        ? 'ఆరు అంకెల ఓటీపీని నమోదు చేయండి'
+                        : language === 'hi'
+                        ? '6 अंकों का ओटीपी दर्ज करें'
+                        : 'Enter OTP'}
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      lastSpokenStepRef.current = '';
+                      triggerOtpInput();
+                    }}
+                    className={`p-1.5 rounded-lg cursor-pointer ${
+                      isListening ? 'bg-red-500 text-white animate-pulse' : 'text-stone-400 hover:text-[#9c4124]'
+                    }`}
+                    title="Speak OTP"
+                  >
+                    <Mic className="w-4 h-4" />
+                  </button>
                 </div>
-                <h4 className="text-xl font-black text-stone-900 mb-1">
-                  {t.otpTitle}
-                </h4>
-                <p className="text-xs sm:text-sm text-stone-600 font-medium max-w-xs mx-auto">
-                  {language === 'hi'
-                    ? `मोबाइल नंबर +91 ${phone} पर भेजा गया 6 अंकों का कोड`
-                    : language === 'te'
-                    ? `మొబైల్ +91 ${phone} కు పంపిన 6 అంకెల కోడ్`
-                    : `6-digit verification code sent to +91 ${phone}`}
-                </p>
+
+                <div className="flex items-center justify-between text-xs bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 text-emerald-900">
+                  <span>Demo Code: <strong className="font-mono text-emerald-800 text-sm">123456</strong></span>
+                  <button
+                    type="button"
+                    onClick={() => setOtp(['1', '2', '3', '4', '5', '6'])}
+                    className="px-2 py-0.5 rounded bg-emerald-600 text-white text-[11px] font-bold cursor-pointer"
+                  >
+                    Auto-Fill
+                  </button>
+                </div>
+
+                {/* 6 Digit Boxes */}
+                <div className="flex justify-between gap-1.5 pt-1">
+                  {otp.map((digit, i) => (
+                    <input
+                      key={i}
+                      id={`otp-${i}`}
+                      type="text"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        const newOtp = [...otp];
+                        newOtp[i] = val;
+                        setOtp(newOtp);
+                        if (val && i < 5) {
+                          document.getElementById(`otp-${i + 1}`)?.focus();
+                        }
+                      }}
+                      className="w-11 h-12 text-center text-xl font-black font-mono bg-stone-50 border-2 border-stone-300 focus:border-[#9c4124] rounded-xl focus:outline-none"
+                    />
+                  ))}
+                </div>
               </div>
 
-              {/* 6-Digit OTP Box */}
-              <div className="flex items-center justify-center gap-2 sm:gap-3 my-3">
-                {otp.map((digit, i) => (
-                  <input
-                    key={i}
-                    id={`otp-input-${i}`}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(i, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                    className="w-11 h-13 sm:w-13 sm:h-15 text-center text-xl sm:text-2xl font-black bg-white border-2 border-amber-300 focus:border-amber-600 focus:ring-2 focus:ring-amber-200 rounded-xl text-stone-900 shadow-sm"
-                  />
-                ))}
-              </div>
-
-              {/* Voice Speak OTP trigger */}
               <button
                 type="button"
-                onClick={promptOtp}
-                className="w-full py-2.5 px-3 rounded-xl bg-amber-100/70 hover:bg-amber-100 text-amber-950 border border-amber-300 text-xs font-black flex items-center justify-center gap-2 cursor-pointer transition-all"
+                disabled={otp.join('').length !== 6 || loading}
+                onClick={() => handleVerifyOtpDigits(otp.join(''))}
+                className="w-full py-3.5 rounded-xl bg-[#9c4124] hover:bg-[#83341b] text-white font-black text-sm transition-all shadow-md shadow-[#9c4124]/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                <Mic className="w-4 h-4 text-amber-700" />
-                <span>
-                  {language === 'hi'
-                    ? '🎙️ बोलकर 6 अंकों का ओटीपी दर्ज करें'
-                    : language === 'te'
-                    ? '🎙️ ఓటీపీ చెప్పి నమోదు చేయండి'
-                    : '🎙️ Speak 6-Digit OTP to Fill'}
-                </span>
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <span>
+                      {language === 'te'
+                        ? 'ఓటీపీని ధృవీకరించండి'
+                        : language === 'hi'
+                        ? 'ओटीपी सत्यापित करें'
+                        : 'Verify OTP'}
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
+            </div>
+          )}
 
-              <div className="space-y-2 pt-2">
-                <button
-                  onClick={() => handleVerifyOtpWithDigits(otp.join(''))}
-                  disabled={isVerifying}
-                  className="w-full min-h-[52px] py-3.5 px-6 rounded-2xl font-black text-lg text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 active:scale-98 cursor-pointer"
-                >
-                  {isVerifying ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Verifying OTP...</span>
-                    </div>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-5 h-5" />
-                      <span>{t.btnVerifyEnter}</span>
-                    </>
-                  )}
-                </button>
+          {/* ========================================================================= */}
+          {/* STEP 3: SELLER NAME — VOICE ENTRY                                         */}
+          {/* ========================================================================= */}
+          {step === 'name_voice' && (
+            <div className="space-y-4">
+              <div className="bg-white p-5 rounded-2xl border-2 border-amber-300 shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-extrabold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                    <User className="w-4 h-4 text-[#9c4124]" />
+                    <span>
+                      {language === 'te'
+                        ? '👤 కళాకారుడి పేరు'
+                        : language === 'hi'
+                        ? '👤 कारीगर का नाम'
+                        : '👤 Seller Name'}
+                    </span>
+                  </label>
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-[#9c4124]">
+                    Voice Input
+                  </span>
+                </div>
 
-                <button
-                  onClick={() => {
-                    hasSpokenPhonePromptRef.current = false;
-                    hasSpokenConfirmPromptRef.current = false;
-                    setStage('phone_input');
-                  }}
-                  className="w-full py-2 text-xs font-bold text-stone-600 hover:text-stone-900 transition-all text-center cursor-pointer"
-                >
-                  ← Change Mobile Number
-                </button>
+                {isEditingName ? (
+                  <input
+                    type="text"
+                    value={sellerName}
+                    onChange={(e) => setSellerName(e.target.value)}
+                    placeholder="Enter seller name"
+                    className="w-full px-3 py-2.5 border-2 border-[#9c4124] rounded-xl text-base font-black text-stone-900 focus:outline-none"
+                  />
+                ) : (
+                  <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200">
+                    <p className="text-lg font-black text-stone-900 min-h-[28px]">
+                      {sellerName || (
+                        <span className="text-stone-400 font-medium text-sm">
+                          {language === 'te' ? 'మీ పేరు కోసం వింటున్నాము...' : language === 'hi' ? 'नाम के लिए सुन रहे हैं...' : 'Listening for your name...'}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
+
+                {/* Confirm, Edit, Speak Again Buttons */}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleConfirmName}
+                    disabled={!sellerName.trim()}
+                    className="flex-1 min-w-[100px] py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>
+                      {language === 'te' ? '✓ నిర్ధారించండి' : language === 'hi' ? '✓ पुष्टि करें' : '✓ Confirm'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingName(!isEditingName)}
+                    className="py-2.5 px-3 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl font-bold text-xs flex items-center gap-1 cursor-pointer transition-all"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>{isEditingName ? 'Done' : '✏️ Edit'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      lastSpokenStepRef.current = '';
+                      triggerNameVoice();
+                    }}
+                    className="py-2.5 px-3 bg-amber-50 hover:bg-amber-100 text-[#9c4124] border border-amber-300 rounded-xl font-bold text-xs flex items-center gap-1 cursor-pointer transition-all"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>
+                      {language === 'te' ? '🔄 మళ్ళీ చెప్పండి' : language === 'hi' ? '🔄 दोबारा बोलें' : '🔄 Speak Again'}
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
-        </div>
 
-        {/* Demo Helper Footer */}
-        <div className="bg-stone-100 px-5 py-2.5 border-t border-stone-200 flex items-center justify-between text-xs shrink-0">
-          <span className="text-[11px] text-stone-500 font-medium">Quick Evaluator Fill:</span>
-          <button
-            onClick={handleFillDemo}
-            className="text-amber-800 hover:text-amber-950 font-bold underline text-xs cursor-pointer"
-          >
-            {t.autoFillDemo} (9876543210 • 123456)
-          </button>
+          {/* ========================================================================= */}
+          {/* STEP 4: HANDICRAFT WORK NAME — VOICE ENTRY                                */}
+          {/* ========================================================================= */}
+          {step === 'craft_voice' && (
+            <div className="space-y-4">
+              <div className="bg-white p-5 rounded-2xl border-2 border-amber-300 shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-extrabold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                    <Palette className="w-4 h-4 text-[#9c4124]" />
+                    <span>
+                      {language === 'te'
+                        ? '🎨 హస్తకళ పని'
+                        : language === 'hi'
+                        ? '🎨 हस्तशिल्प कार्य'
+                        : '🎨 Handicraft Work'}
+                    </span>
+                  </label>
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-[#9c4124]">
+                    Voice Input
+                  </span>
+                </div>
+
+                {isEditingCraft ? (
+                  <input
+                    type="text"
+                    value={handicraftWorkName}
+                    onChange={(e) => setHandicraftWorkName(e.target.value)}
+                    placeholder="e.g. Pochampally handloom weaving"
+                    className="w-full px-3 py-2.5 border-2 border-[#9c4124] rounded-xl text-base font-black text-stone-900 focus:outline-none"
+                  />
+                ) : (
+                  <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200">
+                    <p className="text-lg font-black text-stone-900 min-h-[28px]">
+                      {handicraftWorkName || (
+                        <span className="text-stone-400 font-medium text-sm">
+                          {language === 'te' ? 'మీ పని పేరు కోసం వింటున్నాము...' : language === 'hi' ? 'शिल्प कार्य के लिए सुन रहे हैं...' : 'Listening for your craft name...'}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
+
+                {/* Suggestion Chips */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {['Pochampally Weaving', 'Hand Embroidery', 'Blue Pottery', 'Wood Carving', 'Terracotta'].map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setHandicraftWorkName(c)}
+                      className="text-[11px] font-bold px-2 py-1 bg-stone-100 hover:bg-amber-100 text-stone-700 rounded-lg cursor-pointer"
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Confirm, Edit, Speak Again Buttons */}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleConfirmCraft}
+                    disabled={!handicraftWorkName.trim()}
+                    className="flex-1 min-w-[100px] py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>
+                      {language === 'te' ? '✓ నిర్ధారించండి' : language === 'hi' ? '✓ पुष्टि करें' : '✓ Confirm'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingCraft(!isEditingCraft)}
+                    className="py-2.5 px-3 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl font-bold text-xs flex items-center gap-1 cursor-pointer transition-all"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>{isEditingCraft ? 'Done' : '✏️ Edit'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      lastSpokenStepRef.current = '';
+                      triggerCraftVoice();
+                    }}
+                    className="py-2.5 px-3 bg-amber-50 hover:bg-amber-100 text-[#9c4124] border border-amber-300 rounded-xl font-bold text-xs flex items-center gap-1 cursor-pointer transition-all"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>
+                      {language === 'te' ? '🔄 మళ్ళీ చెప్పండి' : language === 'hi' ? '🔄 दोबारा बोलें' : '🔄 Speak Again'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* STEP 5: FINAL SELLER PROFILE CONFIRMATION & CONTINUE                      */}
+          {/* ========================================================================= */}
+          {step === 'final_confirm' && (
+            <div className="space-y-4">
+              <div className="bg-white p-5 rounded-2xl border-2 border-emerald-400 shadow-sm space-y-4">
+                <div className="text-center pb-2 border-b border-stone-100">
+                  <span className="text-xs font-black uppercase tracking-wider text-emerald-800 block mb-1">
+                    {language === 'te' ? 'కళాకారుల ప్రొఫైల్' : language === 'hi' ? 'कारीगर प्रोफ़ाइल' : 'SELLER PROFILE'}
+                  </span>
+                  <p className="text-xs font-medium text-stone-500">
+                    {language === 'te'
+                      ? 'మీ వివరాలు సేవ్ చేసి స్టూడియోలోకి వెళ్లడానికి నిర్ధారించండి'
+                      : language === 'hi'
+                      ? 'पुष्टि करें और सीधे अपने कारीगर पोर्टल में प्रवेश करें'
+                      : 'Confirm details to open your Artisan Seller Portal'}
+                  </p>
+                </div>
+
+                <div className="space-y-2.5 text-sm">
+                  <div className="flex items-center justify-between p-2.5 bg-stone-50 rounded-xl">
+                    <span className="text-stone-500 font-bold flex items-center gap-1.5">
+                      <User className="w-4 h-4 text-[#9c4124]" />
+                      <span>{language === 'te' ? 'కళాకారుడి పేరు:' : language === 'hi' ? 'कारीगर का नाम:' : 'Seller Name:'}</span>
+                    </span>
+                    <strong className="text-stone-900 font-black">{sellerName}</strong>
+                  </div>
+
+                  <div className="flex items-center justify-between p-2.5 bg-stone-50 rounded-xl">
+                    <span className="text-stone-500 font-bold flex items-center gap-1.5">
+                      <Palette className="w-4 h-4 text-[#9c4124]" />
+                      <span>{language === 'te' ? 'హస్తకళ పని:' : language === 'hi' ? 'हस्तशिल्प कार्य:' : 'Handicraft Work:'}</span>
+                    </span>
+                    <strong className="text-stone-900 font-black">{handicraftWorkName}</strong>
+                  </div>
+
+                  <div className="flex items-center justify-between p-2.5 bg-stone-50 rounded-xl">
+                    <span className="text-stone-500 font-bold flex items-center gap-1.5">
+                      <Phone className="w-4 h-4 text-[#9c4124]" />
+                      <span>{language === 'te' ? 'మొబైల్ నంబర్:' : language === 'hi' ? 'मोबाइल नंबर:' : 'Phone Number:'}</span>
+                    </span>
+                    <strong className="text-stone-900 font-mono font-black">+91 {phone}</strong>
+                  </div>
+                </div>
+
+                {/* Final Buttons */}
+                <div className="flex flex-col gap-2 pt-2">
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={handleSaveAndContinue}
+                    className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-700/20 cursor-pointer disabled:opacity-50"
+                  >
+                    {loading ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <Check className="w-4 h-4" />
+                        <span>
+                          {language === 'te'
+                            ? '✓ నిర్ధారించి కొనసాగించండి'
+                            : language === 'hi'
+                            ? '✓ पुष्टि करें और आगे बढ़ें'
+                            : '✓ Confirm & Continue'}
+                        </span>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStep('name_voice');
+                        lastSpokenStepRef.current = '';
+                      }}
+                      className="flex-1 py-2.5 px-3 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl font-bold text-xs flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>✏️ Edit Name</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStep('craft_voice');
+                        lastSpokenStepRef.current = '';
+                      }}
+                      className="flex-1 py-2.5 px-3 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl font-bold text-xs flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>✏️ Edit Craft</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        lastSpokenStepRef.current = '';
+                        triggerFinalConfirm();
+                      }}
+                      className="py-2.5 px-3 bg-amber-50 hover:bg-amber-100 text-[#9c4124] border border-amber-300 rounded-xl font-bold text-xs flex items-center gap-1 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>🔄 Speak</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Ethical Trust Footnote */}
+          <div className="pt-2 border-t border-stone-200 flex items-center justify-between text-[11px] text-stone-500">
+            <span className="flex items-center gap-1 font-medium">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              Verified Artisan Direct Setup
+            </span>
+            <span className="text-[#9c4124] font-bold">ShilpSetu • SIH</span>
+          </div>
         </div>
       </div>
     </div>

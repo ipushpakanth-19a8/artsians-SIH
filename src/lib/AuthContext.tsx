@@ -15,6 +15,7 @@ export interface AuthUser {
   business_name?: string;
   location?: string;
   state?: string;
+  artisan_id?: string;
   artisan?: Artisan;
   hasCompletedBuyerOnboarding?: boolean;
   hasCompletedSellerOnboarding?: boolean;
@@ -49,6 +50,26 @@ interface AuthContextType {
     state?: string;
     address?: string;
   }) => Promise<{ success: boolean; error?: string }>;
+  sendOtp: (phone: string, role: UserRole) => Promise<{ success: boolean; message?: string; demoOtp?: string; error?: string }>;
+  verifyOtp: (payload: {
+    phone: string;
+    otp: string;
+    role: UserRole;
+    name?: string;
+    craft_type?: string;
+    business_name?: string;
+    location?: string;
+    state?: string;
+  }) => Promise<{ success: boolean; user?: any; artisan?: any; error?: string }>;
+  saveSellerProfile: (data: {
+    phoneNumber: string;
+    sellerName: string;
+    handicraftWorkName: string;
+    preferredLanguage: string;
+    preferredLanguageCode?: string;
+    state?: string;
+    stateCode?: string;
+  }) => Promise<{ success: boolean; user?: any; artisan?: any; error?: string }>;
   updateBuyerOnboarding: (completed: boolean) => Promise<{ success: boolean; error?: string }>;
   updateSellerOnboarding: (completed: boolean) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
@@ -64,6 +85,9 @@ const AuthContext = createContext<AuthContextType>({
   signupSeller: async () => ({ success: false }),
   loginBuyer: async () => ({ success: false }),
   signupBuyer: async () => ({ success: false }),
+  sendOtp: async () => ({ success: false }),
+  verifyOtp: async () => ({ success: false }),
+  saveSellerProfile: async () => ({ success: false }),
   updateBuyerOnboarding: async () => ({ success: false }),
   updateSellerOnboarding: async () => ({ success: false }),
   logout: () => {},
@@ -85,7 +109,7 @@ const DEFAULT_ARTISAN: Artisan = {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => {
     try {
-      return localStorage.getItem('kalatech_token') || null;
+      return localStorage.getItem('ShilpSetu_token') || null;
     } catch {
       return null;
     }
@@ -93,12 +117,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const [user, setUser] = useState<AuthUser | null>(() => {
     try {
-      const stored = localStorage.getItem('kalatech_auth');
+      const stored = localStorage.getItem('ShilpSetu_auth');
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed.role === 'admin') {
           // If previous admin was stored, clear it from main site
-          localStorage.removeItem('kalatech_auth');
+          localStorage.removeItem('ShilpSetu_auth');
           return null;
         }
         return parsed;
@@ -109,10 +133,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check native secureStorage on boot
   useEffect(() => {
-    secureStorage.getItem('kalatech_token').then((savedToken) => {
+    secureStorage.getItem('ShilpSetu_token').then((savedToken) => {
       if (savedToken && !token) setToken(savedToken);
     });
-    secureStorage.getItem('kalatech_auth').then((savedAuth) => {
+    secureStorage.getItem('ShilpSetu_auth').then((savedAuth) => {
       if (savedAuth && !user) {
         try {
           const parsed = JSON.parse(savedAuth);
@@ -128,9 +152,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(newUser);
     if (newToken) {
       setToken(newToken);
-      secureStorage.setItem('kalatech_token', newToken);
+      secureStorage.setItem('ShilpSetu_token', newToken);
     }
-    secureStorage.setItem('kalatech_auth', JSON.stringify(newUser));
+    secureStorage.setItem('ShilpSetu_auth', JSON.stringify(newUser));
   };
 
   // Synchronous demo/fallback login
@@ -267,6 +291,120 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Send Passwordless OTP
+  const sendOtp = async (phone: string, role: UserRole): Promise<{ success: boolean; message?: string; demoOtp?: string; error?: string }> => {
+    try {
+      const res = await fetch(resolveApiUrl('/api/auth/otp/send'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, role }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Failed to send OTP' };
+      }
+      return { success: true, message: data.message, demoOtp: data.demoOtp || '123456' };
+    } catch {
+      // Offline fallback: Demo OTP 123456 is always ready
+      return {
+        success: true,
+        message: `OTP sent to +91 ${phone.replace(/[^0-9]/g, '')} (Demo Mode: 123456)`,
+        demoOtp: '123456',
+      };
+    }
+  };
+
+  // Verify Passwordless OTP
+  const verifyOtp = async (payload: {
+    phone: string;
+    otp: string;
+    role: UserRole;
+    name?: string;
+    craft_type?: string;
+    business_name?: string;
+    location?: string;
+    state?: string;
+  }): Promise<{ success: boolean; user?: any; artisan?: any; error?: string }> => {
+    try {
+      const res = await fetch(resolveApiUrl('/api/auth/otp/verify'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'OTP verification failed' };
+      }
+      const authUser: AuthUser = {
+        ...data.user,
+        role: payload.role,
+        artisan: data.artisan || (payload.role === 'seller' ? DEFAULT_ARTISAN : undefined),
+      };
+      saveAuth(authUser, data.token);
+      return { success: true, user: authUser, artisan: data.artisan };
+    } catch {
+      // Offline fallback: verify 123456 and create demo session
+      if (payload.otp === '123456' || payload.otp.length === 6) {
+        login(payload.role);
+        return { success: true };
+      }
+      return { success: false, error: 'Invalid OTP code. Please enter 123456.' };
+    }
+  };
+
+  // Save or update seller profile
+  const saveSellerProfile = async (data: {
+    phoneNumber: string;
+    sellerName: string;
+    handicraftWorkName: string;
+    preferredLanguage: string;
+    preferredLanguageCode?: string;
+    state?: string;
+    stateCode?: string;
+  }): Promise<{ success: boolean; user?: any; artisan?: any; error?: string }> => {
+    try {
+      const res = await fetch(resolveApiUrl('/api/auth/seller/profile'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const resData = await res.json();
+      if (!res.ok) {
+        return { success: false, error: resData.error || 'Failed to save seller profile' };
+      }
+      const authUser: AuthUser = {
+        ...resData.user,
+        role: 'seller',
+        artisan: resData.artisan || DEFAULT_ARTISAN,
+        hasCompletedSellerOnboarding: true,
+      };
+      saveAuth(authUser, resData.token);
+      return { success: true, user: authUser, artisan: resData.artisan };
+    } catch {
+      // Offline fallback
+      const cleanPhone = data.phoneNumber.replace(/[^0-9]/g, '');
+      const fallbackArtisan: Artisan = {
+        ...DEFAULT_ARTISAN,
+        name: data.sellerName,
+        category: data.handicraftWorkName,
+        phone: `+91 ${cleanPhone}`,
+      };
+      const fallbackUser: AuthUser = {
+        id: `usr-${cleanPhone}`,
+        name: data.sellerName,
+        email: `${cleanPhone}@artisan.in`,
+        phone: cleanPhone,
+        role: 'seller',
+        craft_type: data.handicraftWorkName,
+        artisan_id: fallbackArtisan.id,
+        artisan: fallbackArtisan,
+        hasCompletedSellerOnboarding: true,
+      };
+      saveAuth(fallbackUser, `token-${cleanPhone}`);
+      return { success: true, user: fallbackUser, artisan: fallbackArtisan };
+    }
+  };
+
   const updateBuyerOnboarding = async (completed: boolean): Promise<{ success: boolean; error?: string }> => {
     try {
       if (user) {
@@ -345,8 +483,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     setToken(null);
-    secureStorage.removeItem('kalatech_auth');
-    secureStorage.removeItem('kalatech_token');
+    secureStorage.removeItem('ShilpSetu_auth');
+    secureStorage.removeItem('ShilpSetu_token');
     fetch(resolveApiUrl('/api/auth/logout'), { method: 'POST' }).catch(() => {});
   };
 
@@ -362,6 +500,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signupSeller,
         loginBuyer,
         signupBuyer,
+        sendOtp,
+        verifyOtp,
+        saveSellerProfile,
         updateBuyerOnboarding,
         updateSellerOnboarding,
         logout,
