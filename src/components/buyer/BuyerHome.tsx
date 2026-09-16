@@ -121,15 +121,15 @@ export function BuyerHome() {
       </section>
 
       {/* Craft Categories */}
-      <section className="space-y-4">
+      <section className="space-y-4 animate-fade-in-up">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-stone-900 font-['Rozha_One',serif]">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#262220] font-['Rozha_One',serif]">
               {t.categories}
             </h2>
-            <p className="text-xs text-stone-500">Explore traditional craft traditions across India</p>
+            <p className="text-xs text-[#78716c]">Explore traditional craft traditions across India</p>
           </div>
-          <Link to="/buyer/browse" className="text-xs font-bold text-amber-700 hover:underline flex items-center gap-1">
+          <Link to="/buyer/browse" className="text-xs font-bold text-[#9c4124] hover:underline flex items-center gap-1">
             See All <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -139,10 +139,10 @@ export function BuyerHome() {
             <div
               key={cat.name}
               onClick={() => navigate(`/buyer/browse?category=${encodeURIComponent(cat.name)}`)}
-              className="bg-white p-4 rounded-2xl border border-stone-200 hover:border-amber-400 hover:shadow-md transition-all cursor-pointer text-center group"
+              className="bg-white p-4 rounded-2xl border border-[#eadfd4] hover:border-[#9c4124] hover:shadow-md hover:-translate-y-1 transition-all duration-200 cursor-pointer text-center group shadow-2xs"
             >
               <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{cat.emoji}</div>
-              <h3 className="text-xs font-bold text-stone-800 group-hover:text-amber-700">{cat.name}</h3>
+              <h3 className="text-xs font-bold text-[#262220] group-hover:text-[#9c4124] transition-colors">{cat.name}</h3>
             </div>
           ))}
         </div>
@@ -152,10 +152,10 @@ export function BuyerHome() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-stone-900 font-['Rozha_One',serif]">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#262220] font-['Rozha_One',serif]">
               {t.popularProducts}
             </h2>
-            <p className="text-xs text-stone-500">Curated handcrafted masterpieces available for direct purchase</p>
+            <p className="text-xs text-[#78716c]">Curated handcrafted masterpieces available for direct purchase</p>
           </div>
         </div>
 
@@ -171,10 +171,10 @@ export function BuyerHome() {
                 <div
                   key={prod.id}
                   onClick={() => navigate(`/buyer/product/${prod.id}`)}
-                  className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col group cursor-pointer"
+                  className="bg-white rounded-2xl border border-[#eadfd4] overflow-hidden shadow-xs hover:shadow-[0_12px_28px_-6px_rgba(156,65,36,0.14)] hover:border-[#c85a32] hover:-translate-y-1 transition-all duration-200 flex flex-col group cursor-pointer"
                 >
                   {/* Image container */}
-                  <div className="relative aspect-square bg-stone-100 overflow-hidden">
+                  <div className="relative aspect-square bg-[#faf7f2] overflow-hidden">
                     {img ? (
                       <img
                         src={img}
@@ -190,7 +190,7 @@ export function BuyerHome() {
                     {/* Wishlist Button */}
                     <button
                       onClick={(e) => toggleWishlist(e, prod)}
-                      className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur transition-all ${
+                      className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur transition-all active:scale-90 ${
                         inWishlist
                           ? 'bg-red-50 text-red-600 shadow-md'
                           : 'bg-white/80 text-stone-600 hover:text-red-500 hover:bg-white'
@@ -201,7 +201,7 @@ export function BuyerHome() {
                     </button>
 
                     {/* Fair-Trade Badge */}
-                    <span className="absolute bottom-3 left-3 px-2 py-0.5 rounded-full bg-stone-900/80 backdrop-blur text-[10px] font-bold text-amber-300 flex items-center gap-1">
+                    <span className="absolute bottom-3 left-3 px-2 py-0.5 rounded-full bg-[#1e1b4b]/90 backdrop-blur text-[10px] font-bold text-amber-200 flex items-center gap-1 shadow-2xs">
                       <ShieldCheck className="w-3 h-3 text-emerald-400" />
                       Fair Trade
                     </span>
@@ -210,33 +210,33 @@ export function BuyerHome() {
                   {/* Body Content */}
                   <div className="p-4 flex-1 flex flex-col justify-between">
                     <div>
-                      <div className="flex items-center justify-between text-[11px] text-stone-500 mb-1">
-                        <span className="font-semibold text-amber-800">{prod.category}</span>
+                      <div className="flex items-center justify-between text-[11px] text-[#78716c] mb-1">
+                        <span className="font-semibold text-[#9c4124]">{prod.category}</span>
                         <span className="flex items-center gap-0.5">
                           <MapPin className="w-2.5 h-2.5 text-stone-400" /> {prod.artisan_district || prod.artisan_state || 'India'}
                         </span>
                       </div>
 
-                      <h3 className="font-bold text-stone-900 text-sm line-clamp-1 group-hover:text-amber-700 transition-colors">
+                      <h3 className="font-bold text-[#262220] text-sm line-clamp-1 group-hover:text-[#9c4124] transition-colors">
                         {prod.translations?.[language]?.title || prod.title}
                       </h3>
 
-                      <p className="text-xs text-stone-500 mt-1 line-clamp-2">
+                      <p className="text-xs text-[#57534e] mt-1 line-clamp-2 leading-relaxed">
                         {prod.translations?.[language]?.description || prod.description}
                       </p>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between">
+                    <div className="mt-4 pt-3 border-t border-[#eadfd4] flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] text-stone-400 uppercase font-bold">Artisan Price</span>
-                        <p className="text-base font-black text-stone-900">
+                        <span className="text-[10px] text-[#78716c] uppercase font-bold">Artisan Price</span>
+                        <p className="text-base font-black text-[#262220]">
                           {formatINR(prod.final_price || 2500)}
                         </p>
                       </div>
 
                       <button
                         onClick={(e) => addToCart(e, prod)}
-                        className="p-2.5 bg-stone-900 hover:bg-amber-600 text-white rounded-xl transition-colors shadow-xs"
+                        className="p-2.5 bg-[#9c4124] hover:bg-[#83341b] text-white rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer"
                         title={t.addToCart}
                       >
                         <ShoppingCart className="w-4 h-4" />

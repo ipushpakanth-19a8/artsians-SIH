@@ -118,12 +118,12 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
             {/* Artisan Journey Game Tutorial Trigger */}
             <button
               onClick={() => openWelcomeModal()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 border border-amber-300/80 text-amber-950 text-xs font-black transition-all shadow-2xs cursor-pointer active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#fff7ed] hover:bg-[#ffedd5] border border-[#fed7aa] text-[#9c4124] text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
               title="Start the interactive Artisan Journey game tutorial"
             >
               <span className="text-sm">🌱</span>
               <span className="hidden sm:inline">Artisan Journey</span>
-              <span className="bg-amber-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="bg-[#9c4124] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider">
                 9 Levels
               </span>
             </button>

@@ -312,7 +312,7 @@ export function SellerLayout() {
             {/* Step-by-Step App Tour Button on Mobile */}
             <button
               onClick={() => setManualTourOpen(true)}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 text-white text-[11px] font-black cursor-pointer shadow-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#9c4124] hover:bg-[#83341b] text-white text-xs font-bold cursor-pointer shadow-xs active:scale-95 transition-all"
               title="Voice step-by-step tutorial on how to use the app"
             >
               <Volume2 className="w-3.5 h-3.5 animate-pulse" />

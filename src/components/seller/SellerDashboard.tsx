@@ -105,15 +105,15 @@ export function SellerDashboard() {
       {/* ================================================== */}
       {/* 1. TOP SECTION: HUMAN WARM GREETING + AUDIO LISTEN */}
       {/* ================================================== */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-[0_2px_12px_-3px_rgba(38,34,32,0.06)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in-up">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fdf2e9] text-[#9c4124] text-xs font-black uppercase tracking-wider mb-2 border border-[#f8d7c2]">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fff7ed] text-[#9c4124] text-xs font-black uppercase tracking-wider mb-2 border border-[#fed7aa] shadow-2xs">
             <span>{t.digitalBusinessAssistant}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-[#262220] font-['Rozha_One',serif] tracking-tight">
             {t.goodMorningGreeting}, {artisanName} 👋
           </h1>
-          <p className="text-sm text-stone-600 font-medium mt-1">
+          <p className="text-sm text-[#57534e] font-medium mt-1">
             {t.dashboardSubtitle}
           </p>
         </div>
@@ -122,10 +122,10 @@ export function SellerDashboard() {
           <ShowMeButton missionId="meet-shop" />
           <button
             onClick={handleListenSummary}
-            className="artisan-listen-btn cursor-pointer py-2 px-3.5 text-xs shadow-xs"
+            className="artisan-listen-btn cursor-pointer py-2 px-3.5 text-xs shadow-2xs"
             title="Listen to your business summary"
           >
-            <Volume2 className="w-4 h-4" />
+            <Volume2 className="w-4 h-4 text-[#9c4124]" />
             <span>{t.listenToSummary}</span>
           </button>
         </div>
@@ -134,66 +134,66 @@ export function SellerDashboard() {
       {/* ================================================== */}
       {/* 2. BUSINESS SNAPSHOT (5 Simple Action Cards) */}
       {/* ================================================== */}
-      <div data-tutorial="dashboard-snapshot">
+      <div data-tutorial="dashboard-snapshot" className="animate-fade-in-up">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-[#262220] flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-[#9c4124]" />
             <span>{t.businessSnapshot}</span>
           </h2>
-          <span className="text-xs text-stone-500 font-semibold">
+          <span className="text-xs text-[#78716c] font-semibold">
             {t.directSalesZeroCommission}
           </span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
           {/* 1. Products Listed */}
-          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#eadfd4] shadow-xs">
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-[#9c4124] flex items-center justify-center mb-2.5 font-bold">
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#eadfd4] shadow-xs hover:shadow-md hover:border-[#c85a32] hover:-translate-y-0.5 transition-all duration-200">
+            <div className="w-9 h-9 rounded-xl bg-[#fff7ed] text-[#9c4124] border border-[#fed7aa] flex items-center justify-center mb-2.5 font-bold">
               <Package className="w-5 h-5" />
             </div>
-            <p className="text-xs text-stone-500 font-bold">{t.productsListed}</p>
+            <p className="text-xs text-[#78716c] font-bold">{t.productsListed}</p>
             <p className="text-xl sm:text-2xl font-black text-[#262220] mt-0.5">{dashData?.productsCount || 8}</p>
-            <span className="text-[10px] text-emerald-700 font-bold mt-1 block">Active online</span>
+            <span className="text-[10px] text-[#15803d] font-bold mt-1 block">Active online</span>
           </div>
 
           {/* 2. Orders Received */}
-          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#eadfd4] shadow-xs">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center mb-2.5 font-bold">
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#eadfd4] shadow-xs hover:shadow-md hover:border-[#3730a3] hover:-translate-y-0.5 transition-all duration-200">
+            <div className="w-9 h-9 rounded-xl bg-[#eef2ff] text-[#3730a3] border border-[#c7d2fe] flex items-center justify-center mb-2.5 font-bold">
               <ShoppingCart className="w-5 h-5" />
             </div>
-            <p className="text-xs text-stone-500 font-bold">{t.totalOrdersReceived}</p>
+            <p className="text-xs text-[#78716c] font-bold">{t.totalOrdersReceived}</p>
             <p className="text-xl sm:text-2xl font-black text-[#262220] mt-0.5">{dashData?.ordersCount || 14}</p>
-            <span className="text-[10px] text-blue-700 font-bold mt-1 block">All fulfilled directly</span>
+            <span className="text-[10px] text-[#3730a3] font-bold mt-1 block">All fulfilled directly</span>
           </div>
 
           {/* 3. Direct Revenue */}
-          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#eadfd4] shadow-xs">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center mb-2.5 font-bold">
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#eadfd4] shadow-xs hover:shadow-md hover:border-[#15803d] hover:-translate-y-0.5 transition-all duration-200">
+            <div className="w-9 h-9 rounded-xl bg-[#dcfce7] text-[#15803d] border border-[#bbf7d0] flex items-center justify-center mb-2.5 font-bold">
               <DollarSign className="w-5 h-5" />
             </div>
-            <p className="text-xs text-stone-500 font-bold">{t.netRevenue}</p>
-            <p className="text-xl sm:text-2xl font-black text-emerald-950 mt-0.5">{formatINR(dashData?.totalOrderRevenue || 28450)}</p>
-            <span className="text-[10px] text-emerald-700 font-bold mt-1 block">100% bank settled</span>
+            <p className="text-xs text-[#78716c] font-bold">{t.netRevenue}</p>
+            <p className="text-xl sm:text-2xl font-black text-[#14532d] mt-0.5">{formatINR(dashData?.totalOrderRevenue || 28450)}</p>
+            <span className="text-[10px] text-[#15803d] font-bold mt-1 block">100% bank settled</span>
           </div>
 
           {/* 4. Pending Orders */}
-          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-orange-200 bg-orange-50/30 shadow-xs">
-            <div className="w-9 h-9 rounded-xl bg-orange-100 text-orange-800 flex items-center justify-center mb-2.5 font-bold">
+          <div className="bg-[#fff7ed] p-4 sm:p-5 rounded-2xl border border-[#fed7aa] shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+            <div className="w-9 h-9 rounded-xl bg-white text-[#9c4124] border border-[#fed7aa] flex items-center justify-center mb-2.5 font-bold">
               <Clock className="w-5 h-5" />
             </div>
-            <p className="text-xs text-orange-950 font-bold">{t.pendingOrders}</p>
-            <p className="text-xl sm:text-2xl font-black text-orange-800 mt-0.5">3</p>
-            <span className="text-[10px] text-orange-700 font-bold mt-1 block">Pack & dispatch</span>
+            <p className="text-xs text-[#9c4124] font-bold">{t.pendingOrders}</p>
+            <p className="text-xl sm:text-2xl font-black text-[#7c2d12] mt-0.5">3</p>
+            <span className="text-[10px] text-[#9c4124] font-bold mt-1 block">Pack & dispatch</span>
           </div>
 
           {/* 5. Product Views */}
-          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#eadfd4] shadow-xs col-span-2 sm:col-span-1">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-2.5 font-bold">
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#eadfd4] shadow-xs hover:shadow-md hover:border-[#c85a32] hover:-translate-y-0.5 transition-all duration-200 col-span-2 sm:col-span-1">
+            <div className="w-9 h-9 rounded-xl bg-[#faf7f2] text-[#9c4124] border border-[#eadfd4] flex items-center justify-center mb-2.5 font-bold">
               <Eye className="w-5 h-5" />
             </div>
-            <p className="text-xs text-stone-500 font-bold">{t.productViews}</p>
+            <p className="text-xs text-[#78716c] font-bold">{t.productViews}</p>
             <p className="text-xl sm:text-2xl font-black text-[#262220] mt-0.5">482</p>
-            <span className="text-[10px] text-emerald-700 font-bold mt-1 block">+18% this week</span>
+            <span className="text-[10px] text-[#15803d] font-bold mt-1 block">+18% this week</span>
           </div>
         </div>
       </div>
@@ -217,7 +217,7 @@ export function SellerDashboard() {
           <button
             data-tutorial="action-add-product"
             onClick={() => navigate('/seller/add')}
-            className="p-5 rounded-2xl bg-[#9c4124] text-white flex items-center gap-4 text-left shadow-sm hover:bg-[#83341b] transition-all active:scale-[0.98] cursor-pointer group"
+            className="p-5 rounded-2xl bg-[#9c4124] text-white flex items-center gap-4 text-left shadow-sm hover:bg-[#83341b] artisan-btn-glow transition-all active:scale-[0.98] cursor-pointer group"
           >
             <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
               <PlusCircle className="w-6 h-6 text-white" />

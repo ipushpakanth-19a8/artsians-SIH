@@ -22,63 +22,63 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
   return (
     <section aria-labelledby="artisan-gateway-heading" className="w-full max-w-4xl mx-auto">
       {/* Title & Speech helper */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-8 animate-fade-in-up">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <span className="px-3.5 py-1 rounded-full bg-amber-100 text-amber-950 text-xs font-black tracking-wider uppercase border border-amber-300">
+          <span className="px-3.5 py-1 rounded-full bg-[#fff7ed] text-[#9c4124] text-xs font-black tracking-wider uppercase border border-[#fed7aa] shadow-2xs">
             {language === 'hi' ? 'कारीगर डिजिटल प्रवेश' : language === 'te' ? 'కళాకారుల డిజిటల్ ప్రవేశం' : 'Artisan Digital Onboarding'}
           </span>
           {onSpeak && (
             <button
               onClick={() => onSpeak(t.roleArtisanTitle + '. ' + t.roleArtisanDesc + '. ' + t.roleArtisanPoints.join('. '))}
-              className="p-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all text-xs font-bold flex items-center gap-1 cursor-pointer"
+              className="p-1.5 rounded-xl bg-white hover:bg-[#faf7f2] text-[#9c4124] border border-[#eadfd4] hover:border-[#c85a32] transition-all text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95"
               title={t.voiceListen}
             >
-              <Volume2 className="w-3.5 h-3.5 text-amber-700" />
-              <span className="hidden sm:inline">{t.voiceListen}</span>
+              <Volume2 className="w-3.5 h-3.5 text-[#9c4124]" />
+              <span className="hidden sm:inline font-semibold">{t.voiceListen}</span>
             </button>
           )}
         </div>
 
-        <h2 id="artisan-gateway-heading" className="text-2xl sm:text-4xl font-black text-stone-900 mb-3 tracking-tight font-['Rozha_One',serif]">
+        <h2 id="artisan-gateway-heading" className="text-2xl sm:text-4xl font-black text-[#262220] mb-3 tracking-tight font-['Rozha_One',serif]">
           {t.roleArtisanTitle}
         </h2>
-        <p className="text-base sm:text-lg font-medium text-stone-600 max-w-xl mx-auto">
+        <p className="text-base sm:text-lg font-medium text-[#57534e] max-w-xl mx-auto leading-relaxed">
           {t.roleArtisanDesc}
         </p>
       </div>
 
       {/* DEDICATED ARTISAN PORTAL CARD (NO BUYER PORTAL) */}
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto animate-scale-in">
         <div
           tabIndex={0}
           role="button"
           onClick={onSelectArtisan}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectArtisan(); } }}
-          className="group relative rounded-3xl border-2 border-amber-300 bg-gradient-to-b from-amber-50 via-white to-orange-50/50 p-6 sm:p-10 hover:shadow-2xl hover:border-amber-500 transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between focus:outline-none focus:ring-4 focus:ring-amber-400"
+          className="group relative rounded-3xl border border-[#eadfd4] bg-white p-6 sm:p-10 hover:border-[#c85a32] hover:shadow-[0_16px_36px_-8px_rgba(156,65,36,0.14)] transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between focus:outline-none focus:ring-4 focus:ring-[#c85a32]/20 shadow-[0_2px_12px_-3px_rgba(38,34,32,0.06)]"
         >
           <div>
             {/* Big Icon & Badge */}
             <div className="flex items-center justify-between mb-6">
-              <div className="w-18 h-18 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center text-4xl shadow-lg shadow-amber-600/30 group-hover:scale-105 transition-transform">
+              <div className="w-18 h-18 rounded-2xl bg-[#9c4124] text-white flex items-center justify-center text-4xl shadow-md shadow-[#9c4124]/20 group-hover:scale-105 transition-transform">
                 🧑‍🎨
               </div>
-              <span className="px-3.5 py-1.5 rounded-full bg-amber-200/80 text-amber-950 text-xs font-extrabold border border-amber-300 shadow-xs">
+              <span className="px-3.5 py-1.5 rounded-full bg-[#fff7ed] text-[#9c4124] text-xs font-extrabold border border-[#fed7aa] shadow-2xs">
                 {t.roleArtisanBadge}
               </span>
             </div>
 
-            <h3 className="text-2xl sm:text-3xl font-black text-stone-900 mb-3 leading-tight font-['Rozha_One',serif]">
+            <h3 className="text-2xl sm:text-3xl font-black text-[#262220] mb-3 leading-tight font-['Rozha_One',serif]">
               {language === 'hi' ? 'अपनी हस्तशिल्प दुकान शुरू करें' : language === 'te' ? 'మీ చేతివృత్తి దుకాణాన్ని ప్రారంభించండి' : 'Start Your Handcrafted Digital Shop'}
             </h3>
-            <p className="text-stone-700 text-base sm:text-lg font-bold mb-6 leading-relaxed">
+            <p className="text-[#57534e] text-base sm:text-lg font-medium mb-6 leading-relaxed">
               "{t.roleArtisanDesc}"
             </p>
 
             {/* Key Value Points */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
               {t.roleArtisanPoints.map((pt, i) => (
-                <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/80 border border-amber-200/70 text-stone-800 text-sm font-semibold shadow-2xs">
-                  <CheckCircle2 className="w-4.5 h-4.5 text-amber-600 shrink-0" />
+                <div key={i} className="flex items-center gap-2.5 p-3 rounded-xl bg-[#faf7f2] border border-[#eadfd4] text-[#262220] text-sm font-semibold shadow-2xs">
+                  <CheckCircle2 className="w-4.5 h-4.5 text-[#15803d] shrink-0" />
                   <span>{pt}</span>
                 </div>
               ))}
@@ -90,10 +90,10 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
               e.stopPropagation();
               onSelectArtisan();
             }}
-            className="w-full min-h-[56px] py-4 px-8 rounded-2xl font-black text-lg text-white bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:to-orange-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-amber-900/20 active:scale-98 cursor-pointer"
+            className="w-full min-h-[56px] py-4 px-8 rounded-2xl font-bold text-lg text-white bg-[#9c4124] hover:bg-[#83341b] artisan-btn-glow transition-all duration-200 flex items-center justify-center gap-3 shadow-md shadow-[#9c4124]/25 active:scale-[0.98] cursor-pointer"
           >
             <span>{t.roleArtisanCta}</span>
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
           </button>
         </div>
       </div>

@@ -60,13 +60,13 @@ export function AdminApp() {
       <aside className="hidden lg:flex flex-col w-64 bg-slate-900 border-r border-slate-800 fixed h-full z-30">
         {/* Brand Header */}
         <div className="p-5 border-b border-slate-800 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-600 to-amber-700 flex items-center justify-center text-white font-black text-base shadow-lg shadow-red-950/50 border border-red-500/30">
+          <div className="w-10 h-10 rounded-2xl bg-[#9c4124] flex items-center justify-center text-white font-black text-base shadow-lg shadow-[#9c4124]/30 border border-[#c85a32]/30">
             AD
           </div>
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-white font-['Rozha_One',serif]">ShilpSetu</span>
-              <span className="px-1.5 py-0.2 bg-red-600 text-white rounded text-[9px] font-black uppercase">ADMIN</span>
+              <span className="px-1.5 py-0.2 bg-[#9c4124] text-white rounded text-[9px] font-black uppercase">ADMIN</span>
             </div>
             <p className="text-[10px] text-slate-400 font-semibold tracking-wider">ShilpSetu Governance</p>
           </div>
@@ -78,9 +78,9 @@ export function AdminApp() {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer active:scale-[0.98] ${
                 activeTab === item.id
-                  ? 'bg-red-600 text-white shadow-md shadow-red-950/40'
+                  ? 'bg-[#9c4124] text-white shadow-md shadow-[#9c4124]/30'
                   : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
               }`}
             >

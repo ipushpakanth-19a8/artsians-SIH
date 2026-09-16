@@ -1,5 +1,5 @@
-import React from 'react';
-import { Camera, Sparkles, Tag, DollarSign, ShoppingBag, ArrowRight, CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Camera, Sparkles, Tag, DollarSign, ShoppingBag, ArrowRight, CheckCircle2, ChevronRight } from 'lucide-react';
 import { LanguageCode } from '../../types';
 
 interface CraftJourneyDiagramProps {
@@ -7,87 +7,84 @@ interface CraftJourneyDiagramProps {
 }
 
 export const CraftJourneyDiagram: React.FC<CraftJourneyDiagramProps> = ({ language }) => {
+  const [activeStepId, setActiveStepId] = useState<string>('enhance');
+
   const steps = [
     {
       id: 'photo',
       stepNum: '1',
-      titleEn: 'Photo',
-      titleHi: 'फ़ोटो',
-      titleTe: 'ఫోటో',
-      descEn: 'Take phone photo of your craft',
-      descHi: 'फ़ोन से शिल्प की सामान्य फ़ोटो लें',
-      descTe: 'ఫోన్ కెమెరాతో ఫోటో తీయండి',
+      titleEn: 'Photo Capture',
+      titleHi: 'फ़ोटो लें',
+      titleTe: 'ఫోటో తీయండి',
+      descEn: 'Point & snap a simple photo of your handcrafted item with any phone camera.',
+      descHi: 'फ़ोन से शिल्प की सामान्य फ़ोटो लें, किसी विशेष कैमरे की आवश्यकता नहीं।',
+      descTe: 'సాధారణ ఫోన్ కెమెరాతో మీ చేతివృత్తి వస్తువును ఫోటో తీయండి.',
       icon: Camera,
-      badgeEn: 'Phone Camera',
+      badgeEn: 'Any Phone Camera',
       badgeHi: 'मोबाइल कैमरा',
       badgeTe: 'ఫోన్ కెమెరా',
-      color: 'bg-amber-50 text-amber-900 border-amber-200',
-      iconColor: 'text-amber-700 bg-amber-100',
+      previewTip: 'Natural sunlight • 3 angles supported',
     },
     {
       id: 'enhance',
       stepNum: '2',
-      titleEn: 'AI Enhance',
-      titleHi: 'AI सुधार',
-      titleTe: 'AI మెరుగుదల',
-      descEn: 'Cleans background & lighting',
-      descHi: 'पृष्ठभूमि व रोशनी अपने-आप साफ़',
-      descTe: 'లైటింగ్ & బ్యాక్‌గ్రౌండ్ సరిచేస్తుంది',
+      titleEn: 'AI Studio Polish',
+      titleHi: 'AI स्टूडियो सुधार',
+      titleTe: 'AI స్టూడియో మెరుగుదల',
+      descEn: 'Sharp AI instantly cleans dark backgrounds and balances shadows for a marketplace look.',
+      descHi: 'पृष्ठभूमि व रोशनी अपने-आप साफ़ होकर स्टूडियो गुणवत्ता की फ़ोटो तैयार होती है।',
+      descTe: 'లైటింగ్ మరియు బ్యాక్‌గ్రౌండ్ సరిచేసి ప్రొఫెషనల్ లుక్ ఇస్తుంది.',
       icon: Sparkles,
       badgeEn: 'Studio Finish',
       badgeHi: 'स्टूडियो फ़िनिश',
       badgeTe: 'స్టూడియో ఫినిష్',
-      color: 'bg-orange-50 text-orange-950 border-orange-200 ring-2 ring-orange-400/40',
-      iconColor: 'text-orange-700 bg-orange-100',
+      previewTip: 'Automated 4K clarity • 0 editing needed',
       highlight: true,
     },
     {
       id: 'listing',
       stepNum: '3',
-      titleEn: 'Product Listing',
-      titleHi: 'उत्पाद सूची',
-      titleTe: 'ఉత్పత్తి జాబితా',
-      descEn: 'AI writes craft story & details',
-      descHi: 'विरासत कथा व विवरण तैयार',
-      descTe: 'కళా కథనం & వివరాలు సిద్ధం',
+      titleEn: 'Multilingual Story',
+      titleHi: 'बहुभाषी विवरण',
+      titleTe: 'బహుభాషా కథనం',
+      descEn: 'Speak in your native dialect. Gemini AI writes a heritage story in Hindi, Telugu, and English.',
+      descHi: 'अपनी मातृभाषा में बोलें, AI आपकी विरासत कथा और विवरण स्वतः तैयार करेगा।',
+      descTe: 'మీ సొంత భాషలో మాట్లాడండి, AI కథనం మరియు వివరాలను రికార్డ్ చేస్తుంది.',
       icon: Tag,
-      badgeEn: 'Multilingual',
-      badgeHi: 'बहुभाषी',
-      badgeTe: 'బహుభాషా',
-      color: 'bg-stone-50 text-stone-900 border-stone-200',
-      iconColor: 'text-stone-700 bg-stone-100',
+      badgeEn: '12 Languages',
+      badgeHi: '12 भाषाएं',
+      badgeTe: '12 భాషలు',
+      previewTip: 'Voice-to-text • Cultural story generated',
     },
     {
       id: 'price',
       stepNum: '4',
-      titleEn: 'Fair Price',
-      titleHi: 'उचित मूल्य',
-      titleTe: 'సరసమైన ధర',
-      descEn: 'Living wage + material cost',
-      descHi: 'मेहनत व लागत का सच्चा हिसाब',
-      descTe: 'సరసమైన శ్రమ వేతనం & వ్యయం',
+      titleEn: 'Fair Price Guarantee',
+      titleHi: 'सच्चा उचित मूल्य',
+      titleTe: 'సరసమైన ధర గ్యారెంటీ',
+      descEn: 'Cost-plus formula guarantees fair living hourly wages + materials with full transparent reasoning.',
+      descHi: 'सामग्री की लागत और आपके पूरे श्रम घंटों का सही पारिश्रमिक सुनिश्चित होता है।',
+      descTe: 'ముడిసరుకు ఖర్చు మరియు న్యాయమైన శ్రమ వేతనం లెక్కిస్తుంది.',
       icon: DollarSign,
-      badgeEn: 'Cost-Plus AI',
+      badgeEn: 'Cost-Plus Living Wage',
       badgeHi: 'लागत-जोड़ AI',
       badgeTe: 'కాస్ట్-ప్లస్ AI',
-      color: 'bg-emerald-50 text-emerald-950 border-emerald-200',
-      iconColor: 'text-emerald-700 bg-emerald-100',
+      previewTip: 'Zero distress selling • Certified floor',
     },
     {
       id: 'customer',
       stepNum: '5',
-      titleEn: 'Customer',
-      titleHi: 'सीधा ग्राहक',
-      titleTe: 'కొనుగోలుదారు',
-      descEn: 'Direct order, zero middleman',
-      descHi: 'सीधा ऑर्डर, 0% कमीशन',
-      descTe: 'నేరుగా ఆర్డర్, దళారులు లేరు',
+      titleEn: 'Direct Customer Orders',
+      titleHi: 'सीधे खरीदार',
+      titleTe: 'నేరుగా కొనుగోలుదారులు',
+      descEn: 'Sell directly to nationwide buyers with 0% platform commission and instant direct UPI payouts.',
+      descHi: 'बिचौलियों के बिना सीधा ऑर्डर पाएं, पूरा पैसा सीधे आपके बैंक खाते में।',
+      descTe: 'దళారులు లేకుండా నేరుగా ఆర్డర్లు మరియు పూర్తి UPI చెల్లింపులు పొందండి.',
       icon: ShoppingBag,
-      badgeEn: 'Direct Sales',
+      badgeEn: '0% Commission UPI',
       badgeHi: 'सीधी बिक्री',
       badgeTe: 'నేరుగా అమ్మకాలు',
-      color: 'bg-stone-50 text-stone-900 border-stone-200',
-      iconColor: 'text-stone-800 bg-stone-100',
+      previewTip: 'Instant SMS alert • 100% your money',
     },
   ];
 
@@ -109,13 +106,15 @@ export const CraftJourneyDiagram: React.FC<CraftJourneyDiagramProps> = ({ langua
     return s.badgeEn;
   };
 
+  const activeStep = steps.find(s => s.id === activeStepId) || steps[1];
+
   return (
-    <div className="w-full bg-white rounded-3xl p-5 sm:p-7 border border-[#eadfd4] shadow-sm relative overflow-hidden text-left">
+    <div className="w-full bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-[0_4px_24px_-4px_rgba(38,34,32,0.06)] relative overflow-hidden text-left animate-fade-in-up">
       {/* Top Banner Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-[#eadfd4]">
         <div className="flex items-center gap-2.5">
           <span className="w-2.5 h-2.5 rounded-full bg-[#c85a32] animate-pulse" />
-          <span className="text-xs font-bold uppercase tracking-wider text-[#9c4124]">
+          <span className="text-xs font-black uppercase tracking-wider text-[#9c4124]">
             {language === 'hi'
               ? 'आसान डिजिटल यात्रा • 5 कदम'
               : language === 'te'
@@ -123,70 +122,103 @@ export const CraftJourneyDiagram: React.FC<CraftJourneyDiagramProps> = ({ langua
               : 'Simple 5-Step Artisan Journey'}
           </span>
         </div>
-        <div className="inline-flex items-center gap-1.5 text-xs text-stone-600 font-semibold bg-[#faf7f2] px-3 py-1 rounded-full border border-[#eadfd4]">
-          <span>Photo</span>
-          <span className="text-stone-400">→</span>
-          <span className="text-[#9c4124] font-bold">AI Enhancement</span>
-          <span className="text-stone-400">→</span>
-          <span>Listing</span>
-          <span className="text-stone-400">→</span>
-          <span className="text-emerald-700 font-bold">Price</span>
-          <span className="text-stone-400">→</span>
-          <span>Customer</span>
+        <div className="inline-flex items-center gap-1.5 text-xs text-[#57534e] font-semibold bg-[#faf7f2] px-3.5 py-1.5 rounded-full border border-[#eadfd4]">
+          <span className="font-bold text-[#9c4124]">Tap any step to see details</span>
         </div>
       </div>
 
-      {/* 5 Step Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 relative">
-        {steps.map((step, idx) => (
-          <div
-            key={step.id}
-            className={`relative rounded-2xl p-4 border transition-all flex flex-col justify-between ${step.color} ${
-              step.highlight ? 'shadow-md shadow-orange-900/5' : ''
-            }`}
-          >
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black ${step.iconColor}`}>
-                  <step.icon className="w-5 h-5" />
+      {/* 5 Step Interactive Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 relative mb-6">
+        {steps.map((step) => {
+          const isSelected = activeStepId === step.id;
+          return (
+            <button
+              key={step.id}
+              type="button"
+              onClick={() => setActiveStepId(step.id)}
+              className={`text-left rounded-2xl p-4 border transition-all duration-200 flex flex-col justify-between cursor-pointer relative group active:scale-[0.98] ${
+                isSelected
+                  ? 'bg-white border-[#9c4124] shadow-md ring-2 ring-[#9c4124]/15 -translate-y-1'
+                  : 'bg-[#faf7f2] hover:bg-white border-[#eadfd4] hover:border-[#c85a32] hover:-translate-y-0.5'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-black transition-colors ${
+                      isSelected
+                        ? 'bg-[#9c4124] text-white shadow-xs'
+                        : 'bg-white text-[#9c4124] border border-[#fed7aa]'
+                    }`}
+                  >
+                    <step.icon className="w-5 h-5" />
+                  </div>
+                  <span
+                    className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                      isSelected
+                        ? 'bg-[#fff7ed] text-[#9c4124] border-[#fed7aa]'
+                        : 'bg-white text-[#78716c] border-[#eadfd4]'
+                    }`}
+                  >
+                    Step {step.stepNum}
+                  </span>
                 </div>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/80 border border-stone-200/80 text-stone-700">
-                  {getBadge(step)}
-                </span>
-              </div>
 
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="text-xs font-extrabold text-[#9c4124]">{step.stepNum}.</span>
-                <h4 className="font-extrabold text-sm sm:text-base text-stone-900 leading-snug">
+                <h4 className="font-black text-sm text-[#262220] leading-snug mb-1">
                   {getTitle(step)}
                 </h4>
+                <p className="text-[11px] text-[#78716c] line-clamp-2 leading-relaxed">
+                  {getDesc(step)}
+                </p>
               </div>
-              <p className="text-xs text-stone-600 leading-relaxed">
-                {getDesc(step)}
-              </p>
-            </div>
 
-            {/* Desktop Connective indicator */}
-            {idx < steps.length - 1 && (
-              <div className="hidden lg:flex absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 w-5 h-5 rounded-full bg-white text-stone-400 border border-[#eadfd4] items-center justify-center text-[10px] font-bold shadow-xs">
-                →
+              <div className="mt-3 pt-2 border-t border-[#eadfd4]/60 flex items-center justify-between text-[10px] font-bold text-[#9c4124]">
+                <span>{getBadge(step)}</span>
+                <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? 'translate-x-0.5 text-[#9c4124]' : 'text-stone-400'}`} />
               </div>
-            )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Active Step Highlight Drawer */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#faf7f2] border border-[#eadfd4] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in-up">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-[#9c4124] text-white flex items-center justify-center font-bold text-xl shadow-xs shrink-0">
+            <activeStep.icon className="w-6 h-6" />
           </div>
-        ))}
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black uppercase text-[#9c4124] tracking-wide">
+                Step {activeStep.stepNum} • {getBadge(activeStep)}
+              </span>
+            </div>
+            <h5 className="text-base sm:text-lg font-black text-[#262220] font-['Rozha_One',serif]">
+              {getTitle(activeStep)}
+            </h5>
+            <p className="text-xs sm:text-sm text-[#57534e] mt-0.5 leading-relaxed max-w-xl">
+              {getDesc(activeStep)}
+            </p>
+          </div>
+        </div>
+
+        <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-[#eadfd4] text-xs font-bold text-[#9c4124] shadow-2xs self-stretch sm:self-auto justify-center shrink-0">
+          <Sparkles className="w-4 h-4 text-[#d97706]" />
+          <span>{activeStep.previewTip}</span>
+        </div>
       </div>
 
       {/* Reassurance Footer */}
-      <div className="mt-5 pt-3.5 border-t border-[#eadfd4] flex flex-wrap items-center justify-between gap-3 text-xs text-stone-600">
-        <span className="font-medium flex items-center gap-1.5 text-stone-700">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+      <div className="mt-5 pt-3.5 border-t border-[#eadfd4] flex flex-wrap items-center justify-between gap-3 text-xs text-[#57534e]">
+        <span className="font-medium flex items-center gap-1.5 text-[#262220]">
+          <CheckCircle2 className="w-4 h-4 text-[#15803d]" />
           {language === 'hi'
             ? 'बिना किसी तकनीकी ज्ञान के 2 मिनट में अपनी दुकान शुरू करें'
             : language === 'te'
             ? 'ఎటువంటి సాంకేతిక పరిజ్ఞానం లేకుండా 2 నిమిషాల్లో ప్రారంభించండి'
             : 'Start selling in less than 2 minutes without technical complexity'}
         </span>
-        <span className="text-[11px] text-stone-500 font-semibold bg-[#faf7f2] px-2.5 py-1 rounded-lg border border-[#eadfd4]">
+        <span className="text-[11px] text-[#78716c] font-bold bg-[#faf7f2] px-3 py-1 rounded-full border border-[#eadfd4]">
           Zero Commission • 100% Direct UPI Settlement
         </span>
       </div>

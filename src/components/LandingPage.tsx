@@ -122,116 +122,161 @@ export function LandingPage() {
       />
 
       {/* ================================================== */}
-      {/* 1. WARM HERO SECTION */}
+      {/* 1. ASYMMETRIC CRAFT HERO (stitch-design-taste)     */}
       {/* ================================================== */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#faf7f2] via-[#f7f1ea] to-[#faf7f2] pt-8 sm:pt-14 pb-12 sm:pb-16 border-b border-[#eadfd4]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 relative z-10 text-center">
-          {/* Subtle Craft Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fdf2e9] border border-[#f8d7c2] text-[#9c4124] text-xs font-extrabold uppercase tracking-wider mb-4 shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-[#c85a32]" />
-            <span>{t.heroBadge}</span>
-          </div>
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#faf7f2] via-[#f5efeb]/40 to-[#faf7f2] pt-8 sm:pt-14 pb-14 sm:pb-20 border-b border-[#eadfd4]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            
+            {/* Left Column: Editorial Headline & Actions */}
+            <div className="lg:col-span-7 text-left space-y-5 animate-fade-in-up">
+              {/* Subtle Heritage Craft Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fff7ed] border border-[#fed7aa] text-[#9c4124] text-xs font-black uppercase tracking-wider shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 text-[#d97706]" />
+                <span>{t.heroBadge}</span>
+              </div>
 
-          {/* Large Hero Heading */}
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-[#262220] mb-4 tracking-tight leading-[1.15] font-['Rozha_One',serif] max-w-4xl mx-auto">
-            {t.heroHeading}
-          </h1>
+              {/* Large Display Heading in Rozha One */}
+              <h1 className="text-3xl sm:text-5xl lg:text-[3.25rem] font-black text-[#262220] tracking-tight leading-[1.14] font-['Rozha_One',serif]">
+                {t.heroHeading}
+              </h1>
 
-          {/* Supporting Text */}
-          <p className="text-base sm:text-lg text-stone-600 font-medium max-w-2xl mx-auto mb-6 leading-relaxed">
-            {t.heroSub}
-          </p>
+              {/* Empathetic Craft Narrative */}
+              <p className="text-base sm:text-lg text-[#57534e] font-medium leading-relaxed max-w-xl">
+                {t.heroSub}
+              </p>
 
-          {/* Artisan Journey Interactive Game Banner */}
-          <div className="flex flex-wrap items-center justify-center gap-2.5 max-w-xl mx-auto mb-7">
-            <button
-              onClick={() => openWelcomeModal()}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 border border-amber-300 text-amber-950 text-xs sm:text-sm font-black transition-all shadow-2xs cursor-pointer active:scale-98"
-            >
-              <span className="text-base">🌱</span>
-              <span>{t.startArtisanJourney}</span>
-              <span className="bg-[#9c4124] text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                9 Levels
-              </span>
-            </button>
-            <button
-              onClick={() => startDemoJourney()}
-              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-white hover:bg-stone-50 border border-amber-300 text-[#9c4124] text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-98"
-              title="Fast-track to Level 3 for SIH judges & evaluators"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#9c4124]" />
-              <span>⚡ Try 2-Min Demo (Judges)</span>
-            </button>
-          </div>
+              {/* Dual Primary Action CTAs */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                <button
+                  onClick={() => setArtisanModalOpen(true)}
+                  className="min-h-[54px] px-8 py-3.5 rounded-2xl font-bold text-base text-white bg-[#9c4124] hover:bg-[#83341b] artisan-btn-glow shadow-md shadow-[#9c4124]/25 transition-all duration-200 flex items-center justify-center gap-2.5 active:scale-[0.98] cursor-pointer"
+                >
+                  <span>{t.primaryCta}</span>
+                  <ArrowRight className="w-4.5 h-4.5 group-hover:translate-x-1" />
+                </button>
 
-          {/* Action CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-lg mx-auto mb-10">
-            <button
-              onClick={() => setArtisanModalOpen(true)}
-              className="w-full sm:w-auto min-h-[52px] px-8 py-3.5 rounded-2xl font-black text-base text-white bg-[#9c4124] hover:bg-[#83341b] shadow-md shadow-[#9c4124]/20 transition-all flex items-center justify-center gap-2.5 active:scale-98 cursor-pointer"
-            >
-              <span>{t.primaryCta}</span>
-              <ArrowRight className="w-4.5 h-4.5" />
-            </button>
+                <button
+                  onClick={handleStartTutorial}
+                  className="min-h-[54px] px-6 py-3.5 rounded-2xl font-bold text-base text-[#9c4124] bg-white hover:bg-[#fff7ed] border border-[#fed7aa] hover:border-[#9c4124] shadow-2xs transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+                >
+                  <Volume2 className="w-4.5 h-4.5 text-[#9c4124] animate-pulse" />
+                  <span>{t.voiceTourButton}</span>
+                </button>
+              </div>
 
-            {/* Voice Tour with Auto Next Button (Replacing Buyer Portal button) */}
-            <button
-              onClick={handleStartTutorial}
-              className="w-full sm:w-auto min-h-[52px] px-6 py-3.5 rounded-2xl font-bold text-base text-[#9c4124] bg-white hover:bg-[#fdf2e9] border-2 border-[#f8d7c2] shadow-xs transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
-            >
-              <Volume2 className="w-4.5 h-4.5 text-[#9c4124] animate-pulse" />
-              <span>{t.voiceTourButton}</span>
-            </button>
-          </div>
+              {/* Artisan Journey & Fast-Track Evaluator Pill */}
+              <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                <button
+                  onClick={() => openWelcomeModal()}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#fff7ed] hover:bg-[#ffedd5] border border-[#fed7aa] text-[#9c4124] text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
+                >
+                  <span className="text-base">🌱</span>
+                  <span>{t.startArtisanJourney}</span>
+                  <span className="bg-[#9c4124] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                    9 Levels
+                  </span>
+                </button>
 
-          {/* Visual 5-Step Demonstration */}
-          <div className="w-full max-w-4xl mx-auto">
-            <CraftJourneyDiagram language={language} />
+                <button
+                  onClick={() => startDemoJourney()}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-[#faf7f2] border border-[#eadfd4] hover:border-[#9c4124] text-[#9c4124] text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
+                  title="Fast-track to Level 3 for SIH judges & evaluators"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-[#d97706]" />
+                  <span>⚡ 2-Min Demo (Judges)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Right Column: Visual Craft Spotlight Card */}
+            <div className="lg:col-span-5 animate-scale-in">
+              <div className="artisan-card p-5 sm:p-6 relative overflow-hidden bg-white shadow-[0_12px_36px_-6px_rgba(38,34,32,0.08)] border border-[#eadfd4]">
+                {/* Visual Craft Card Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-xl bg-[#fff7ed] border border-[#fed7aa] text-[#9c4124] flex items-center justify-center font-bold text-sm">
+                      🏺
+                    </span>
+                    <div>
+                      <span className="text-xs font-black text-[#262220] block">Terracotta Water Pot</span>
+                      <span className="text-[10px] text-[#78716c] font-semibold">Gorakhpur Clay Heritage</span>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-[#dcfce7] text-[#15803d] border border-[#bbf7d0] text-[10px] font-extrabold uppercase tracking-wide">
+                    GI Certified
+                  </span>
+                </div>
+
+                {/* Craft Image Simulation */}
+                <div className="relative aspect-4/3 rounded-2xl overflow-hidden bg-[#f5efeb] mb-4 border border-[#eadfd4] group">
+                  <img
+                    src="https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80"
+                    alt="Artisan Terracotta Craft"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  {/* Before / After AI Studio Badge */}
+                  <div className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-[#262220]/85 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1.5 shadow-md">
+                    <Sparkles className="w-3 h-3 text-[#fbbf24]" />
+                    <span>AI Studio Enhanced (4K)</span>
+                  </div>
+                  <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-md text-[#9c4124] text-[10px] font-black shadow-xs">
+                    0% Commission
+                  </div>
+                </div>
+
+                {/* Fair-Price Metric Pill */}
+                <div className="p-3 rounded-xl bg-[#faf7f2] border border-[#eadfd4] flex items-center justify-between mb-3">
+                  <div>
+                    <span className="text-[10px] text-[#78716c] font-bold uppercase block">Verified Fair Wage</span>
+                    <span className="text-sm font-black text-[#262220]">₹1,250 <span className="text-[10px] font-bold text-[#15803d]">✓ Cost-Plus Fair Price</span></span>
+                  </div>
+                  <button
+                    onClick={handleListenWelcome}
+                    className="artisan-listen-btn cursor-pointer"
+                    title="Listen to welcome audio"
+                  >
+                    <Volume2 className="w-3.5 h-3.5 text-[#9c4124]" />
+                    <span>Listen</span>
+                  </button>
+                </div>
+
+                <p className="text-[11px] text-[#78716c] text-center font-medium">
+                  Direct artisan payout via instant UPI on every order. Zero middlemen.
+                </p>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
       {/* ================================================== */}
-      {/* 2. SIMPLE 3-STEP INSTRUCTION SECTION */}
+      {/* 2. THE 5-STEP CRAFT JOURNEY (Transparent & Simple) */}
       {/* ================================================== */}
       <section
         ref={tutorialRef}
         id="tutorial-section"
-        className="py-12 sm:py-16 px-4 sm:px-6 max-w-5xl mx-auto"
+        className="py-14 sm:py-20 px-4 sm:px-6 max-w-6xl mx-auto"
       >
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fdf2e9] text-[#9c4124] text-xs font-black uppercase tracking-wider mb-2 border border-[#f8d7c2]">
-            <span>Visual Guidance</span>
+        <div className="text-center mb-8 animate-fade-in-up">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fff7ed] text-[#9c4124] text-xs font-black uppercase tracking-wider mb-2 border border-[#fed7aa] shadow-2xs">
+            <span>Transparent 5-Step Process</span>
           </div>
           <h2 className="text-2xl sm:text-4xl font-black text-[#262220] mb-2 font-['Rozha_One',serif]">
             {t.instructionSectionTitle}
           </h2>
-          <p className="text-sm sm:text-base text-stone-600 font-medium max-w-md mx-auto">
+          <p className="text-sm sm:text-base text-[#57534e] font-medium max-w-xl mx-auto leading-relaxed">
             {t.instructionSectionSub}
           </p>
         </div>
 
-        {/* 3-Step Wizard Component */}
-        <InstructionWizard
-          language={language}
-          currentStep={instructionStep}
-          onStepChange={setInstructionStep}
-          onFinish={handleFinishInstructions}
-          onSpeakInstruction={handleSpeakInstruction}
-          isSpeaking={voice.isPlaying}
-        />
+        {/* The 5-Step Interactive Diagram */}
+        <CraftJourneyDiagram language={language} />
       </section>
 
       {/* ================================================== */}
-      {/* 3. AI CRAFT ASSISTANT DEMONSTRATION (ShilpSetu AI) */}
-      {/* ================================================== */}
-      <section ref={aiRef} className="py-10 sm:py-14 px-4 sm:px-6 max-w-4xl mx-auto">
-        <AIProcessingDemo language={language} onSpeak={handleSpeakInstruction} />
-      </section>
-
-      {/* ================================================== */}
-      {/* ================================================== */}
-      {/* 4. DEDICATED ARTISAN ONBOARDING (NO BUYER PORTAL) */}
+      {/* 3. DEDICATED ARTISAN ONBOARDING GATEWAY           */}
       {/* ================================================== */}
       <section
         ref={roleRef}
@@ -247,23 +292,29 @@ export function LandingPage() {
       </section>
 
       {/* ================================================== */}
-      {/* 5. ETHICAL COMMITMENT & TRUST ASSURANCE */}
+      {/* 4. ETHICAL COMMITMENT & TRUST ASSURANCE           */}
       {/* ================================================== */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-sm text-center">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-xs text-center animate-fade-in-up">
           <div className="flex items-center justify-center gap-2 mb-3">
-            <ShieldCheck className="w-6 h-6 text-emerald-700" />
-            <span className="text-base font-black text-[#262220]">
+            <ShieldCheck className="w-6 h-6 text-[#15803d]" />
+            <span className="text-base sm:text-lg font-black text-[#262220] font-['Rozha_One',serif]">
               {t.ethicalCommitmentTitle}
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-2xl mx-auto mb-4">
+          <p className="text-xs sm:text-sm text-[#57534e] leading-relaxed max-w-2xl mx-auto mb-5">
             {t.ethicalCommitmentDesc}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-bold text-stone-700">
-            <span className="px-3 py-1 bg-[#fdf2e9] border border-[#f8d7c2] text-[#9c4124] rounded-full">✓ 0% Platform Commission on Craft Direct Sales</span>
-            <span className="px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full">✓ Direct UPI & Bank Settlement</span>
-            <span className="px-3 py-1 bg-stone-100 border border-stone-200 text-stone-700 rounded-full">✓ Multilingual Audio Voice Support</span>
+          <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-bold">
+            <span className="px-3.5 py-1.5 bg-[#fff7ed] border border-[#fed7aa] text-[#9c4124] rounded-full shadow-2xs">
+              ✓ 0% Platform Commission on Craft Sales
+            </span>
+            <span className="px-3.5 py-1.5 bg-[#dcfce7] border border-[#bbf7d0] text-[#15803d] rounded-full shadow-2xs">
+              ✓ 100% Direct UPI & Bank Settlement
+            </span>
+            <span className="px-3.5 py-1.5 bg-white border border-[#eadfd4] text-[#262220] rounded-full shadow-2xs">
+              ✓ 12 Regional Indian Languages Supported
+            </span>
           </div>
         </div>
       </section>

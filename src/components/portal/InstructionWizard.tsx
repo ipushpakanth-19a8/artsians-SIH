@@ -171,14 +171,14 @@ export const InstructionWizard: React.FC<InstructionWizardProps> = ({
   return (
     <section aria-labelledby="simple-tutorial-heading" className="w-full max-w-2xl mx-auto">
       {/* Container Card */}
-      <div className="bg-white rounded-3xl p-5 sm:p-8 border-2 border-amber-200/80 shadow-xl shadow-amber-950/5 relative">
+      <div className="bg-white rounded-3xl p-5 sm:p-8 border border-[#eadfd4] shadow-[0_4px_20px_-4px_rgba(38,34,32,0.06)] relative animate-fade-in-up">
         {/* Header with Step Badge, Auto-Play Tour Trigger & Voice Listen */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-stone-100">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-[#eadfd4]">
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-black tracking-wider uppercase border border-amber-300">
+            <span className="px-3 py-1 rounded-full bg-[#fff7ed] text-[#9c4124] text-xs font-black tracking-wider uppercase border border-[#fed7aa] shadow-2xs">
               {current.badge}
             </span>
-            <span className="text-xs text-stone-500 font-semibold">
+            <span className="text-xs text-[#78716c] font-semibold">
               {currentStep + 1} of 3
             </span>
           </div>
@@ -187,10 +187,10 @@ export const InstructionWizard: React.FC<InstructionWizardProps> = ({
             {/* Automatic Voice Guided Tour Button */}
             <button
               onClick={isAutoPlaying ? handleStopAutoPlay : handleStartAutoPlay}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-black transition-all cursor-pointer shadow-xs ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer shadow-2xs ${
                 isAutoPlaying
-                  ? 'bg-amber-600 text-white border-amber-700 animate-pulse'
-                  : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-transparent'
+                  ? 'bg-[#9c4124] text-white border-[#7c2d12] animate-pulse'
+                  : 'bg-[#faf7f2] hover:bg-white text-[#9c4124] border-[#fed7aa] hover:border-[#9c4124]'
               }`}
               title="Sit back: tutorial will speak and advance automatically"
             >
@@ -221,12 +221,12 @@ export const InstructionWizard: React.FC<InstructionWizardProps> = ({
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                 isSpeaking
-                  ? 'bg-amber-100 text-amber-950 border-amber-400 shadow-sm animate-pulse'
-                  : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
+                  ? 'bg-[#fff7ed] text-[#9c4124] border-[#fed7aa] shadow-2xs animate-pulse'
+                  : 'bg-white text-[#9c4124] border-[#eadfd4] hover:bg-[#faf7f2] hover:border-[#c85a32]'
               }`}
               title="Listen to this step with voice guidance"
             >
-              <Volume2 className="w-4 h-4 text-amber-700" />
+              <Volume2 className="w-4 h-4 text-[#9c4124]" />
               <span>{t.voiceListen}</span>
             </button>
           </div>
@@ -234,21 +234,21 @@ export const InstructionWizard: React.FC<InstructionWizardProps> = ({
 
         {/* Status banner when auto-playing */}
         {isAutoPlaying && (
-          <div className="mb-4 py-1.5 px-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-amber-900">
-            <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-spin" />
+          <div className="mb-4 py-1.5 px-3 bg-[#fff7ed] border border-[#fed7aa] rounded-xl flex items-center justify-center gap-2 text-xs font-bold text-[#9c4124] animate-fade-in-up">
+            <Sparkles className="w-3.5 h-3.5 text-[#d97706] animate-spin" />
             <span>Voice tutorial active • Steps advance to next automatically</span>
           </div>
         )}
 
         {/* Big Step Title & Visual Description */}
         <div className="text-center mb-6">
-          <h2 id="simple-tutorial-heading" className="text-2xl sm:text-3xl font-black text-stone-900 mb-2 leading-tight flex items-center justify-center gap-2">
+          <h2 id="simple-tutorial-heading" className="text-2xl sm:text-3xl font-black text-[#262220] mb-2 leading-tight flex items-center justify-center gap-2 font-['Rozha_One',serif]">
             <span>{current.title}</span>
           </h2>
-          <p className="text-lg sm:text-xl font-bold text-stone-700 max-w-lg mx-auto leading-snug">
+          <p className="text-lg sm:text-xl font-bold text-[#3d3835] max-w-lg mx-auto leading-snug">
             "{current.desc}"
           </p>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1.5 max-w-md mx-auto">
+          <p className="text-xs sm:text-sm text-[#78716c] mt-1.5 max-w-md mx-auto">
             {current.detail}
           </p>
         </div>
@@ -264,8 +264,8 @@ export const InstructionWizard: React.FC<InstructionWizardProps> = ({
               onClick={() => onStepChange(idx)}
               className={`transition-all rounded-full ${
                 currentStep === idx
-                  ? 'w-7 h-2.5 bg-gradient-to-r from-amber-600 to-orange-600 shadow-xs'
-                  : 'w-2.5 h-2.5 bg-stone-300 hover:bg-stone-400'
+                  ? 'w-7 h-2.5 bg-[#9c4124] shadow-2xs'
+                  : 'w-2.5 h-2.5 bg-[#eadfd4] hover:bg-[#dccbc0]'
               }`}
               aria-label={`Go to Step ${idx + 1}`}
             />
@@ -273,14 +273,14 @@ export const InstructionWizard: React.FC<InstructionWizardProps> = ({
         </div>
 
         {/* Controls: Prev, Next or Finish */}
-        <div className="flex items-center justify-between gap-3 pt-3 border-t border-stone-100">
+        <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#eadfd4]">
           <button
             onClick={() => onStepChange(Math.max(0, currentStep - 1))}
             disabled={currentStep === 0}
-            className={`min-h-[48px] px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-1.5 transition-all ${
+            className={`min-h-[48px] px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-1.5 transition-all cursor-pointer ${
               currentStep === 0
                 ? 'opacity-0 pointer-events-none'
-                : 'text-stone-700 hover:bg-stone-100 border border-stone-200'
+                : 'text-[#57534e] hover:bg-[#faf7f2] border border-[#eadfd4]'
             }`}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -290,7 +290,7 @@ export const InstructionWizard: React.FC<InstructionWizardProps> = ({
           {currentStep < steps.length - 1 ? (
             <button
               onClick={() => onStepChange(currentStep + 1)}
-              className="min-h-[48px] px-6 py-2.5 rounded-xl font-black text-base text-white bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:to-orange-700 shadow-md hover:shadow-lg transition-all flex items-center gap-2 active:scale-98"
+              className="min-h-[48px] px-6 py-2.5 rounded-xl font-bold text-base text-white bg-[#9c4124] hover:bg-[#83341b] shadow-sm hover:shadow-md transition-all flex items-center gap-2 active:scale-[0.98] cursor-pointer"
             >
               <span>{t.nextStep}</span>
               <ArrowRight className="w-4 h-4" />
@@ -298,7 +298,7 @@ export const InstructionWizard: React.FC<InstructionWizardProps> = ({
           ) : (
             <button
               onClick={onFinish}
-              className="min-h-[48px] px-6 py-2.5 rounded-xl font-black text-base text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 shadow-md hover:shadow-lg transition-all flex items-center gap-2 active:scale-98"
+              className="min-h-[48px] px-6 py-2.5 rounded-xl font-bold text-base text-white bg-[#15803d] hover:bg-[#166534] shadow-sm hover:shadow-md transition-all flex items-center gap-2 active:scale-[0.98] cursor-pointer"
             >
               <span>{t.finishInstructions}</span>
               <ArrowRight className="w-4 h-4" />

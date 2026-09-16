@@ -9,23 +9,72 @@
   --font-devanagari: 'Noto Sans Devanagari', sans-serif;
   --font-telugu: 'Noto Sans Telugu', sans-serif;
 
-  --color-artisan-ochre: #d97706;
-  --color-artisan-terracotta: #c85a32;
-  --color-artisan-clay: #9c4124;
-  --color-artisan-indigo: #3730a3;
-  --color-artisan-emerald: #2e7d32;
-  --color-artisan-silk: #faf7f2;
+  /* Primary Heritage Terracotta / Clay */
+  --color-artisan-clay-950: #431407;
+  --color-artisan-clay-900: #7c2d12;
+  --color-artisan-clay-800: #83341b;
+  --color-artisan-clay-700: #9c4124;
+  --color-artisan-clay-600: #c85a32;
+  --color-artisan-clay-500: #ea580c;
+  --color-artisan-clay-400: #f97316;
+  --color-artisan-clay-200: #fed7aa;
+  --color-artisan-clay-100: #ffedd5;
+  --color-artisan-clay-50: #fff7ed;
+
+  /* Secondary Heritage Royal Indigo */
+  --color-artisan-indigo-950: #0f172a;
+  --color-artisan-indigo-900: #1e1b4b;
+  --color-artisan-indigo-800: #312e81;
+  --color-artisan-indigo-700: #3730a3;
+  --color-artisan-indigo-600: #4338ca;
+  --color-artisan-indigo-100: #e0e7ff;
+  --color-artisan-indigo-50: #eef2ff;
+
+  /* Accent Warm Ochre / Marigold Gold */
+  --color-artisan-ochre-800: #92400e;
+  --color-artisan-ochre-700: #b45309;
+  --color-artisan-ochre-600: #d97706;
+  --color-artisan-ochre-500: #f59e0b;
+  --color-artisan-ochre-400: #fbbf24;
+  --color-artisan-ochre-100: #fef3c7;
+  --color-artisan-ochre-50: #fffbeb;
+
+  /* Earth Neutrals / Raw Silk & Sand */
+  --color-artisan-silk-50: #faf7f2;
+  --color-artisan-silk-100: #f5efeb;
+  --color-artisan-silk-200: #eadfd4;
+  --color-artisan-silk-300: #dccbc0;
   --color-artisan-sand: #f5efeb;
+  --color-artisan-silk: #faf7f2;
   --color-artisan-border: #eadfd4;
+
+  /* Charcoal Typography (Warm Dark Slate, zero pure black) */
+  --color-artisan-charcoal-950: #181514;
+  --color-artisan-charcoal-900: #262220;
+  --color-artisan-charcoal-800: #3d3835;
+  --color-artisan-charcoal-700: #57534e;
+  --color-artisan-charcoal-600: #78716c;
+  --color-artisan-charcoal-500: #a8a29e;
+  --color-artisan-charcoal-300: #d6d3d1;
+  --color-artisan-charcoal-200: #e7e5e4;
   --color-artisan-charcoal: #262220;
+
+  /* Semantic System Feedback */
+  --color-artisan-emerald: #15803d;
+  --color-artisan-emerald-dark: #166534;
+  --color-artisan-emerald-light: #dcfce7;
+  --color-artisan-amber: #b45309;
+  --color-artisan-amber-light: #fef3c7;
+  --color-artisan-rose: #be123c;
+  --color-artisan-rose-light: #ffe4e6;
 }
 
 :root {
   --color-artisan-ochre: #d97706;
   --color-artisan-terracotta: #c85a32;
   --color-artisan-clay: #9c4124;
-  --color-artisan-indigo: #3730a3;
-  --color-artisan-emerald: #2e7d32;
+  --color-artisan-indigo: #1e1b4b;
+  --color-artisan-emerald: #15803d;
   --color-artisan-silk: #faf7f2;
   --color-artisan-sand: #f5efeb;
   --color-artisan-border: #eadfd4;
@@ -70,42 +119,66 @@ body {
   background-color: #ffffff;
   border: 1px solid #eadfd4;
   border-radius: 1rem;
-  box-shadow: 0 1px 3px 0 rgba(38, 34, 32, 0.05), 0 1px 2px -1px rgba(38, 34, 32, 0.05);
+  box-shadow: 0 2px 8px -2px rgba(38, 34, 32, 0.05), 0 1px 3px 0 rgba(38, 34, 32, 0.03);
 }
 
 .artisan-card-warm {
   background-color: #fdfbf7;
   border: 1px solid #eadfd4;
   border-radius: 1rem;
+  box-shadow: 0 2px 6px -2px rgba(38, 34, 32, 0.04);
 }
 
 .artisan-card-interactive {
   background-color: #ffffff;
   border: 1px solid #eadfd4;
   border-radius: 1rem;
-  box-shadow: 0 1px 3px 0 rgba(38, 34, 32, 0.05);
-  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 8px -2px rgba(38, 34, 32, 0.05);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
 }
 .artisan-card-interactive:hover {
   border-color: #c85a32;
-  box-shadow: 0 4px 12px -2px rgba(200, 90, 50, 0.12);
+  box-shadow: 0 10px 24px -4px rgba(156, 65, 36, 0.12), 0 4px 8px -2px rgba(38, 34, 32, 0.04);
   transform: translateY(-2px);
 }
+.artisan-card-interactive:active {
+  transform: scale(0.985);
+}
 
+/* Primary Button with Subtle Glow & Micro-animation */
 .artisan-btn-primary {
   background-color: #9c4124;
   color: #ffffff;
   font-weight: 700;
   border-radius: 0.875rem;
   padding: 0.75rem 1.5rem;
-  box-shadow: 0 2px 6px rgba(156, 65, 36, 0.25);
-  transition: all 0.15s ease-in-out;
+  box-shadow: 0 2px 8px rgba(156, 65, 36, 0.25);
+  transition: background-color 0.18s ease, transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 .artisan-btn-primary:hover {
   background-color: #83341b;
+  box-shadow: 0 4px 14px rgba(156, 65, 36, 0.35);
+  transform: translateY(-1px);
 }
 .artisan-btn-primary:active {
-  transform: scale(0.98);
+  transform: scale(0.975);
+}
+
+/* Glowing Primary CTA for High Importance (e.g. Add Product, Publish) */
+.artisan-btn-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(156, 65, 36, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 18px rgba(200, 90, 50, 0.55);
+  }
 }
 
 .artisan-btn-secondary {
@@ -115,11 +188,21 @@ body {
   font-weight: 600;
   border-radius: 0.875rem;
   padding: 0.75rem 1.25rem;
-  transition: all 0.15s ease-in-out;
+  box-shadow: 0 1px 3px rgba(38, 34, 32, 0.04);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 .artisan-btn-secondary:hover {
   background-color: #f5efeb;
   border-color: #d8c7b8;
+  color: #181514;
+  transform: translateY(-1px);
+}
+.artisan-btn-secondary:active {
+  transform: scale(0.975);
 }
 
 .artisan-listen-btn {
@@ -128,15 +211,21 @@ body {
   gap: 0.375rem;
   padding: 0.375rem 0.75rem;
   border-radius: 9999px;
-  background-color: #fdf2e9;
-  border: 1px solid #f8d7c2;
+  background-color: #fff7ed;
+  border: 1px solid #ffedd5;
   color: #9c4124;
   font-size: 0.75rem;
   font-weight: 700;
-  transition: all 0.15s ease-in-out;
+  box-shadow: 0 1px 2px rgba(156, 65, 36, 0.08);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .artisan-listen-btn:hover {
-  background-color: #fae5d3;
+  background-color: #ffedd5;
+  border-color: #fed7aa;
+  transform: translateY(-1px);
+}
+.artisan-listen-btn:active {
+  transform: scale(0.96);
 }
 
 /* Glassmorphism & Modern Card Accents */
@@ -209,6 +298,91 @@ body {
   animation: shimmer 2s infinite;
 }
 
+/* Entrance, Feedback & Micro-interaction Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes badgePop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shakeX {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+@keyframes spotlightPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 12px rgba(217, 119, 6, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 24px rgba(217, 119, 6, 0.75));
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-badge-pop {
+  animation: badgePop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-shake {
+  animation: shakeX 0.3s ease-in-out;
+}
+
+.animate-spotlight-pulse {
+  animation: spotlightPulse 2.5s ease-in-out infinite;
+}
+
+/* Accessibility: Respect Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Print Styles for Handicraft Bills & Invoices */
 @media print {
   body {
@@ -238,3 +412,4 @@ body {
     size: A4 portrait;
   }
 }
+

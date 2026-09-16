@@ -355,21 +355,21 @@ export const FairPriceBreakdownCard: React.FC<FairPriceBreakdownCardProps> = ({
     : 0;
 
   return (
-    <div className={`bg-white rounded-3xl border border-stone-200 shadow-md p-5 sm:p-7 overflow-hidden relative ${className}`}>
+    <div className={`bg-white rounded-3xl border border-[#eadfd4] shadow-[0_4px_20px_-4px_rgba(38,34,32,0.06)] p-5 sm:p-7 overflow-hidden relative animate-fade-in-up ${className}`}>
       
       {/* Header Badge */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stone-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#eadfd4]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 bg-amber-100 text-amber-900 rounded-lg text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+            <span className="px-2.5 py-1 bg-[#fff7ed] text-[#9c4124] border border-[#fed7aa] rounded-lg text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
+              <Sparkles className="w-3.5 h-3.5 text-[#d97706]" />
               {l.title}
             </span>
-            <span className="text-xs text-stone-400 font-mono">
+            <span className="text-xs text-[#78716c] font-mono">
               {pricing.pricingFormulaVersion || 'v1.0-living-wage'}
             </span>
           </div>
-          <p className="text-xs text-stone-600 mt-1">
+          <p className="text-xs text-[#57534e] mt-1">
             {l.subtitle}
           </p>
         </div>
@@ -380,10 +380,10 @@ export const FairPriceBreakdownCard: React.FC<FairPriceBreakdownCardProps> = ({
           <button
             type="button"
             onClick={handleExplainFairPrice}
-            className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all shadow-sm ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-sm cursor-pointer active:scale-95 ${
               isSpeaking
-                ? 'bg-amber-600 text-white ring-4 ring-amber-200 animate-pulse'
-                : 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white hover:shadow-md'
+                ? 'bg-[#9c4124] text-white ring-4 ring-[#ffedd5] animate-pulse'
+                : 'bg-[#9c4124] hover:bg-[#83341b] text-white hover:shadow-md'
             }`}
           >
             {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 animate-bounce" />}
@@ -396,13 +396,13 @@ export const FairPriceBreakdownCard: React.FC<FairPriceBreakdownCardProps> = ({
               type="button"
               onClick={handleToggleVoiceInteraction}
               title={l.voiceMic}
-              className={`p-2.5 rounded-xl border transition-all ${
+              className={`p-2.5 rounded-xl border transition-all cursor-pointer active:scale-95 ${
                 isListeningVoice
                   ? 'bg-red-500 text-white border-red-600 animate-ping ring-4 ring-red-200'
-                  : 'bg-stone-50 hover:bg-amber-50 text-stone-700 hover:text-amber-800 border-stone-200'
+                  : 'bg-[#faf7f2] hover:bg-[#fff7ed] text-[#262220] hover:text-[#9c4124] border-[#eadfd4]'
               }`}
             >
-              {isListeningVoice ? <Mic className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              {isListeningVoice ? <Mic className="w-4 h-4" /> : <Mic className="w-4 h-4 text-[#9c4124]" />}
             </button>
           )}
         </div>
