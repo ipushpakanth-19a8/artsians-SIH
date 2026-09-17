@@ -130,12 +130,16 @@ export function BuyerLayout() {
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-stone-600">
+          <nav className="hidden lg:flex items-center gap-1 text-sm font-semibold text-stone-600">
             <NavLink
               to="/buyer"
               end
               className={({ isActive }) =>
-                `transition-colors ${isActive ? 'text-amber-700 font-bold' : 'hover:text-stone-900'}`
+                `px-3 py-1.5 rounded-xl transition-colors ${
+                  isActive
+                    ? 'bg-[#fff7ed] text-[#9c4124] font-bold border border-[#fed7aa]'
+                    : 'hover:text-stone-900 hover:bg-stone-100/70'
+                }`
               }
             >
               {t.buyerHome}
@@ -143,7 +147,11 @@ export function BuyerLayout() {
             <NavLink
               to="/buyer/browse"
               className={({ isActive }) =>
-                `transition-colors ${isActive ? 'text-amber-700 font-bold' : 'hover:text-stone-900'}`
+                `px-3 py-1.5 rounded-xl transition-colors ${
+                  isActive
+                    ? 'bg-[#fff7ed] text-[#9c4124] font-bold border border-[#fed7aa]'
+                    : 'hover:text-stone-900 hover:bg-stone-100/70'
+                }`
               }
             >
               {t.products}
@@ -151,7 +159,11 @@ export function BuyerLayout() {
             <NavLink
               to="/buyer/orders"
               className={({ isActive }) =>
-                `transition-colors ${isActive ? 'text-amber-700 font-bold' : 'hover:text-stone-900'}`
+                `px-3 py-1.5 rounded-xl transition-colors ${
+                  isActive
+                    ? 'bg-[#fff7ed] text-[#9c4124] font-bold border border-[#fed7aa]'
+                    : 'hover:text-stone-900 hover:bg-stone-100/70'
+                }`
               }
             >
               {t.orders}
@@ -159,25 +171,30 @@ export function BuyerLayout() {
             <NavLink
               to="/buyer/customer-care"
               className={({ isActive }) =>
-                `transition-colors flex items-center gap-1 ${isActive ? 'text-amber-700 font-bold' : 'hover:text-stone-900'}`
+                `px-3 py-1.5 rounded-xl transition-colors flex items-center gap-1.5 ${
+                  isActive
+                    ? 'bg-[#fff7ed] text-[#9c4124] font-bold border border-[#fed7aa]'
+                    : 'hover:text-stone-900 hover:bg-stone-100/70'
+                }`
               }
             >
-              <Headphones className="w-3.5 h-3.5" />
-              {t.customerCare}
+              <Headphones className="w-4 h-4" />
+              <span>{t.customerCare}</span>
             </NavLink>
           </nav>
 
-          {/* Actions: Language, Wishlist, Cart, User */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Actions: Language, Search, Tour, Wishlist, Cart, User, Portal Switch */}
+          <div className="flex items-center gap-2">
             {/* Language Selector */}
-            <div className="flex items-center bg-stone-100 p-1 rounded-lg border border-stone-200">
-              <Globe className="w-3.5 h-3.5 text-stone-500 ml-1 mr-1 hidden sm:inline" />
+            <div className="hidden sm:inline-flex items-center h-9 bg-white px-1.5 rounded-xl border border-stone-200 gap-0.5 shadow-2xs">
               {(['en', 'hi', 'te'] as LanguageCode[]).map((l) => (
                 <button
                   key={l}
                   onClick={() => setLanguage(l)}
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors ${
-                    language === l ? 'bg-amber-600 text-white shadow-xs' : 'text-stone-600 hover:text-stone-900'
+                  className={`h-7 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    language === l
+                      ? 'bg-[#9c4124] text-white shadow-xs'
+                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
                   }`}
                 >
                   {l === 'en' ? 'EN' : l === 'hi' ? 'हिं' : 'తె'}
@@ -185,25 +202,35 @@ export function BuyerLayout() {
               ))}
             </div>
 
-            {/* Voice Tour Trigger / Replay Button */}
+            {/* Voice Search for Crafts */}
+            <button
+              onClick={() => navigate('/buyer/browse?voice=1')}
+              className="h-9 inline-flex items-center gap-1.5 px-3 rounded-xl bg-[#fff7ed] hover:bg-[#ffedd5] border border-[#fed7aa] text-[#9c4124] text-xs font-bold transition-all shadow-2xs cursor-pointer"
+              title="Voice Search for Indian Crafts"
+            >
+              <Mic className="w-3.5 h-3.5 text-[#9c4124] animate-pulse" />
+              <span className="hidden md:inline">{language === 'hi' ? 'आवाज़ खोज' : language === 'te' ? 'వాయిస్ శోధన' : 'Voice Search'}</span>
+            </button>
+
+            {/* Voice Tour Trigger */}
             <button
               onClick={() => setManualTourOpen(true)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-300 text-amber-900 text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="h-9 hidden sm:inline-flex items-center gap-1.5 px-3 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 text-xs font-semibold transition-all shadow-2xs cursor-pointer"
               title="Start or Replay Automatic Voice Tour"
             >
-              <Headphones className="w-3.5 h-3.5 text-amber-700 animate-pulse" />
-              <span className="hidden sm:inline">Voice Tour</span>
+              <Headphones className="w-3.5 h-3.5 text-stone-600" />
+              <span>Voice Tour</span>
             </button>
 
             {/* Wishlist */}
             <Link
               to="/buyer/wishlist"
-              className="relative p-2 text-stone-600 hover:text-amber-700 hover:bg-amber-50 rounded-xl transition-colors"
+              className="w-9 h-9 relative inline-flex items-center justify-center text-stone-600 hover:text-[#9c4124] hover:bg-[#fff7ed] rounded-xl border border-stone-200 transition-colors shadow-2xs"
               title="Wishlist"
             >
-              <Heart className="w-5 h-5" />
+              <Heart className="w-4 h-4" />
               {wishlistCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-xs">
                   {wishlistCount}
                 </span>
               )}
@@ -212,51 +239,41 @@ export function BuyerLayout() {
             {/* Cart */}
             <Link
               to="/buyer/cart"
-              className="relative p-2 text-stone-600 hover:text-amber-700 hover:bg-amber-50 rounded-xl transition-colors"
+              className="w-9 h-9 relative inline-flex items-center justify-center text-stone-600 hover:text-[#9c4124] hover:bg-[#fff7ed] rounded-xl border border-stone-200 transition-colors shadow-2xs"
               title="Shopping Cart"
             >
-              <ShoppingCart className="w-5 h-5" />
+              <ShoppingCart className="w-4 h-4" />
               {cartCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-amber-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#9c4124] text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-xs">
                   {cartCount}
                 </span>
               )}
             </Link>
 
-            {/* Voice Search for Crafts Trigger */}
-            <button
-              onClick={() => navigate('/buyer/browse?voice=1')}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-950 text-xs font-bold transition-all shadow-xs cursor-pointer"
-              title="Voice Search for Indian Crafts"
-            >
-              <Mic className="w-3.5 h-3.5 text-amber-700 animate-pulse" />
-              <span className="hidden md:inline">{language === 'hi' ? 'आवाज़ खोज' : language === 'te' ? 'వాయిస్ శోధన' : 'Voice Search'}</span>
-            </button>
-
             {/* Account / Sign In with Voice Assist */}
             <button
               onClick={() => setAuthModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+              className="h-9 inline-flex items-center gap-1.5 px-3 bg-white hover:bg-stone-50 text-stone-800 border border-stone-200 rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-2xs"
               title="Sign In / Switch Account with Voice Assist"
             >
-              <User className="w-3.5 h-3.5 text-emerald-700" />
+              <User className="w-3.5 h-3.5 text-[#9c4124]" />
               <span className="hidden sm:inline">{user?.role === 'buyer' && user?.name ? user.name.split(' ')[0] : 'Sign In'}</span>
             </button>
 
             {/* Switch to Seller Portal with Automatic Voice Tour */}
             <button
               onClick={handleSwitchToSeller}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-[#9c4124] rounded-xl text-xs font-black border border-amber-300 transition-colors cursor-pointer shadow-2xs"
+              className="h-9 hidden md:inline-flex items-center gap-1.5 px-3.5 bg-[#9c4124] hover:bg-[#83341b] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-[0.98]"
               title="Switch to Artisan Studio with Step-by-Step Voice Guide"
             >
-              <Volume2 className="w-3.5 h-3.5 text-amber-700" />
+              <Volume2 className="w-3.5 h-3.5 text-white/90" />
               <span>Artisan Mode →</span>
             </button>
 
             {/* Logout */}
             <button
               onClick={handleLogout}
-              className="p-2 text-stone-400 hover:text-red-500 rounded-xl hover:bg-red-50 transition-colors cursor-pointer"
+              className="w-9 h-9 inline-flex items-center justify-center text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
               title="Exit Buyer Portal"
             >
               <LogOut className="w-4 h-4" />

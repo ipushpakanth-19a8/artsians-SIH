@@ -19,6 +19,9 @@ model User {
   business_name String?
   location     String?
   state        String?
+  district     String?
+  place        String?
+  preferredLanguage String?
   address      String?
   artisan_id   String?
   last_login   DateTime?
@@ -42,6 +45,8 @@ model Artisan {
   category          String
   state             String
   district          String
+  place             String?
+  preferredLanguage String?
   bio               String    @db.Text
   experience_years  Int       @default(5)
   profile_image_url String    @db.Text

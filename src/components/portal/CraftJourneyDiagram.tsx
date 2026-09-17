@@ -109,12 +109,12 @@ export const CraftJourneyDiagram: React.FC<CraftJourneyDiagramProps> = ({ langua
   const activeStep = steps.find(s => s.id === activeStepId) || steps[1];
 
   return (
-    <div className="w-full bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-[0_4px_24px_-4px_rgba(38,34,32,0.06)] relative overflow-hidden text-left animate-fade-in-up">
+    <div className="w-full bg-white rounded-2xl p-6 sm:p-8 border border-[#eadfd4] shadow-[0_4px_24px_-4px_rgba(38,34,32,0.06)] relative overflow-hidden text-left animate-fade-in-up">
       {/* Top Banner Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-[#eadfd4]">
         <div className="flex items-center gap-2.5">
           <span className="w-2.5 h-2.5 rounded-full bg-[#c85a32] animate-pulse" />
-          <span className="text-xs font-black uppercase tracking-wider text-[#9c4124]">
+          <span className="text-xs font-bold uppercase tracking-wider text-[#9c4124]">
             {language === 'hi'
               ? 'आसान डिजिटल यात्रा • 5 कदम'
               : language === 'te'
@@ -122,7 +122,7 @@ export const CraftJourneyDiagram: React.FC<CraftJourneyDiagramProps> = ({ langua
               : 'Simple 5-Step Artisan Journey'}
           </span>
         </div>
-        <div className="inline-flex items-center gap-1.5 text-xs text-[#57534e] font-semibold bg-[#faf7f2] px-3.5 py-1.5 rounded-full border border-[#eadfd4]">
+        <div className="h-8 inline-flex items-center gap-1.5 text-xs text-[#57534e] font-semibold bg-[#faf7f2] px-3.5 rounded-lg border border-[#eadfd4] self-start sm:self-auto">
           <span className="font-bold text-[#9c4124]">Tap any step to see details</span>
         </div>
       </div>
@@ -136,25 +136,25 @@ export const CraftJourneyDiagram: React.FC<CraftJourneyDiagramProps> = ({ langua
               key={step.id}
               type="button"
               onClick={() => setActiveStepId(step.id)}
-              className={`text-left rounded-2xl p-4 border transition-all duration-200 flex flex-col justify-between cursor-pointer relative group active:scale-[0.98] ${
+              className={`text-left rounded-xl p-4 border transition-all duration-200 flex flex-col justify-between min-h-[176px] cursor-pointer relative group active:scale-[0.98] ${
                 isSelected
-                  ? 'bg-white border-[#9c4124] shadow-md ring-2 ring-[#9c4124]/15 -translate-y-1'
-                  : 'bg-[#faf7f2] hover:bg-white border-[#eadfd4] hover:border-[#c85a32] hover:-translate-y-0.5'
+                  ? 'bg-white border-[#9c4124] shadow-md ring-2 ring-[#9c4124]/15 -translate-y-0.5'
+                  : 'bg-[#faf7f2] hover:bg-white border-[#eadfd4] hover:border-[#c85a32]'
               }`}
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-black transition-colors ${
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center font-black transition-colors ${
                       isSelected
                         ? 'bg-[#9c4124] text-white shadow-xs'
                         : 'bg-white text-[#9c4124] border border-[#fed7aa]'
                     }`}
                   >
-                    <step.icon className="w-5 h-5" />
+                    <step.icon className="w-4.5 h-4.5" />
                   </div>
                   <span
-                    className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${
                       isSelected
                         ? 'bg-[#fff7ed] text-[#9c4124] border-[#fed7aa]'
                         : 'bg-white text-[#78716c] border-[#eadfd4]'
@@ -164,17 +164,17 @@ export const CraftJourneyDiagram: React.FC<CraftJourneyDiagramProps> = ({ langua
                   </span>
                 </div>
 
-                <h4 className="font-black text-sm text-[#262220] leading-snug mb-1">
+                <h4 className="font-bold text-sm text-[#262220] leading-snug mb-1">
                   {getTitle(step)}
                 </h4>
-                <p className="text-[11px] text-[#78716c] line-clamp-2 leading-relaxed">
+                <p className="text-xs text-[#78716c] line-clamp-2 leading-relaxed">
                   {getDesc(step)}
                 </p>
               </div>
 
-              <div className="mt-3 pt-2 border-t border-[#eadfd4]/60 flex items-center justify-between text-[10px] font-bold text-[#9c4124]">
-                <span>{getBadge(step)}</span>
-                <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? 'translate-x-0.5 text-[#9c4124]' : 'text-stone-400'}`} />
+              <div className="mt-3 pt-2.5 border-t border-[#eadfd4]/60 flex items-center justify-between text-[11px] font-bold text-[#9c4124]">
+                <span className="truncate pr-1">{getBadge(step)}</span>
+                <ChevronRight className={`w-3.5 h-3.5 shrink-0 transition-transform ${isSelected ? 'translate-x-0.5 text-[#9c4124]' : 'text-stone-400'}`} />
               </div>
             </button>
           );
@@ -182,35 +182,35 @@ export const CraftJourneyDiagram: React.FC<CraftJourneyDiagramProps> = ({ langua
       </div>
 
       {/* Active Step Highlight Drawer */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-[#faf7f2] border border-[#eadfd4] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in-up">
+      <div className="p-4 sm:p-5 rounded-xl bg-[#faf7f2] border border-[#eadfd4] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in-up">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#9c4124] text-white flex items-center justify-center font-bold text-xl shadow-xs shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-[#9c4124] text-white flex items-center justify-center font-bold text-xl shadow-xs shrink-0">
             <activeStep.icon className="w-6 h-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase text-[#9c4124] tracking-wide">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-xs font-bold uppercase text-[#9c4124] tracking-wide">
                 Step {activeStep.stepNum} • {getBadge(activeStep)}
               </span>
             </div>
-            <h5 className="text-base sm:text-lg font-black text-[#262220] font-['Rozha_One',serif]">
+            <h5 className="text-base sm:text-lg font-black text-[#262220] font-['Rozha_One',serif] leading-tight">
               {getTitle(activeStep)}
             </h5>
-            <p className="text-xs sm:text-sm text-[#57534e] mt-0.5 leading-relaxed max-w-xl">
+            <p className="text-xs sm:text-sm text-[#57534e] mt-1 leading-relaxed max-w-xl">
               {getDesc(activeStep)}
             </p>
           </div>
         </div>
 
-        <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-[#eadfd4] text-xs font-bold text-[#9c4124] shadow-2xs self-stretch sm:self-auto justify-center shrink-0">
-          <Sparkles className="w-4 h-4 text-[#d97706]" />
+        <div className="h-9 inline-flex items-center gap-2 px-3.5 rounded-lg bg-white border border-[#eadfd4] text-xs font-bold text-[#9c4124] shadow-2xs self-stretch sm:self-auto justify-center shrink-0">
+          <Sparkles className="w-3.5 h-3.5 text-[#d97706]" />
           <span>{activeStep.previewTip}</span>
         </div>
       </div>
 
       {/* Reassurance Footer */}
       <div className="mt-5 pt-3.5 border-t border-[#eadfd4] flex flex-wrap items-center justify-between gap-3 text-xs text-[#57534e]">
-        <span className="font-medium flex items-center gap-1.5 text-[#262220]">
+        <span className="font-medium flex items-center gap-2 text-[#262220]">
           <CheckCircle2 className="w-4 h-4 text-[#15803d]" />
           {language === 'hi'
             ? 'बिना किसी तकनीकी ज्ञान के 2 मिनट में अपनी दुकान शुरू करें'
@@ -218,7 +218,7 @@ export const CraftJourneyDiagram: React.FC<CraftJourneyDiagramProps> = ({ langua
             ? 'ఎటువంటి సాంకేతిక పరిజ్ఞానం లేకుండా 2 నిమిషాల్లో ప్రారంభించండి'
             : 'Start selling in less than 2 minutes without technical complexity'}
         </span>
-        <span className="text-[11px] text-[#78716c] font-bold bg-[#faf7f2] px-3 py-1 rounded-full border border-[#eadfd4]">
+        <span className="h-7 inline-flex items-center text-[11px] text-[#78716c] font-bold bg-[#faf7f2] px-3 rounded-full border border-[#eadfd4]">
           Zero Commission • 100% Direct UPI Settlement
         </span>
       </div>

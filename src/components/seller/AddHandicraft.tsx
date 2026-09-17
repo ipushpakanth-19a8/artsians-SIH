@@ -3,13 +3,38 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Camera, Upload, Sparkles, CheckCircle2, ArrowRight, ArrowLeft,
   Volume2, RotateCcw, Edit3, Globe, Tag, DollarSign, Eye, RefreshCw,
-  AlertCircle, ShieldCheck, Check
+  AlertCircle, ShieldCheck, Check, MapPin
 } from 'lucide-react';
 import { useLanguage } from '../../lib/LanguageContext';
+import { getRegionalCraftsForState } from '../../config/stateLanguageMap';
 import { translations, speakText } from '../../lib/i18n';
 import { formatINR } from '../../lib/billingService';
 import { useTutorial } from '../tutorial/TutorialContext';
 import { ShowMeButton } from '../tutorial/ContextualHelp';
+import {
+  CraftInspectionResult,
+  CraftAttributes,
+} from './CraftAttributeInspector';
+import { VoiceProductDetailsPricingWizard, PricingResultData } from './VoiceProductDetailsPricingWizard';
+import { DevAiDebugPanel, DevDebugTelemetry } from './DevAiDebugPanel';
+import { getCraftAttributeLabels } from '../../lib/craftAttributeLabels';
+import { CameraCaptureModal } from '../common/CameraCaptureModal';
+import { LanguageCode } from '../../types';
+
+const FAIR_PRICING_EXPLANATIONS: Record<LanguageCode, (mat: number, hours: number, price: number) => string> = {
+  en: (mat, hours, price) => `Based on your material cost of ₹${mat} and ${hours} hours of labor, the recommended fair price is ₹${price}. This guarantees fair wages for your craftsmanship.`,
+  hi: (mat, hours, price) => `आपकी ₹${mat} सामग्री लागत और ${hours} घंटे के श्रम के आधार पर, अनुशंसित उचित मूल्य ₹${price} है। यह आपकी कारीगरी के लिए उचित पारिश्रमिक सुनिश्चित करता है।`,
+  te: (mat, hours, price) => `మీ మెటీరియల్ ఖర్చు ₹${mat} మరియు ${hours} గంటల శ్రమ ఆధారంగా, సిఫార్సు చేయబడిన న్యాయమైన ధర ₹${price}. ఇది మీ నైపుణ్యానికి సరైన వేతనాన్ని అందిస్తుంది.`,
+  ta: (mat, hours, price) => `உங்கள் மூலப்பொருள் செலவு ₹${mat} மற்றும் ${hours} மணிநேர உழைப்பின் அடிப்படையில், நியாயமான விலை ₹${price}.`,
+  kn: (mat, hours, price) => `ನಿಮ್ಮ ಕಚ್ಚಾ ಸಾಮಗ್ರಿಯ ವೆಚ್ಚ ₹${mat} ಮತ್ತು ${hours} ಗಂಟೆಗಳ ಶ್ರಮದ ಆಧಾರದ ಮೇಲೆ, ನ್ಯಾಯಯುತ ಬೆಲೆ ₹${price}.`,
+  ml: (mat, hours, price) => `നിങ്ങളുടെ അസംസ്കൃത വസ്തുക്കളുടെ ചിലവ് ₹${mat}, ${hours} മണിക്കൂർ ജോലി എന്നിവ അടിസ്ഥാനമാക്കി, ശുപാർശ ചെയ്യുന്ന ന്യായമായ വില ₹${price}.`,
+  mr: (mat, hours, price) => `तुमचा ₹${mat} कच्चा माल खर्च आणि ${hours} तासांच्या श्रमावर आधारित, योग्य किंमत ₹${price} आहे.`,
+  gu: (mat, hours, price) => `તમારા ₹${mat} સામગ્રી ખર્ચ અને ${hours} કલાકના શ્રમના આધારે, ભલામણ કરેલ વાજબી કિંમત ₹${price} છે.`,
+  bn: (mat, hours, price) => `আপনার ₹${mat} উপাদান খরচ এবং ${hours} ঘণ্টার শ্রমের ভিত্তিতে প্রস্তাবিত ন্যায্য মূল্য ₹${price}।`,
+  or: (mat, hours, price) => `ଆପଣଙ୍କର ₹${mat} ସାମଗ୍ରୀ ଖର୍ଚ୍ଚ ଏବଂ ${hours} ଘଣ୍ଟା ପରିଶ୍ରମ ଆଧାରରେ ଉଚିତ ମୂଲ୍ୟ ₹${price} ଅଟେ।`,
+  pa: (mat, hours, price) => `ਤੁਹਾਡੀ ₹${mat} ਸਮੱਗਰੀ ਲਾਗਤ ਅਤੇ ${hours} ਘੰਟੇ ਦੀ ਮਿਹਨਤ ਦੇ ਆਧਾਰ 'ਤੇ, ਸਿਫਾਰਸ਼ ਕੀਤੀ ਕੀਮਤ ₹${price} ਹੈ।`,
+  as: (mat, hours, price) => `আপোনাৰ ₹${mat} সামগ্ৰীৰ খৰচ আৰু ${hours} ঘণ্টাৰ পৰিশ্ৰমৰ ভিত্তিত উচিত মূল্য ₹${price}।`,
+};
 
 const SAMPLE_PRESETS = [
   {
@@ -69,7 +94,7 @@ const SAMPLE_PRESETS = [
 ];
 
 export function AddHandicraft() {
-  const { language } = useLanguage();
+  const { language, artisanLocation } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const t = translations[language];
@@ -93,15 +118,186 @@ export function AddHandicraft() {
   const [colors, setColors] = useState('');
   const [dimensions, setDimensions] = useState('');
   const [handmadeFeatures, setHandmadeFeatures] = useState('');
+  const [madeInLocation, setMadeInLocation] = useState<string>(() => {
+    if (artisanLocation.district && artisanLocation.district !== 'Not available') {
+      const placePrefix = artisanLocation.place && artisanLocation.place !== 'Not available' && artisanLocation.place !== artisanLocation.district
+        ? `${artisanLocation.place}, `
+        : '';
+      return `${placePrefix}${artisanLocation.district}, ${artisanLocation.state}`;
+    }
+    return `${artisanLocation.state || 'Telangana'}, India`;
+  });
   const [shortDesc, setShortDesc] = useState('');
   const [story, setStory] = useState('');
   const [care, setCare] = useState('');
   const [occasions, setOccasions] = useState('');
   const [suggestedPrice, setSuggestedPrice] = useState<number>(1850);
-  const [materialCost, setMaterialCost] = useState<number>(850);
+  const [materialCost, setMaterialCost] = useState<number>(0);
+  const [laborHours, setLaborHours] = useState<number>(0);
+  const [quantity, setQuantity] = useState<number>(0);
   const [publishing, setPublishing] = useState<boolean>(false);
   const [draftSaved, setDraftSaved] = useState<boolean>(false);
   const [editingField, setEditingField] = useState<string | null>(null);
+  const [originalAiValues, setOriginalAiValues] = useState<Record<string, string>>({});
+
+  // AI Craft Attribute Inspection state
+  const [inspectionResult, setInspectionResult] = useState<CraftInspectionResult | null>(null);
+  const [isAnalyzingCraft, setIsAnalyzingCraft] = useState<boolean>(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  // Camera & Image Preview Gate state
+  const [isCameraModalOpen, setIsCameraModalOpen] = useState<boolean>(false);
+  const [imageMeta, setImageMeta] = useState<{
+    width?: number;
+    height?: number;
+    sizeBytes?: number;
+    type?: string;
+  } | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // DEV Diagnostic Telemetry State
+  const [telemetry, setTelemetry] = useState<DevDebugTelemetry>({
+    imageCaptured: false,
+    aiRequestSent: false,
+    aiResponseStatus: 'not sent',
+    detectedFields: [],
+    missingFields: [],
+    selectedLanguage: language,
+    speechLocale: 'en-IN',
+    speechRecognitionSupported: typeof window !== 'undefined' && Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition),
+    ttsSupported: typeof window !== 'undefined' && Boolean(window.speechSynthesis),
+    currentVoiceState: 'idle',
+    lastTranscript: '',
+    lastExtractedField: '',
+    lastError: null,
+  });
+
+  const labels = getCraftAttributeLabels(language);
+
+  const calculateFairPrice = (matCost: number, hours: number, hourlyRate: number = 90) => {
+    const validCost = matCost > 0 ? matCost : 800;
+    const validHours = hours > 0 ? hours : 12;
+    const laborCost = Math.round(validHours * hourlyRate);
+    const overhead = Math.round(validCost * 0.15);
+    const margin = Math.round((validCost + laborCost) * 0.20);
+    return Math.max(validCost + laborCost + overhead + margin, 450);
+  };
+
+  const explainPricingViaVoice = (cost: number, hours: number, price: number) => {
+    const fn = FAIR_PRICING_EXPLANATIONS[language] || FAIR_PRICING_EXPLANATIONS.en;
+    const text = fn(cost || materialCost || 800, hours || laborHours || 15, price || suggestedPrice || 1850);
+    speakText(text, language);
+  };
+
+  const handleVoiceFieldUpdated = (field: string, canonicalVal: any, localizedVal: any) => {
+    if (field === 'material') {
+      setMaterial(localizedVal || canonicalVal);
+    } else if (field === 'dimensions') {
+      setDimensions(localizedVal || canonicalVal);
+    } else if (field === 'laborHours') {
+      const num = Number(canonicalVal);
+      if (!isNaN(num) && num > 0) {
+        setLaborHours(num);
+        const newPrice = calculateFairPrice(materialCost || 850, num);
+        setSuggestedPrice(newPrice);
+      }
+    } else if (field === 'materialCost') {
+      const num = Number(canonicalVal);
+      if (!isNaN(num) && num > 0) {
+        setMaterialCost(num);
+        const newPrice = calculateFairPrice(num, laborHours || 15);
+        setSuggestedPrice(newPrice);
+      }
+    } else if (field === 'quantity') {
+      const num = Number(canonicalVal);
+      if (!isNaN(num) && num > 0) {
+        setQuantity(num);
+      }
+    }
+  };
+
+  const runCraftInspection = async (img: string, catHint?: string) => {
+    if (!img) return;
+    setIsAnalyzingCraft(true);
+    setAnalysisError(null);
+    setTelemetry(prev => ({
+      ...prev,
+      aiRequestSent: true,
+      aiResponseStatus: 'analyzing',
+    }));
+
+    try {
+      const res = await fetch('/api/v1/ai/inspect-craft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: img,
+          language,
+          categoryHint: catHint || category,
+          regionHint: madeInLocation
+        })
+      });
+      if (res.ok) {
+        const data: CraftInspectionResult = await res.json();
+        setInspectionResult(data);
+        const loc = data.localizedAttributes;
+        const can = data.canonicalAttributes;
+
+        // Save original AI values for AI vs User comparison (Req 24)
+        const orig: Record<string, string> = {};
+        if (loc.material || can.material) orig.material = loc.material || can.material || '';
+        if (loc.craftName || can.craftName) orig.craftName = loc.craftName || can.craftName || '';
+        if (loc.technique || can.technique) orig.technique = loc.technique || can.technique || '';
+        setOriginalAiValues(orig);
+
+        if (loc.craftName || can.craftName) setTitle(loc.craftName || can.craftName || '');
+        if (loc.craftCategory || can.craftCategory) setCategory(loc.craftCategory || can.craftCategory || 'Handloom');
+        if (loc.material || can.material) setMaterial(loc.material || can.material || '');
+        if (loc.technique || can.technique) setCraftType(loc.technique || can.technique || '');
+        if (loc.colors && loc.colors.length) setColors(loc.colors.join(', '));
+        if (loc.description || can.description) {
+          setStory(loc.description || can.description || '');
+          setShortDesc(loc.description || can.description || '');
+        }
+        if (loc.region || can.region) setMadeInLocation(loc.region || can.region || madeInLocation);
+
+        const detected: string[] = [];
+        if (can.craftName) detected.push('craftName');
+        if (can.craftCategory) detected.push('craftCategory');
+        if (can.technique) detected.push('technique');
+        if (can.motif) detected.push('motif');
+        if (can.material) detected.push('material');
+        if (can.colors?.length) detected.push('colors');
+
+        setTelemetry(prev => ({
+          ...prev,
+          aiResponseStatus: 'success',
+          aiProvider: data.aiProvider === 'gemini' ? 'Gemini 2.5 Flash' : 'Demo Heuristic',
+          detectedFields: detected,
+          missingFields: data.uncertainAttributes || [],
+        }));
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setAnalysisError(errData.error || "We couldn't analyze the image.");
+        setTelemetry(prev => ({
+          ...prev,
+          aiResponseStatus: 'failure',
+          lastError: errData.error || 'Inspection failed',
+        }));
+      }
+    } catch (err: any) {
+      setAnalysisError("We couldn't analyze the image.");
+      setTelemetry(prev => ({
+        ...prev,
+        aiResponseStatus: 'failure',
+        lastError: err?.message || 'Network error',
+      }));
+    } finally {
+      setIsAnalyzingCraft(false);
+    }
+  };
+
+
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -182,39 +378,124 @@ export function AddHandicraft() {
     setOccasions(preset.occasions);
     setSuggestedPrice(preset.suggestedPrice);
     setMaterialCost(preset.cost);
-    setStep(2);
+    setStep(3);
+    // Trigger real AI craft attribute inspection
+    runCraftInspection(preset.rawImage, preset.category);
+  };
+
+  // Automatically launch camera viewfinder when arriving via "Scan Product"
+  useEffect(() => {
+    if (searchParams.get('action') === 'scan' && !rawImage) {
+      setIsCameraModalOpen(true);
+    }
+  }, [searchParams, rawImage]);
+
+  const handleImageCapture = (dataUrl: string) => {
+    setValidationError(null);
+    if (!dataUrl || (!dataUrl.startsWith('data:image/') && !dataUrl.startsWith('http'))) {
+      setValidationError('Invalid image format. Please capture or upload a valid photo.');
+      return;
+    }
+
+    const img = new Image();
+    img.onload = () => {
+      let width = img.naturalWidth || img.width;
+      let height = img.naturalHeight || img.height;
+      if (width < 40 || height < 40) {
+        setValidationError('Image resolution is too low. Please provide a clear, focused craft photo.');
+        return;
+      }
+
+      // Auto-bound oversized images (> 1920px) to prevent network and storage bottlenecks
+      let finalDataUrl = dataUrl;
+      const maxDim = 1920;
+      if (width > maxDim || height > maxDim) {
+        try {
+          const ratio = Math.min(maxDim / width, maxDim / height);
+          const targetW = Math.round(width * ratio);
+          const targetH = Math.round(height * ratio);
+          const canvas = document.createElement('canvas');
+          canvas.width = targetW;
+          canvas.height = targetH;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, targetW, targetH);
+            finalDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+            width = targetW;
+            height = targetH;
+          }
+        } catch (e) {
+          console.warn('Canvas resize notice:', e);
+        }
+      }
+
+      const base64Part = finalDataUrl.includes(',') ? finalDataUrl.split(',')[1] : '';
+      const sizeBytes = base64Part ? Math.round((base64Part.length * 3) / 4) : undefined;
+      const mimeType = finalDataUrl.startsWith('data:')
+        ? finalDataUrl.substring(finalDataUrl.indexOf(':') + 1, finalDataUrl.indexOf(';'))
+        : 'image/jpeg';
+
+      setImageMeta({ width, height, sizeBytes, type: mimeType });
+      setRawImage(finalDataUrl);
+      setEnhancedImage(finalDataUrl);
+      setInspectionResult(null);
+      setAnalysisError(null);
+      setIsCameraModalOpen(false);
+
+      // Record telemetry
+      setTelemetry(prev => ({
+        ...prev,
+        imageCaptured: true,
+        imageSizeBytes: sizeBytes,
+        imageMime: mimeType,
+        imageDimensions: { width, height },
+      }));
+
+      // Automatically proceed to AI craft inspection
+      setStep(3);
+      runCraftInspection(finalDataUrl, category);
+    };
+    img.onerror = () => {
+      setValidationError('Could not load captured craft image. Please try again.');
+    };
+    img.src = dataUrl;
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValidationError(null);
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Support broad image types across all mobile & desktop operating systems
+    const isImage = file.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|gif|bmp|svg|avif)$/i.test(file.name) || !file.type;
+    if (!isImage) {
+      setValidationError('Please upload a valid image file (JPEG, PNG, WebP, HEIC).');
+      return;
+    }
+    if (file.size === 0) {
+      setValidationError('The selected image file is empty (0 bytes).');
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (ev) => {
       const src = ev.target?.result as string;
-      setRawImage(src);
-      setEnhancedImage(src);
-      // Run simulated enhancement pipeline
-      setIsEnhancing(true);
-      setStep(2);
-      setTimeout(() => {
-        setIsEnhancing(false);
-        // Default AI attributes for custom uploads
-        if (!title) {
-          setTitle('Handcrafted Artisan Craft Piece');
-          setCategory('Handloom');
-          setMaterial('Natural organic materials');
-          setCraftType('Traditional Handcraft');
-          setColors('Earthy warm tones');
-          setDimensions('Standard size');
-          setHandmadeFeatures('100% handmade, ethical artisan labor');
-          setShortDesc('Carefully handcrafted piece created with heritage techniques and natural materials.');
-          setStory('Made by hand by traditional village craftspeople honoring multigenerational Indian craftsmanship.');
-          setCare('Handle with care. Gentle hand cleaning recommended.');
-          setOccasions('Festivals, thoughtful gifting, sustainable living');
-        }
-      }, 1500);
+      if (src) {
+        handleImageCapture(src);
+      }
+    };
+    reader.onerror = () => {
+      setValidationError('Could not read the selected image file. Please try again.');
     };
     reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleStartAnalysis = () => {
+    const targetImage = enhancedImage || rawImage;
+    if (!targetImage || isAnalyzingCraft) return;
+    setStep(3);
+    runCraftInspection(targetImage, category);
   };
 
   const handleListen = (text: string) => {
@@ -236,10 +517,10 @@ export function AddHandicraft() {
           category_hint: category,
           image: enhancedImage || rawImage,
           cost: {
-            material_cost: materialCost,
-            labor_hours: 18,
-            hourly_rate: 85,
-            other_cost: 150
+            material_cost: materialCost || 850,
+            labor_hours: laborHours || 15,
+            hourly_rate: 90,
+            other_cost: Math.round((materialCost || 850) * 0.15)
           }
         }),
       });
@@ -383,7 +664,15 @@ export function AddHandicraft() {
             </button>
           </div>
 
-          {/* Hidden inputs */}
+          {/* Hardware Camera Viewfinder Modal */}
+          <CameraCaptureModal
+            isOpen={isCameraModalOpen}
+            onClose={() => setIsCameraModalOpen(false)}
+            onCapture={handleImageCapture}
+            title={language === 'hi' ? '📷 शिल्प की फ़ोटो लें' : language === 'te' ? '📷 హస్తకళ ఫోటో తీయండి' : '📷 Capture Craft Photo'}
+          />
+
+          {/* Hidden file inputs */}
           <input
             type="file"
             ref={fileInputRef}
@@ -400,40 +689,163 @@ export function AddHandicraft() {
             className="hidden"
           />
 
-          {/* Large Camera & Upload Trigger Area */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Camera Button */}
-            <div
-              onClick={() => cameraInputRef.current?.click()}
-              className="p-8 rounded-3xl border-2 border-dashed border-[#eadfd4] hover:border-[#9c4124] bg-[#faf7f2] flex flex-col items-center justify-center text-center cursor-pointer transition-all group hover:bg-[#fdfbf7]"
-            >
-              <div className="w-16 h-16 rounded-2xl bg-[#fdf2e9] text-[#9c4124] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Camera className="w-8 h-8" />
+          {/* Validation Error Banner for initial upload */}
+          {validationError && !rawImage && (
+            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-300 text-rose-800 text-xs font-bold flex items-center justify-between gap-3 shadow-xs animate-in fade-in">
+              <div className="flex items-center gap-2.5">
+                <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+                <span>{validationError}</span>
               </div>
-              <h3 className="font-extrabold text-base text-[#262220]">
-                {language === 'hi' ? '📷 कैमरा चालू करें' : language === 'te' ? '📷 కెమెరా ఉపయోగించండి' : '📷 Take with Camera'}
-              </h3>
-              <p className="text-xs text-stone-500 mt-1">
-                Use hardware smartphone camera
-              </p>
+              <button
+                type="button"
+                onClick={() => setValidationError(null)}
+                className="text-rose-600 hover:text-rose-900 text-xs font-black cursor-pointer px-2 py-1"
+              >
+                ✕
+              </button>
             </div>
+          )}
 
-            {/* Gallery Upload */}
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="p-8 rounded-3xl border-2 border-dashed border-[#eadfd4] hover:border-[#9c4124] bg-[#faf7f2] flex flex-col items-center justify-center text-center cursor-pointer transition-all group hover:bg-[#fdfbf7]"
-            >
-              <div className="w-16 h-16 rounded-2xl bg-stone-100 text-stone-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Upload className="w-8 h-8" />
+          {/* Image Preview Gate Card vs Capture Options */}
+          {rawImage ? (
+            <div className="bg-[#faf7f2] rounded-3xl p-5 sm:p-6 border-2 border-[#9c4124]/30 space-y-4 shadow-sm animate-fade-in">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-[#eadfd4]">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-[#9c4124] tracking-wider bg-[#fdf2e9] px-2.5 py-0.5 rounded-md border border-[#f8d7c2]">
+                    Image Preview Gate
+                  </span>
+                  <h3 className="text-base font-extrabold text-[#262220] mt-1">
+                    {language === 'te' ? 'క్రాఫ్ట్ ఫోటో ప్రివ్యూ' : language === 'hi' ? 'शिल्प फोटो पूर्वावलोकन' : 'Craft Photo Preview'}
+                  </h3>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-stone-600 font-mono">
+                  {imageMeta?.width && imageMeta?.height && (
+                    <span className="bg-white px-2.5 py-1 rounded-lg border border-stone-200 shadow-2xs">
+                      {imageMeta.width} × {imageMeta.height} px
+                    </span>
+                  )}
+                  {imageMeta?.sizeBytes && (
+                    <span className="bg-white px-2.5 py-1 rounded-lg border border-stone-200 shadow-2xs">
+                      {Math.round(imageMeta.sizeBytes / 1024)} KB
+                    </span>
+                  )}
+                  {imageMeta?.type && (
+                    <span className="bg-white px-2.5 py-1 rounded-lg border border-stone-200 shadow-2xs uppercase">
+                      {imageMeta.type.replace('image/', '')}
+                    </span>
+                  )}
+                </div>
               </div>
-              <h3 className="font-extrabold text-base text-[#262220]">
-                {language === 'hi' ? '🖼️ गैलरी से चुनें' : language === 'te' ? '🖼️ గ్యాలరీ నుండి ఎంచుకోండి' : '🖼️ Upload from Gallery'}
-              </h3>
-              <p className="text-xs text-stone-500 mt-1">
-                Select existing photo from phone
-              </p>
+
+              {/* Viewfinder Preview */}
+              <div className="relative max-h-[360px] sm:max-h-[440px] rounded-2xl overflow-hidden bg-stone-950 flex items-center justify-center border border-stone-800">
+                <img
+                  src={rawImage}
+                  alt="Captured craft preview"
+                  className="max-h-[360px] sm:max-h-[440px] w-auto object-contain rounded-xl"
+                />
+                <div className="absolute top-3 left-3 bg-stone-900/85 backdrop-blur text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Ready for AI Craft Inspection</span>
+                </div>
+              </div>
+
+              {validationError && (
+                <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{validationError}</span>
+                </div>
+              )}
+
+              {/* Actions: Retake vs Analyze Craft */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRawImage('');
+                    setEnhancedImage('');
+                    setImageMeta(null);
+                    setInspectionResult(null);
+                    setAnalysisError(null);
+                    setValidationError(null);
+                  }}
+                  className="w-full sm:w-auto px-5 py-3 rounded-xl text-xs font-bold text-stone-700 bg-white hover:bg-stone-100 border border-stone-300 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span>{language === 'te' ? 'మరలా తీయండి' : language === 'hi' ? 'पुनः फोटो लें' : 'Retake / Choose Another'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isAnalyzingCraft}
+                  onClick={handleStartAnalysis}
+                  className="w-full sm:w-auto px-8 py-3 rounded-xl text-xs font-black text-white bg-[#9c4124] hover:bg-[#83341b] disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all min-h-[44px]"
+                >
+                  {isAnalyzingCraft ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Analyzing Craft...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      <span>{language === 'te' ? 'క్రాఫ్ట్ వివరాలు విశ్లేషించండి ✨' : language === 'hi' ? 'शिल्प विवरण विश्लेषण करें ✨' : 'Analyze Craft ✨'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Option 1: Live Viewfinder Camera */}
+              <div
+                onClick={() => setIsCameraModalOpen(true)}
+                className="p-6 rounded-3xl border-2 border-dashed border-[#eadfd4] hover:border-[#9c4124] bg-[#faf7f2] flex flex-col items-center justify-center text-center cursor-pointer transition-all group hover:bg-[#fdfbf7]"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-[#fdf2e9] text-[#9c4124] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <Camera className="w-7 h-7" />
+                </div>
+                <h3 className="font-extrabold text-sm text-[#262220]">
+                  {language === 'hi' ? '📷 लाइव कैमरा' : language === 'te' ? '📷 లైవ్ కెమెరా' : '📷 Live Viewfinder'}
+                </h3>
+                <p className="text-[11px] text-stone-500 mt-1">
+                  HD viewfinder with guide grid
+                </p>
+              </div>
+
+              {/* Option 2: Direct Phone Camera */}
+              <div
+                onClick={() => cameraInputRef.current?.click()}
+                className="p-6 rounded-3xl border-2 border-dashed border-[#eadfd4] hover:border-[#9c4124] bg-[#faf7f2] flex flex-col items-center justify-center text-center cursor-pointer transition-all group hover:bg-[#fdfbf7]"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <Camera className="w-7 h-7" />
+                </div>
+                <h3 className="font-extrabold text-sm text-[#262220]">
+                  {language === 'hi' ? '📱 फ़ोन कैमरा' : language === 'te' ? '📱 మొబైల్ కెమెరా' : '📱 Direct Camera'}
+                </h3>
+                <p className="text-[11px] text-stone-500 mt-1">
+                  Snap instantly with your device camera
+                </p>
+              </div>
+
+              {/* Option 3: Gallery Upload */}
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="p-6 rounded-3xl border-2 border-dashed border-[#eadfd4] hover:border-[#9c4124] bg-[#faf7f2] flex flex-col items-center justify-center text-center cursor-pointer transition-all group hover:bg-[#fdfbf7]"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-stone-100 text-stone-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <Upload className="w-7 h-7" />
+                </div>
+                <h3 className="font-extrabold text-sm text-[#262220]">
+                  {language === 'hi' ? '🖼️ गैलरी से चुनें' : language === 'te' ? '🖼️ గ్యాలరీ నుండి' : '🖼️ Upload from Gallery'}
+                </h3>
+                <p className="text-[11px] text-stone-500 mt-1">
+                  Choose JPG, PNG, WebP, HEIC
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Quick Demo Sample Crafts */}
           <div className="pt-4 border-t border-[#eadfd4]">
@@ -569,10 +981,15 @@ export function AddHandicraft() {
 
             <button
               data-tutorial="ai-studio-compare"
-              onClick={() => setStep(3)}
+              onClick={() => {
+                if (!inspectionResult && !isAnalyzingCraft) {
+                  runCraftInspection(enhancedImage || rawImage, category);
+                }
+                setStep(3);
+              }}
               className="artisan-btn-primary cursor-pointer flex items-center gap-2"
             >
-              <span>Approve Enhanced Photo ✨</span>
+              <span>Inspect Craft Attributes ✨</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -580,152 +997,268 @@ export function AddHandicraft() {
       )}
 
       {/* ================================================== */}
-      {/* STEP 3: AI PRODUCT UNDERSTANDING */}
+      {/* STEP 3: AI PRODUCT UNDERSTANDING & CRAFT ATTRIBUTES */}
       {/* ================================================== */}
       {step === 3 && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#eadfd4]">
-            <div>
-              <span className="text-[10px] font-extrabold text-[#9c4124] bg-[#fdf2e9] px-2.5 py-0.5 rounded-full border border-[#f8d7c2] uppercase">
-                Step 3 of 4 • AI Understanding
-              </span>
-              <h2 className="text-xl sm:text-2xl font-black text-[#262220] font-['Rozha_One',serif] mt-1">
-                AI Detected Craft Attributes
-              </h2>
-              <p className="text-xs text-stone-600 mt-1">
-                Review and tap any chip to edit. You have complete control over your craft details.
+        <div>
+          {isAnalyzingCraft ? (
+            <div className="bg-white rounded-3xl p-12 border border-[#eadfd4] shadow-xs text-center space-y-4">
+              <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
+                <div className="w-20 h-20 border-4 border-[#eadfd4] border-t-[#9c4124] rounded-full animate-spin" />
+                <Sparkles className="w-8 h-8 text-[#9c4124] absolute animate-pulse" />
+              </div>
+              <h3 className="text-xl font-black text-[#262220] font-['Rozha_One',serif]">
+                {labels.analyzingCraftMsg}
+              </h3>
+              <p className="text-xs text-stone-500 max-w-md mx-auto">
+                Analyzing visible weave patterns, regional craft technique, authentic materials, and color motifs...
               </p>
             </div>
+          ) : analysisError ? (
+            <div className="bg-white rounded-3xl p-8 border border-red-200 shadow-xs text-center space-y-4">
+              <div className="w-14 h-14 bg-red-100 text-red-700 rounded-2xl flex items-center justify-center mx-auto">
+                <AlertCircle className="w-7 h-7" />
+              </div>
+              <h3 className="text-lg font-extrabold text-stone-900">
+                We couldn't analyze the image.
+              </h3>
+              <p className="text-xs text-stone-600 max-w-md mx-auto">
+                {analysisError}
+              </p>
+              <div className="flex items-center justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => runCraftInspection(enhancedImage || rawImage, category)}
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#9c4124] hover:bg-[#83341b] cursor-pointer shadow-xs"
+                >
+                  Try Again
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAnalysisError(null);
+                    setStep(4);
+                  }}
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-stone-700 bg-stone-100 hover:bg-stone-200 cursor-pointer"
+                >
+                  Enter Details Manually
+                </button>
+              </div>
+            </div>
+          ) : inspectionResult ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between px-2">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="inline-flex items-center gap-1.5 text-stone-600 hover:text-stone-900 text-xs font-bold cursor-pointer"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>{language === 'hi' ? '← फोटो स्टूडियो (बैकग्राउंड)' : language === 'te' ? '← ఫోటో స్టూడియో' : '← Photo Studio (Lighting & Background)'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => runCraftInspection(enhancedImage || rawImage, category)}
+                  disabled={isAnalyzingCraft}
+                  className="inline-flex items-center gap-1.5 text-[#9c4124] hover:text-[#83341b] text-xs font-bold cursor-pointer"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isAnalyzingCraft ? 'animate-spin' : ''}`} />
+                  <span>{language === 'hi' ? 'फिर से जांचें' : language === 'te' ? 'మళ్ళీ పరిశీలించు' : 'Re-inspect Image'}</span>
+                </button>
+              </div>
 
-            <button
-              onClick={() => handleListen('Step 3: Review the details our system detected. You can tap on any box to correct category, materials, or dimensions.')}
-              className="artisan-listen-btn cursor-pointer self-start sm:self-auto"
-            >
-              <Volume2 className="w-4 h-4" />
-              <span>Listen 🔊</span>
-            </button>
-          </div>
-
-          {/* Editable Field Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Category */}
-            <div className="p-4 rounded-2xl bg-[#faf7f2] border border-[#eadfd4]">
-              <label className="block text-xs font-extrabold text-[#9c4124] uppercase mb-1">
-                Product Category
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-white px-3 py-2 rounded-xl border border-stone-300 text-sm font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#9c4124]"
+              {/* ================================================== */}
+              {/* VOICE-GUIDED PRODUCT DETAILS + PRICING WIZARD */}
+              {/* ================================================== */}
+              <VoiceProductDetailsPricingWizard
+                language={language}
+                imageUrl={enhancedImage || rawImage}
+                detectedCraft={inspectionResult ? inspectionResult.canonicalAttributes : null}
+                currentFormState={{
+                  title,
+                  category,
+                  material,
+                  craftType,
+                  colors,
+                  dimensions,
+                  story,
+                  shortDesc,
+                  suggestedPrice,
+                  materialCost,
+                  laborHours,
+                  quantity,
+                  madeInLocation,
+                }}
+                onFieldUpdated={handleVoiceFieldUpdated}
+                onProductConfirmed={(confirmedProduct) => {
+                  if (confirmedProduct.productName) setTitle(confirmedProduct.productName);
+                  if (confirmedProduct.craftCategory || confirmedProduct.category) setCategory(confirmedProduct.craftCategory || confirmedProduct.category);
+                  if (confirmedProduct.material) setMaterial(confirmedProduct.material);
+                  if (confirmedProduct.technique || confirmedProduct.craftType) setCraftType(confirmedProduct.technique || confirmedProduct.craftType);
+                  if (confirmedProduct.colors) setColors(confirmedProduct.colors);
+                  if (confirmedProduct.dimensions) setDimensions(confirmedProduct.dimensions);
+                  if (confirmedProduct.region || confirmedProduct.madeInLocation) setMadeInLocation(confirmedProduct.region || confirmedProduct.madeInLocation);
+                  if (confirmedProduct.quantity) setQuantity(Number(confirmedProduct.quantity));
+                  if (confirmedProduct.description) {
+                    setStory(confirmedProduct.description);
+                    setShortDesc(confirmedProduct.description);
+                  }
+                  setStep(4);
+                }}
+                onPricingCompleted={(pricingData) => {
+                  setMaterialCost(pricingData.materialCost);
+                  setLaborHours(pricingData.laborHours);
+                  setQuantity(pricingData.quantity);
+                  setSuggestedPrice(pricingData.artisanApprovedPrice);
+                  setTelemetry(prev => ({
+                    ...prev,
+                    pricingTelemetry: {
+                      materialCost: pricingData.materialCost,
+                      laborHours: pricingData.laborHours,
+                      fairHourlyWage: pricingData.fairHourlyWage,
+                      laborCost: pricingData.laborCost,
+                      productionCost: pricingData.productionCost,
+                      targetMargin: pricingData.targetMargin,
+                      recommendedFairPrice: pricingData.recommendedFairPrice,
+                      marketMedian: pricingData.marketBenchmarks?.median,
+                      marketMin: pricingData.marketBenchmarks?.min,
+                      marketMax: pricingData.marketBenchmarks?.max,
+                      marketAvailable: pricingData.marketBenchmarks?.available,
+                      artisanApprovedPrice: pricingData.artisanApprovedPrice,
+                    }
+                  }));
+                  setStep(4);
+                }}
+                onTelemetryUpdate={(data) => {
+                  setTelemetry(prev => ({
+                    ...prev,
+                    currentVoiceState: data.voiceState,
+                    speechLocale: data.speechLocale,
+                    speechRecognitionSupported: data.speechRecognitionSupported,
+                    ttsSupported: data.ttsSupported,
+                    lastTranscript: data.transcript,
+                    lastExtractedField: data.currentField ? `${data.currentField}: ${data.extractedValue}` : prev.lastExtractedField,
+                    lastError: data.lastError,
+                    pricingTelemetry: data.pricingData ? {
+                      materialCost: data.pricingData.materialCost,
+                      laborHours: data.pricingData.laborHours,
+                      fairHourlyWage: data.pricingData.fairHourlyWage,
+                      laborCost: data.pricingData.laborCost,
+                      productionCost: data.pricingData.productionCost,
+                      targetMargin: data.pricingData.targetMargin,
+                      recommendedFairPrice: data.pricingData.recommendedFairPrice,
+                      marketMedian: data.pricingData.marketBenchmarks?.median,
+                      marketMin: data.pricingData.marketBenchmarks?.min,
+                      marketMax: data.pricingData.marketBenchmarks?.max,
+                      marketAvailable: data.pricingData.marketBenchmarks?.available,
+                      artisanApprovedPrice: data.pricingData.artisanApprovedPrice,
+                    } : prev.pricingTelemetry,
+                  }));
+                }}
+              />
+            </div>
+          ) : (
+            <div className="bg-white rounded-3xl p-8 border border-[#eadfd4] shadow-xs text-center space-y-4">
+              <Sparkles className="w-10 h-10 text-[#9c4124] mx-auto" />
+              <h3 className="text-lg font-black text-[#262220]">
+                Ready to Analyze Craft Details
+              </h3>
+              <button
+                type="button"
+                onClick={() => runCraftInspection(enhancedImage || rawImage, category)}
+                className="px-6 py-2.5 bg-[#9c4124] hover:bg-[#83341b] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
               >
-                {['Handloom', 'Pottery', 'Woodcraft', 'Metalcraft', 'Jewellery', 'Painting', 'Embroidery', 'Bamboo/Cane', 'Other'].map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+                Analyze Craft Image Now ✨
+              </button>
             </div>
-
-            {/* Material */}
-            <div className="p-4 rounded-2xl bg-[#faf7f2] border border-[#eadfd4]">
-              <label className="block text-xs font-extrabold text-[#9c4124] uppercase mb-1">
-                Primary Material
-              </label>
-              <input
-                type="text"
-                value={material}
-                onChange={(e) => setMaterial(e.target.value)}
-                placeholder="e.g. Mulberry Silk, Riverbed Clay, Teak Wood"
-                className="w-full bg-white px-3 py-2 rounded-xl border border-stone-300 text-sm font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#9c4124]"
-              />
-            </div>
-
-            {/* Craft Type */}
-            <div className="p-4 rounded-2xl bg-[#faf7f2] border border-[#eadfd4]">
-              <label className="block text-xs font-extrabold text-[#9c4124] uppercase mb-1">
-                Craft Technique / Heritage
-              </label>
-              <input
-                type="text"
-                value={craftType}
-                onChange={(e) => setCraftType(e.target.value)}
-                placeholder="e.g. Kalamkari Hand-block, Pochampally Ikat"
-                className="w-full bg-white px-3 py-2 rounded-xl border border-stone-300 text-sm font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#9c4124]"
-              />
-            </div>
-
-            {/* Dimensions */}
-            <div className="p-4 rounded-2xl bg-[#faf7f2] border border-[#eadfd4]">
-              <label className="block text-xs font-extrabold text-[#9c4124] uppercase mb-1">
-                Approximate Dimensions
-              </label>
-              <input
-                type="text"
-                value={dimensions}
-                onChange={(e) => setDimensions(e.target.value)}
-                placeholder="e.g. 5.5m saree, 10 x 6 inches, 250 grams"
-                className="w-full bg-white px-3 py-2 rounded-xl border border-stone-300 text-sm font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#9c4124]"
-              />
-            </div>
-
-            {/* Handmade Features */}
-            <div className="sm:col-span-2 p-4 rounded-2xl bg-[#faf7f2] border border-[#eadfd4]">
-              <label className="block text-xs font-extrabold text-[#9c4124] uppercase mb-1">
-                Handmade Characteristics & Authenticity
-              </label>
-              <input
-                type="text"
-                value={handmadeFeatures}
-                onChange={(e) => setHandmadeFeatures(e.target.value)}
-                placeholder="e.g. 100% natural dyes, GI tag certified, hand-spun on traditional pit-loom"
-                className="w-full bg-white px-3 py-2 rounded-xl border border-stone-300 text-sm font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#9c4124]"
-              />
-            </div>
-          </div>
-
-          {/* Navigation to Step 4 */}
-          <div className="flex items-center justify-between pt-4 border-t border-[#eadfd4]">
-            <button
-              onClick={() => setStep(2)}
-              className="px-4 py-2.5 rounded-xl text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 cursor-pointer"
-            >
-              ← Back to Studio
-            </button>
-
-            <button
-              data-tutorial="ai-craft-attributes"
-              onClick={() => setStep(4)}
-              className="artisan-btn-primary cursor-pointer flex items-center gap-2"
-            >
-              <span>Continue to AI Story & Description →</span>
-            </button>
-          </div>
+          )}
         </div>
       )}
 
       {/* ================================================== */}
-      {/* STEP 4: AI DESCRIPTION & REVIEW & PUBLISH */}
+      {/* STEP 4: AI DESCRIPTION & REVIEW & FAIR PRICING */}
       {/* ================================================== */}
       {step === 4 && (
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#eadfd4]">
             <div>
               <span className="text-[10px] font-extrabold text-[#9c4124] bg-[#fdf2e9] px-2.5 py-0.5 rounded-full border border-[#f8d7c2] uppercase">
-                Step 4 of 4 • Final Review
+                Step 4 of 4 • Final Product Review & Fair Pricing
               </span>
               <h2 className="text-xl sm:text-2xl font-black text-[#262220] font-['Rozha_One',serif] mt-1">
-                Your AI Product Story & Pricing
+                Product Details Complete ✓
               </h2>
               <p className="text-xs text-stone-600 mt-1">
-                Ready to publish. Buyers will read your authentic craft heritage story.
+                Review your handcrafted product details. AI calculates a fair price based on your materials and labor hours.
               </p>
             </div>
 
             <button
-              onClick={() => handleListen(story || shortDesc)}
+              onClick={() => explainPricingViaVoice(materialCost, laborHours, suggestedPrice)}
               className="artisan-listen-btn cursor-pointer self-start sm:self-auto"
             >
               <Volume2 className="w-4 h-4" />
-              <span>Listen to Story 🔊</span>
+              <span>Listen to Pricing Breakdown 🔊</span>
             </button>
+          </div>
+
+          {/* REQUIREMENT 29: PRODUCT DETAILS COMPLETE SUMMARY CARD */}
+          <div className="bg-[#faf7f2] rounded-3xl p-5 sm:p-6 border border-[#eadfd4] space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-[#9c4124] uppercase tracking-wider flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                Verified Product Attributes
+              </span>
+              <button
+                type="button"
+                onClick={() => setStep(3)}
+                className="text-xs text-[#9c4124] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+              >
+                <Edit3 className="w-3.5 h-3.5" /> Edit via Voice/Form
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="bg-white p-3 rounded-2xl border border-stone-200">
+                <span className="text-[10px] font-bold text-stone-400 block uppercase">Craft Type</span>
+                <span className="font-extrabold text-[#262220]">{craftType || category}</span>
+              </div>
+              <div className="bg-white p-3 rounded-2xl border border-stone-200">
+                <span className="text-[10px] font-bold text-stone-400 block uppercase">Material</span>
+                <span className="font-extrabold text-[#262220]">{material || 'Pure Cotton'}</span>
+              </div>
+              <div className="bg-white p-3 rounded-2xl border border-stone-200">
+                <span className="text-[10px] font-bold text-stone-400 block uppercase">Handcrafted Labor</span>
+                <span className="font-extrabold text-[#262220]">{laborHours || 15} hours</span>
+              </div>
+              <div className="bg-white p-3 rounded-2xl border border-stone-200">
+                <span className="text-[10px] font-bold text-stone-400 block uppercase">Material Cost</span>
+                <span className="font-extrabold text-[#262220]">₹{materialCost || 850}</span>
+              </div>
+            </div>
+
+            {/* REQUIREMENT 24: SHOW AI VS USER VALUES */}
+            {originalAiValues.material && material && originalAiValues.material.toLowerCase() !== material.toLowerCase() && (
+              <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-900 space-y-1">
+                <div className="font-extrabold flex items-center gap-1 text-[#9c4124]">
+                  <Sparkles className="w-3.5 h-3.5" /> AI vs Artisan Correction
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] pt-1">
+                  <div>
+                    <span className="text-stone-500 font-medium">AI detected: </span>
+                    <span className="line-through text-stone-600">{originalAiValues.material}</span>
+                  </div>
+                  <div>
+                    <span className="text-stone-500 font-medium">Your correction: </span>
+                    <span className="font-bold text-[#9c4124]">{material}</span>
+                  </div>
+                  <div>
+                    <span className="text-stone-500 font-medium">Final saved value: </span>
+                    <span className="font-extrabold text-emerald-800">✓ {material}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Title and Short Description */}
@@ -773,28 +1306,76 @@ export function AddHandicraft() {
               />
             </div>
 
-            {/* Fair Price Box */}
-            <div data-tutorial="ai-price-box" className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div>
-                <span className="text-[10px] font-extrabold text-emerald-800 uppercase">AI Recommended Selling Price</span>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-2xl font-black text-emerald-950">₹{suggestedPrice}</span>
-                  <span className="text-xs text-emerald-700 font-bold">(Your profit: ~₹{suggestedPrice - materialCost})</span>
+            {/* Verified Origin / Made in Badge */}
+            <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-[#9c4124] shrink-0" />
+                <div>
+                  <span className="text-xs font-bold text-stone-800">
+                    Made in: <span className="text-[#9c4124] font-extrabold">{madeInLocation}</span>
+                  </span>
+                  <span className="text-[10px] text-stone-500 block">
+                    Regional artisan place (Does not automatically imply GI certification)
+                  </span>
                 </div>
-                <p className="text-[11px] text-stone-600 mt-0.5">
-                  Fair price based on your material cost of ₹{materialCost} and fair labor wages.
-                </p>
+              </div>
+              <button
+                onClick={() => setStep(3)}
+                className="text-xs font-bold text-[#9c4124] hover:underline shrink-0"
+              >
+                Edit
+              </button>
+            </div>
+
+            {/* REQUIREMENT 30: FAIR PRICING ENGINE CALCULATION BOX */}
+            <div data-tutorial="ai-price-box" className="p-5 rounded-3xl bg-emerald-50/60 border border-emerald-300 space-y-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-emerald-200/80 pb-3">
+                <div>
+                  <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                    Fair Pricing Engine (Cost-Plus Methodology)
+                  </span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-3xl font-black text-emerald-950">₹{suggestedPrice}</span>
+                    <span className="text-xs text-emerald-800 font-bold bg-emerald-100/70 px-2 py-0.5 rounded-md">
+                      Net Profit: ~₹{Math.max(suggestedPrice - (materialCost || 850), 0)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <span className="text-xs font-bold text-stone-700">Set Custom Price: ₹</span>
+                  <input
+                    type="number"
+                    value={suggestedPrice}
+                    onChange={(e) => setSuggestedPrice(Number(e.target.value))}
+                    className="w-28 px-3 py-1.5 bg-white rounded-xl border border-emerald-300 text-base font-extrabold text-stone-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 self-start sm:self-auto">
-                <span className="text-xs font-bold text-stone-700">Set Price: ₹</span>
-                <input
-                  type="number"
-                  value={suggestedPrice}
-                  onChange={(e) => setSuggestedPrice(Number(e.target.value))}
-                  className="w-24 px-2 py-1 bg-white rounded-lg border border-stone-300 text-sm font-extrabold text-stone-900"
-                />
+              {/* Formula Breakdown */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
+                <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-200">
+                  <span className="text-[10px] text-stone-500 font-semibold block">Material Cost</span>
+                  <span className="font-extrabold text-stone-900">₹{materialCost || 850}</span>
+                </div>
+                <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-200">
+                  <span className="text-[10px] text-stone-500 font-semibold block">Artisan Labor ({laborHours || 15}h @ ₹90/h)</span>
+                  <span className="font-extrabold text-stone-900">₹{(laborHours || 15) * 90}</span>
+                </div>
+                <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-200">
+                  <span className="text-[10px] text-stone-500 font-semibold block">Tooling & Overhead (15%)</span>
+                  <span className="font-extrabold text-stone-900">₹{Math.round((materialCost || 850) * 0.15)}</span>
+                </div>
+                <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-200">
+                  <span className="text-[10px] text-stone-500 font-semibold block">Fair Profit Margin (20%)</span>
+                  <span className="font-extrabold text-stone-900">₹{Math.round(((materialCost || 850) + ((laborHours || 15) * 90)) * 0.20)}</span>
+                </div>
               </div>
+
+              <p className="text-[11px] text-emerald-900/80 font-medium">
+                Fair price dynamically calculated to prevent artisan exploitation and ensure liveable wage rates.
+              </p>
             </div>
           </div>
 
@@ -825,6 +1406,9 @@ export function AddHandicraft() {
           </div>
         </div>
       )}
+
+      {/* REQUIREMENT 32: DEV ONLY AI / CAMERA / VOICE TELEMETRY PANEL */}
+      <DevAiDebugPanel telemetry={telemetry} />
     </div>
   );
 }

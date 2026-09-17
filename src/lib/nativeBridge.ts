@@ -93,42 +93,116 @@ export const secureStorage = {
   },
 };
 
+// Helper to prompt file selection or camera capture on web browsers
+const promptWebFileInput = (captureCamera: boolean): Promise<string | null> => {
+  return new Promise((resolve) => {
+    if (typeof document === 'undefined') return resolve(null);
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    if (captureCamera) {
+      input.setAttribute('capture', 'environment');
+    }
+    input.style.display = 'none';
+
+    let resolved = false;
+    const cleanup = () => {
+      if (document.body.contains(input)) {
+        document.body.removeChild(input);
+      }
+    };
+
+    input.onchange = (e: any) => {
+      const file = e.target?.files?.[0];
+      if (!file) {
+        cleanup();
+        if (!resolved) {
+          resolved = true;
+          resolve(null);
+        }
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        cleanup();
+        if (!resolved) {
+          resolved = true;
+          resolve((ev.target?.result as string) || null);
+        }
+      };
+      reader.onerror = () => {
+        cleanup();
+        if (!resolved) {
+          resolved = true;
+          resolve(null);
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.addEventListener(
+      'focus',
+      () => {
+        setTimeout(() => {
+          if (!resolved && (!input.files || input.files.length === 0)) {
+            cleanup();
+            resolved = true;
+            resolve(null);
+          }
+        }, 1200);
+      },
+      { once: true }
+    );
+
+    document.body.appendChild(input);
+    input.click();
+  });
+};
+
 // 4. Native Camera & Gallery
 export const takeNativePhoto = async (): Promise<string | null> => {
-  try {
-    const photo = await Camera.getPhoto({
-      quality: 90,
-      allowEditing: false,
-      resultType: CameraResultType.DataUrl,
-      source: CameraSource.Camera,
-      promptLabelHeader: 'Capture Craft Photo',
-      promptLabelPhoto: 'From Gallery',
-      promptLabelPicture: 'Take Photo',
-    });
-    return photo.dataUrl || null;
-  } catch (err: any) {
-    if (err?.message !== 'User cancelled photos app') {
-      console.warn('Native camera capture fallback:', err);
+  if (isNativePlatform()) {
+    try {
+      const photo = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Camera,
+        promptLabelHeader: 'Capture Craft Photo',
+        promptLabelPhoto: 'From Gallery',
+        promptLabelPicture: 'Take Photo',
+      });
+      return photo.dataUrl || null;
+    } catch (err: any) {
+      if (err?.message !== 'User cancelled photos app') {
+        console.warn('Native camera capture fallback:', err);
+      }
+      return null;
     }
-    return null;
   }
+  // Web fallback: trigger mobile camera or file input
+  return promptWebFileInput(true);
 };
 
 export const pickNativeGalleryPhoto = async (): Promise<string | null> => {
-  try {
-    const photo = await Camera.getPhoto({
-      quality: 90,
-      allowEditing: false,
-      resultType: CameraResultType.DataUrl,
-      source: CameraSource.Photos,
-    });
-    return photo.dataUrl || null;
-  } catch (err: any) {
-    if (err?.message !== 'User cancelled photos app') {
-      console.warn('Native gallery pick fallback:', err);
+  if (isNativePlatform()) {
+    try {
+      const photo = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Photos,
+      });
+      return photo.dataUrl || null;
+    } catch (err: any) {
+      if (err?.message !== 'User cancelled photos app') {
+        console.warn('Native gallery pick fallback:', err);
+      }
+      return null;
     }
-    return null;
   }
+  // Web fallback: trigger gallery file input
+  return promptWebFileInput(false);
 };
 
 // 5. Native Haptic Feedback

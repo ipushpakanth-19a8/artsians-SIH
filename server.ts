@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import path from "path";
 import fs from "fs";
@@ -13,6 +15,12 @@ import {
 import { enhanceCraftImage } from "./server/imageProcessor.js";
 import { LanguageCode, Enquiry } from "./src/types.js";
 import { pricingService } from "./server/services/pricing.service.js";
+import {
+  inspectCraftImage,
+  extractVoiceCorrection,
+  extractProductDetailsFromVoice,
+  extractTargetFieldFromVoice,
+} from "./server/services/craftInspection.service.js";
 
 // Token helpers for secure stateless session authentication
 function generateToken(user: User): string {
@@ -90,6 +98,134 @@ async function startServer() {
   });
 
   // ==========================================
+  // LOCATION & REVERSE GEOCODING PROXY (PRIVACY-BY-DESIGN)
+  // ==========================================
+  // Indian State Centroids for offline / fallback reverse-geocoding
+  const INDIAN_STATE_CENTROIDS: Array<{ state: string; district: string; lat: number; lon: number }> = [
+    { state: "Andhra Pradesh", district: "Amaravati", lat: 15.9129, lon: 79.7400 },
+    { state: "Telangana", district: "Hyderabad", lat: 17.8749, lon: 78.1008 },
+    { state: "Tamil Nadu", district: "Chennai", lat: 11.1271, lon: 78.6569 },
+    { state: "Karnataka", district: "Bengaluru", lat: 15.3173, lon: 75.7139 },
+    { state: "Kerala", district: "Thiruvananthapuram", lat: 10.8505, lon: 76.2711 },
+    { state: "Maharashtra", district: "Mumbai", lat: 19.7515, lon: 75.7139 },
+    { state: "Gujarat", district: "Gandhinagar", lat: 22.2587, lon: 71.1924 },
+    { state: "Rajasthan", district: "Jaipur", lat: 27.0238, lon: 74.2179 },
+    { state: "Uttar Pradesh", district: "Lucknow", lat: 26.8467, lon: 80.9462 },
+    { state: "Madhya Pradesh", district: "Bhopal", lat: 22.9734, lon: 78.6569 },
+    { state: "West Bengal", district: "Kolkata", lat: 22.9868, lon: 87.8550 },
+    { state: "Bihar", district: "Patna", lat: 25.0961, lon: 85.3131 },
+    { state: "Odisha", district: "Bhubaneswar", lat: 20.9517, lon: 85.0985 },
+    { state: "Punjab", district: "Chandigarh", lat: 31.1471, lon: 75.3412 },
+    { state: "Haryana", district: "Chandigarh", lat: 29.0588, lon: 76.0856 },
+    { state: "Assam", district: "Guwahati", lat: 26.2006, lon: 92.9376 },
+    { state: "Jharkhand", district: "Ranchi", lat: 23.6102, lon: 85.2799 },
+    { state: "Chhattisgarh", district: "Raipur", lat: 21.2787, lon: 81.8661 },
+    { state: "Uttarakhand", district: "Dehradun", lat: 30.0668, lon: 79.0193 },
+    { state: "Himachal Pradesh", district: "Shimla", lat: 31.1048, lon: 77.1734 },
+    { state: "Goa", district: "Panaji", lat: 15.2993, lon: 74.1240 },
+    { state: "Tripura", district: "Agartala", lat: 23.9408, lon: 91.9882 },
+    { state: "Meghalaya", district: "Shillong", lat: 25.4670, lon: 91.3662 },
+    { state: "Manipur", district: "Imphal", lat: 24.6637, lon: 93.9063 },
+    { state: "Nagaland", district: "Kohima", lat: 26.1584, lon: 94.5624 },
+    { state: "Mizoram", district: "Aizawl", lat: 23.1645, lon: 92.9376 },
+    { state: "Arunachal Pradesh", district: "Itanagar", lat: 28.2180, lon: 94.7278 },
+    { state: "Sikkim", district: "Gangtok", lat: 27.5330, lon: 88.5122 },
+    { state: "Delhi", district: "New Delhi", lat: 28.7041, lon: 77.1025 },
+    { state: "Jammu and Kashmir", district: "Srinagar", lat: 33.7782, lon: 76.5762 },
+    { state: "Ladakh", district: "Leh", lat: 34.1526, lon: 77.5771 },
+    { state: "Puducherry", district: "Pondicherry", lat: 11.9416, lon: 79.8083 },
+    { state: "Chandigarh", district: "Chandigarh", lat: 30.7333, lon: 76.7794 },
+  ];
+
+  function findNearestIndianState(lat: number, lon: number) {
+    let best = INDIAN_STATE_CENTROIDS[0];
+    let bestDist = Infinity;
+    for (const item of INDIAN_STATE_CENTROIDS) {
+      const d = Math.hypot(lat - item.lat, lon - item.lon);
+      if (d < bestDist) {
+        bestDist = d;
+        best = item;
+      }
+    }
+    return best;
+  }
+
+  app.post("/api/location/reverse-geocode", async (req, res) => {
+    try {
+      const { latitude, longitude } = req.body;
+      const lat = Number(latitude);
+      const lon = Number(longitude);
+
+      if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid coordinates provided"
+        });
+      }
+
+      let detectedState = "";
+      let detectedDistrict = "";
+      let detectedPlace = "";
+      let country = "India";
+      let source = "osm_nominatim";
+
+      // Attempt live reverse geocoding via OpenStreetMap Nominatim with 5s timeout
+      try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&addressdetails=1`;
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            "User-Agent": "KALAtech-Artisan-Marketplace/1.0 (contact@kalatech.gov.in)",
+            "Accept-Language": "en"
+          }
+        });
+        clearTimeout(timeout);
+
+        if (response.ok) {
+          const data = await response.json();
+          const address = data?.address || {};
+
+          detectedState = address.state || address.state_district || address.union_territory || "";
+          detectedDistrict = address.state_district || address.district || address.county || address.subdistrict || "";
+          detectedPlace = address.city || address.town || address.village || address.hamlet || address.suburb || address.neighbourhood || address.municipality || "";
+          country = address.country || "India";
+        }
+      } catch (err) {
+        // Network failure, DNS issue, or timeout: fall back gracefully to spatial centroid
+      }
+
+      // If live lookup failed or returned empty state, use nearest spatial centroid in India
+      if (!detectedState) {
+        const fallback = findNearestIndianState(lat, lon);
+        detectedState = fallback.state;
+        detectedDistrict = fallback.district;
+        detectedPlace = "Not available";
+        source = "offline_spatial_centroid";
+      }
+
+      // Privacy: raw lat/long is NEVER returned or persisted
+      return res.json({
+        success: true,
+        location: {
+          state: detectedState,
+          district: detectedDistrict || "Not available",
+          place: detectedPlace || "Not available",
+          country
+        },
+        source
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        error: "Failed to reverse geocode location"
+      });
+    }
+  });
+
+  // ==========================================
   // PASSWORDLESS OTP AUTHENTICATION ENDPOINTS
   // ==========================================
   const otpStore = new Map<string, { code: string; expiresAt: number }>();
@@ -118,7 +254,7 @@ async function startServer() {
 
   // Verify OTP & Passwordless Login
   app.post("/api/auth/otp/verify", (req, res) => {
-    const { otp, role, name, craft_type, business_name, location, state } = req.body;
+    const { otp, role, name, craft_type, business_name, location, state, district, place, preferredLanguage } = req.body;
     const rawPhone = req.body.phone || req.body.phoneNumber || "";
     const cleanPhone = rawPhone.replace(/[^0-9]/g, "");
     if (cleanPhone.length !== 10) {
@@ -136,6 +272,9 @@ async function startServer() {
     let user = db.findUserByPhone(cleanPhone);
     let artisan: any = undefined;
 
+    const finalDistrict = district || location || (userRole === "seller" ? "Pochampally" : "Bengaluru");
+    const finalPlace = place || (userRole === "seller" ? "Pochampally" : "Bengaluru");
+
     if (!user) {
       // Auto-provision artisan/user profile on-the-fly without password
       if (userRole === "seller") {
@@ -144,7 +283,9 @@ async function startServer() {
           category: craft_type || "Weaving",
           phone: `+91 ${cleanPhone}`,
           state: state || "Telangana",
-          district: location || "Pochampally",
+          district: finalDistrict,
+          place: finalPlace,
+          preferredLanguage: preferredLanguage || "te",
           bio: `Master craftsperson practicing ${craft_type || "traditional handloom"} craft heritage.`,
           experience_years: 12,
         });
@@ -159,15 +300,41 @@ async function startServer() {
         status: "active",
         craft_type: userRole === "seller" ? (craft_type || "Weaving") : undefined,
         business_name: business_name?.trim() || (userRole === "seller" ? `${name?.trim() || "Artisan"} Studio` : undefined),
-        location: location || (userRole === "seller" ? "Pochampally" : "Bengaluru"),
+        location: location || finalDistrict,
         state: state || (userRole === "seller" ? "Telangana" : "Karnataka"),
+        district: finalDistrict,
+        place: finalPlace,
+        preferredLanguage: preferredLanguage || (userRole === "seller" ? "te" : "en"),
         artisan_id: artisan?.id,
         hasCompletedSellerOnboarding: false,
         hasCompletedBuyerOnboarding: false,
       });
     } else {
+      if (district) user.district = district;
+      if (place) user.place = place;
+      if (preferredLanguage) (user as any).preferredLanguage = preferredLanguage;
+
       if (user.artisan_id) {
         artisan = db.getArtisan(user.artisan_id);
+        if (artisan) {
+          if (district) artisan.district = district;
+          if (place) artisan.place = place;
+          if (preferredLanguage) artisan.preferredLanguage = preferredLanguage;
+        }
+      }
+      if (userRole === "seller" && !artisan) {
+        artisan = db.createOrUpdateArtisan({
+          name: user.name || "Artisan Craftsperson",
+          category: user.craft_type || "Weaving",
+          phone: `+91 ${cleanPhone}`,
+          state: user.state || state || "Telangana",
+          district: user.district || finalDistrict,
+          place: user.place || finalPlace,
+          preferredLanguage: preferredLanguage || "te",
+          bio: `Master craftsperson practicing ${user.craft_type || "traditional"} craft heritage.`,
+          experience_years: 12,
+        });
+        user.artisan_id = artisan.id;
       }
     }
 
@@ -186,7 +353,7 @@ async function startServer() {
 
   // Save or Update Seller Profile after Voice Confirmation
   app.post("/api/auth/seller/profile", (req, res) => {
-    const { phoneNumber, sellerName, handicraftWorkName, preferredLanguage, preferredLanguageCode, state, stateCode } = req.body;
+    const { phoneNumber, sellerName, handicraftWorkName, preferredLanguage, preferredLanguageCode, state, stateCode, district, place } = req.body;
     const cleanPhone = (phoneNumber || "").replace(/[^0-9]/g, "");
     if (cleanPhone.length !== 10) {
       return res.status(400).json({ error: "Please enter a valid 10-digit mobile number" });
@@ -196,6 +363,8 @@ async function startServer() {
     const hWork = (handicraftWorkName || "").trim() || "Handicrafts";
     const selectedState = (state || "").trim() || "Telangana";
     const selectedStateCode = (stateCode || "").trim() || "TS";
+    const selectedDistrict = (district || "").trim();
+    const selectedPlace = (place || "").trim();
     const prefLang = preferredLanguage || "en";
     const prefLangCode = preferredLanguageCode || "en-IN";
 
@@ -206,6 +375,8 @@ async function startServer() {
       user.name = sName;
       user.craft_type = hWork;
       user.state = selectedState;
+      if (selectedDistrict) user.district = selectedDistrict;
+      if (selectedPlace) user.place = selectedPlace;
       (user as any).stateCode = selectedStateCode;
       (user as any).preferredLanguage = prefLang;
       (user as any).preferredLanguageCode = prefLangCode;
@@ -218,6 +389,9 @@ async function startServer() {
           artisan.category = hWork;
           artisan.phone = `+91 ${cleanPhone}`;
           artisan.state = selectedState;
+          if (selectedDistrict) artisan.district = selectedDistrict;
+          if (selectedPlace) artisan.place = selectedPlace;
+          artisan.preferredLanguage = prefLang;
         }
       }
       if (!artisan) {
@@ -226,7 +400,9 @@ async function startServer() {
           category: hWork,
           phone: `+91 ${cleanPhone}`,
           state: selectedState,
-          district: user.location || "Pochampally",
+          district: selectedDistrict || user.location || "Pochampally",
+          place: selectedPlace || "Pochampally",
+          preferredLanguage: prefLang,
           bio: `Master craftsperson practicing ${hWork} craft heritage.`,
           experience_years: 12,
         });
@@ -238,7 +414,9 @@ async function startServer() {
         category: hWork,
         phone: `+91 ${cleanPhone}`,
         state: selectedState,
-        district: "Pochampally",
+        district: selectedDistrict || "Pochampally",
+        place: selectedPlace || "Pochampally",
+        preferredLanguage: prefLang,
         bio: `Master craftsperson practicing ${hWork} craft heritage.`,
         experience_years: 12,
       });
@@ -252,8 +430,11 @@ async function startServer() {
         status: "active",
         craft_type: hWork,
         business_name: `${sName} Studio`,
-        location: "Pochampally",
+        location: selectedDistrict || "Pochampally",
         state: selectedState,
+        district: selectedDistrict || "Pochampally",
+        place: selectedPlace || "Pochampally",
+        preferredLanguage: prefLang,
         artisan_id: artisan.id,
         hasCompletedSellerOnboarding: true,
       });
@@ -1070,6 +1251,108 @@ async function startServer() {
     } catch (err: any) {
       console.error("Fair pricing calculation endpoint error:", err);
       res.status(400).json({ error: err.message || "Failed to calculate fair price" });
+    }
+  });
+
+  // ==========================================
+  // MULTIMODAL AI CRAFT INSPECTION & DETECTION
+  // ==========================================
+  app.post("/api/v1/ai/inspect-craft", async (req, res) => {
+    try {
+      const { image, language = "en", categoryHint, regionHint } = req.body;
+      if (!image || typeof image !== "string") {
+        return res.status(400).json({ error: "Craft photo (image base64 or URL) is required for AI inspection" });
+      }
+
+      const result = await inspectCraftImage(image, language as LanguageCode, categoryHint, regionHint);
+      res.json(result);
+    } catch (err: any) {
+      console.error("Craft inspection error:", err);
+      res.status(500).json({
+        success: false,
+        error: "We couldn't analyze the image.",
+        details: err?.message || String(err)
+      });
+    }
+  });
+
+  // Natural Voice-Driven Attribute Correction
+  app.post("/api/v1/ai/voice-correct-attribute", async (req, res) => {
+    try {
+      const { transcript, language = "en", currentAttributes } = req.body;
+      if (!transcript || typeof transcript !== "string") {
+        return res.status(400).json({ error: "Voice transcript is required" });
+      }
+
+      const correction = await extractVoiceCorrection(transcript, language as LanguageCode, currentAttributes || {});
+      res.json(correction);
+    } catch (err: any) {
+      console.error("Voice correction error:", err);
+      res.status(500).json({ error: "Failed to extract voice correction", details: err?.message });
+    }
+  });
+
+  // Voice Assistant: Auto-Fill Craft Product Details
+  app.post("/api/v1/ai/voice-auto-fill-product", async (req, res) => {
+    try {
+      const { transcript, language = "en", currentFormState } = req.body;
+      if (!transcript || typeof transcript !== "string") {
+        return res.status(400).json({ error: "Voice transcript is required" });
+      }
+
+      const result = await extractProductDetailsFromVoice(transcript, language as LanguageCode, currentFormState || {});
+      res.json(result);
+    } catch (err: any) {
+      console.error("Voice product auto-fill error:", err);
+      res.status(500).json({ error: "Failed to auto-fill product from voice", details: err?.message });
+    }
+  });
+
+  // Targeted Single-Field Voice Extraction (Sequential Voice Assistant Flow)
+  app.post("/api/v1/ai/voice-extract-field", async (req, res) => {
+    try {
+      const { transcript, targetField, language = "en", currentFormState } = req.body;
+      if (!transcript || typeof transcript !== "string") {
+        return res.status(400).json({ error: "Voice transcript is required" });
+      }
+      if (!targetField || typeof targetField !== "string") {
+        return res.status(400).json({ error: "targetField is required" });
+      }
+
+      const result = await extractTargetFieldFromVoice(
+        transcript,
+        targetField,
+        language as LanguageCode,
+        currentFormState || {}
+      );
+      res.json(result);
+    } catch (err: any) {
+      console.error("Target field voice extraction error:", err);
+      res.status(500).json({ error: "Failed to extract target field from voice", details: err?.message });
+    }
+  });
+
+  // Alias for backward compatibility with wizard client
+  app.post("/api/v1/ai/voice-extract-target-field", async (req, res) => {
+    try {
+      const { transcript, targetField, language = "en", currentFormState } = req.body;
+      if (!transcript || typeof transcript !== "string") {
+        return res.status(400).json({ error: "Voice transcript is required" });
+      }
+      if (!targetField || typeof targetField !== "string") {
+        return res.status(400).json({ error: "targetField is required" });
+      }
+
+      const result = await extractTargetFieldFromVoice(
+        transcript,
+        targetField,
+        language as LanguageCode,
+        currentFormState || {}
+      );
+      res.json(result);
+    } catch (err: any) {
+      console.error("Target field voice extraction alias error:", err);
+      res.status(500).json({ error: "Failed to extract target field from voice", details: err?.message });
     }
   });
 

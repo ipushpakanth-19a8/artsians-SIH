@@ -379,14 +379,14 @@ export function SellerLayout() {
               </span>
             </button>
 
-            {/* State & Language Indicator Pill (Exact match with Landing Portal) */}
+            {/* State & Language Indicator Pill */}
             <button
               id="seller-header-state-lang-btn"
               onClick={() => openLanguageModal('state')}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white hover:bg-stone-50 border border-[#eadfd4] hover:border-[#9c4124] text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="h-9 inline-flex items-center gap-1.5 px-3 rounded-xl bg-white hover:bg-stone-50 border border-[#eadfd4] hover:border-[#9c4124] text-xs font-semibold transition-all shadow-2xs cursor-pointer"
               title="Change State or Language"
             >
-              <span className="text-[#9c4124] font-extrabold flex items-center gap-1">
+              <span className="text-[#9c4124] font-bold flex items-center gap-1">
                 📍 {selectedState}
               </span>
               <span className="text-stone-300">•</span>
@@ -395,7 +395,7 @@ export function SellerLayout() {
             </button>
 
             {/* Quick Language Switcher on Desktop Top Bar */}
-            <div className="flex items-center bg-white p-1 rounded-xl border border-[#eadfd4]">
+            <div className="hidden sm:inline-flex items-center h-9 bg-white px-1.5 rounded-xl border border-[#eadfd4] gap-0.5 shadow-2xs">
               {(
                 [
                   { code: 'en' as const, label: 'EN' },
@@ -408,7 +408,7 @@ export function SellerLayout() {
                   <button
                     key={langItem.code}
                     onClick={() => setLanguage(langItem.code)}
-                    className={`px-2 py-0.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    className={`h-7 px-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                       isSelected
                         ? 'bg-[#9c4124] text-white shadow-xs'
                         : 'text-stone-600 hover:text-stone-900 hover:bg-[#f5efeb]'
@@ -420,10 +420,10 @@ export function SellerLayout() {
               })}
               <button
                 onClick={() => openLanguageModal('language')}
-                className="px-1.5 py-0.5 text-[10px] font-bold text-[#9c4124] hover:underline cursor-pointer"
+                className="h-7 px-1.5 text-[11px] font-bold text-[#9c4124] hover:underline cursor-pointer"
                 title="All 12 Indian Languages"
               >
-                More...
+                More
               </button>
             </div>
 
@@ -435,7 +435,7 @@ export function SellerLayout() {
                 sessionStorage.removeItem('ShilpSetu_seen_buyer_tour');
                 navigate('/buyer');
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-50 hover:text-emerald-800 text-stone-700 text-xs font-bold transition-colors border border-[#eadfd4] cursor-pointer shadow-2xs"
+              className="h-9 inline-flex items-center gap-2 px-3.5 rounded-xl bg-white hover:bg-emerald-50 hover:text-emerald-800 text-stone-700 hover:border-emerald-300 text-xs font-bold transition-colors border border-[#eadfd4] cursor-pointer shadow-2xs"
             >
               <Volume2 className="w-3.5 h-3.5 text-emerald-600" />
               <span>🛍️ Buyer Marketplace →</span>

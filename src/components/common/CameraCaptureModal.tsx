@@ -16,6 +16,8 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
   title = 'Capture Craft Photo'
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fileFallbackRef = useRef<HTMLInputElement>(null);
+  const cameraFallbackRef = useRef<HTMLInputElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cameraFacing, setCameraFacing] = useState<'environment' | 'user'>('environment');
@@ -30,11 +32,27 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
     }
   }, [stream]);
 
+  // Ensure video element plays whenever stream is attached
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.play().catch((err) => {
+        console.warn('Video auto-playback deferred:', err);
+      });
+    }
+  }, [stream]);
+
   // Start video stream
   const startCamera = useCallback(async (facing: 'environment' | 'user') => {
     setIsInitializing(true);
     setError(null);
     stopStream();
+
+    if (!navigator?.mediaDevices?.getUserMedia) {
+      setError('Live camera viewfinder is not supported in this browser or network context. Please take a photo with your device camera or choose from gallery.');
+      setIsInitializing(false);
+      return;
+    }
 
     try {
       let mediaStream: MediaStream;
@@ -48,7 +66,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
           audio: false,
         });
       } catch (err) {
-        // Fallback for laptops/desktops with only standard webcam
+        // Fallback for laptops/desktops with standard webcam
         mediaStream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: false,
@@ -58,13 +76,14 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
       setStream(mediaStream);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        videoRef.current.play().catch(() => {});
       }
     } catch (err: any) {
       console.error('Camera access error:', err);
       setError(
-        err.name === 'NotAllowedError'
-          ? 'Camera permission was denied. Please enable camera access in your browser settings or use file upload.'
-          : 'Unable to connect to camera device. Please verify your hardware or select an image file.'
+        err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError'
+          ? 'Camera permission was denied. Please allow camera access in your browser or select an image file directly.'
+          : 'Unable to start camera viewfinder. You can take a photo with your device camera or select a photo below.'
       );
     } finally {
       setIsInitializing(false);
@@ -91,14 +110,16 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
   const takeSnapshot = () => {
     if (!videoRef.current) return;
     const video = videoRef.current;
+    const w = video.videoWidth || 1280;
+    const h = video.videoHeight || 720;
     const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 1280;
-    canvas.height = video.videoHeight || 720;
+    canvas.width = w;
+    canvas.height = h;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     // Draw frame
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0, w, h);
     const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
     setCapturedImage(dataUrl);
     stopStream();
@@ -127,6 +148,24 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
     }
   };
 
+  // Process file from fallback inputs
+  const handleFilePicked = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        if (dataUrl) {
+          onCapture(dataUrl);
+          stopStream();
+          onClose();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    e.target.value = '';
+  };
+
   // Retake photo
   const handleRetake = () => {
     triggerHaptic('light');
@@ -148,6 +187,23 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-xl bg-stone-900 rounded-3xl overflow-hidden shadow-2xl border border-stone-800 flex flex-col max-h-[90vh]">
+        {/* Hidden Fallback File Inputs (Available in all states) */}
+        <input
+          type="file"
+          ref={fileFallbackRef}
+          accept="image/*"
+          className="hidden"
+          onChange={handleFilePicked}
+        />
+        <input
+          type="file"
+          ref={cameraFallbackRef}
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={handleFilePicked}
+        />
+
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-stone-800 bg-stone-950/80">
           <div className="flex items-center gap-2">
@@ -173,16 +229,39 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
         {/* Viewfinder / Capture Area */}
         <div className="relative flex-1 bg-black flex items-center justify-center overflow-hidden min-h-[340px] sm:min-h-[420px]">
           {error ? (
-            <div className="p-6 text-center max-w-md">
-              <AlertCircle className="w-12 h-12 text-rose-400 mx-auto mb-3" />
-              <p className="text-white text-sm font-semibold mb-2">Camera Unavailable</p>
-              <p className="text-stone-400 text-xs leading-relaxed mb-4">{error}</p>
-              <button
-                onClick={() => startCamera(cameraFacing)}
-                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all"
-              >
-                Retry Camera Access
-              </button>
+            <div className="p-6 text-center max-w-md space-y-4">
+              <AlertCircle className="w-12 h-12 text-rose-400 mx-auto" />
+              <div>
+                <p className="text-white text-base font-bold mb-1">Camera access is unavailable</p>
+                <p className="text-stone-300 text-xs leading-relaxed">{error}</p>
+              </div>
+
+              <div className="flex flex-col gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => cameraFallbackRef.current?.click()}
+                  className="w-full px-5 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:opacity-95 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Camera className="w-4 h-4" />
+                  <span>Take Photo with Device Camera</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fileFallbackRef.current?.click()}
+                  className="w-full px-5 py-3 bg-stone-800 hover:bg-stone-700 border border-stone-600 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <ImageIcon className="w-4 h-4 text-amber-400" />
+                  <span>Choose Photo from Gallery / Files</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => startCamera(cameraFacing)}
+                  className="w-full px-4 py-2 text-stone-400 hover:text-stone-200 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Retry Live Viewfinder</span>
+                </button>
+              </div>
             </div>
           ) : capturedImage ? (
             <div className="relative w-full h-full flex items-center justify-center">

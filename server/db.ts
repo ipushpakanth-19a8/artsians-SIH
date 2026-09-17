@@ -15,6 +15,9 @@ export interface User {
   business_name?: string;
   location?: string;
   state?: string;
+  district?: string;
+  place?: string;
+  preferredLanguage?: string;
   address?: string;
   artisan_id?: string;
   created_at: string;
@@ -522,11 +525,13 @@ class PostgresDB {
           category: existing.category,
           state: existing.state,
           district: existing.district,
+          place: existing.place,
+          preferredLanguage: existing.preferredLanguage,
           bio: existing.bio,
           experience_years: existing.experience_years,
           profile_image_url: existing.profile_image_url,
           phone: existing.phone
-        }
+        } as any
       }).catch(e => console.error('Prisma Artisan update error:', e));
       return existing;
     }
@@ -537,6 +542,8 @@ class PostgresDB {
       category: data.category || "Weaving",
       state: data.state || "Telangana",
       district: data.district || "Bhoodan Pochampally",
+      place: data.place || "Not available",
+      preferredLanguage: data.preferredLanguage || "te",
       bio: data.bio || "Traditional artisan continuing ancient ancestral craft legacy.",
       experience_years: data.experience_years || 15,
       profile_image_url: data.profile_image_url || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80",
@@ -552,11 +559,13 @@ class PostgresDB {
         category: newArtisan.category,
         state: newArtisan.state,
         district: newArtisan.district,
+        place: newArtisan.place,
+        preferredLanguage: newArtisan.preferredLanguage,
         bio: newArtisan.bio,
         experience_years: newArtisan.experience_years,
         profile_image_url: newArtisan.profile_image_url,
         phone: newArtisan.phone
-      }
+      } as any
     }).catch(e => console.error('Prisma Artisan create error:', e));
 
     return newArtisan;
@@ -752,6 +761,14 @@ class PostgresDB {
     const dataToUpdate: any = {};
     if (updates.title !== undefined) dataToUpdate.title = updates.title;
     if (updates.description !== undefined) dataToUpdate.description = updates.description;
+    if (updates.category !== undefined) dataToUpdate.category = updates.category;
+    if (updates.material !== undefined) dataToUpdate.material = updates.material;
+    if (updates.craft_technique !== undefined) dataToUpdate.craft_technique = updates.craft_technique;
+    if (updates.est_dimensions !== undefined) dataToUpdate.est_dimensions = updates.est_dimensions;
+    if (updates.quantity !== undefined) dataToUpdate.quantity = updates.quantity;
+    if (updates.location !== undefined) dataToUpdate.location = updates.location;
+    if (updates.motifs !== undefined) dataToUpdate.motifs = updates.motifs;
+    if (updates.colors !== undefined) dataToUpdate.colors = updates.colors;
     if (updates.final_price !== undefined) dataToUpdate.final_price = updates.final_price;
     if (updates.status !== undefined) dataToUpdate.status = updates.status;
     if (updates.pricing !== undefined) dataToUpdate.pricing = updates.pricing;
@@ -773,10 +790,21 @@ class PostgresDB {
     if (updates.pricingFormulaVersion !== undefined) dataToUpdate.pricingFormulaVersion = updates.pricingFormulaVersion;
     if (updates.pricingCalculatedAt !== undefined) dataToUpdate.pricingCalculatedAt = new Date(updates.pricingCalculatedAt);
 
-    prisma.product.update({
-      where: { id },
-      data: dataToUpdate
-    }).catch(e => console.error('Prisma Product update error:', e));
+    prisma.product.findUnique({ where: { id }, select: { id: true } })
+      .then(existing => {
+        if (existing) {
+          return prisma.product.update({
+            where: { id },
+            data: dataToUpdate
+          });
+        }
+      })
+      .catch(e => {
+        // Non-critical background sync logging
+        if (process.env.NODE_ENV === 'development') {
+          console.debug('Prisma background product sync note:', e?.message || e);
+        }
+      });
 
     return p;
   }

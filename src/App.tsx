@@ -38,7 +38,7 @@ import { OfflineBanner } from './components/common/OfflineBanner';
 import { initNativeAppChrome } from './lib/nativeBridge';
 
 import { LanguageSelectionModal } from './components/common/LanguageSelectionModal';
-import { LanguageTestPanel } from './components/dev/LanguageTestPanel';
+import { LocationLanguageModal } from './components/common/LocationLanguageModal';
 
 export default function App() {
   const { language, isLanguageModalOpen, closeLanguageModal, initialModalStep } = useLanguage();
@@ -61,11 +61,11 @@ export default function App() {
         <CompletionJourneyModal />
         <ReturningArtisanBanner />
 
-        {/* Global Language Modal for non-landing pages (e.g. /seller, /buyer) */}
+        {/* Global Location & Language Modal for non-landing pages (e.g. /seller, /buyer) */}
         {isLanguageModalOpen && location.pathname !== '/' && (
-          <LanguageSelectionModal
+          <LocationLanguageModal
             isOpen={isLanguageModalOpen}
-            initialStep={initialModalStep}
+            initialMode={initialModalStep === 'language' ? 'language-only' : 'auto'}
             onClose={closeLanguageModal}
           />
         )}
@@ -124,7 +124,6 @@ export default function App() {
         {/* Catch-all redirect to Landing */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <LanguageTestPanel />
     </div>
     </TutorialProvider>
   );

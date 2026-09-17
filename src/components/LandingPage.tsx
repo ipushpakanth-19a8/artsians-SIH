@@ -18,6 +18,7 @@ import { ArtisanOnboardingModal } from './portal/ArtisanOnboardingModal';
 import { BuyerAuthModal } from './auth/BuyerAuthModal';
 import { SellerAuthModal } from './auth/SellerAuthModal';
 import { LanguageSelectionModal } from './common/LanguageSelectionModal';
+import { LocationLanguageModal } from './common/LocationLanguageModal';
 import { useTutorial } from './tutorial/TutorialContext';
 
 export function LandingPage() {
@@ -122,8 +123,7 @@ export function LandingPage() {
       />
 
       {/* ================================================== */}
-      {/* 1. ASYMMETRIC CRAFT HERO (stitch-design-taste)     */}
-      {/* ================================================== */}
+      {/* 1. ASYMMETRIC CRAFT HERO */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#faf7f2] via-[#f5efeb]/40 to-[#faf7f2] pt-8 sm:pt-14 pb-14 sm:pb-20 border-b border-[#eadfd4]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
@@ -131,26 +131,26 @@ export function LandingPage() {
             {/* Left Column: Editorial Headline & Actions */}
             <div className="lg:col-span-7 text-left space-y-5 animate-fade-in-up">
               {/* Subtle Heritage Craft Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fff7ed] border border-[#fed7aa] text-[#9c4124] text-xs font-black uppercase tracking-wider shadow-2xs">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fff7ed] border border-[#fed7aa] text-[#9c4124] text-xs font-bold uppercase tracking-wider shadow-2xs">
                 <Sparkles className="w-3.5 h-3.5 text-[#d97706]" />
                 <span>{t.heroBadge}</span>
               </div>
 
               {/* Large Display Heading in Rozha One */}
-              <h1 className="text-3xl sm:text-5xl lg:text-[3.25rem] font-black text-[#262220] tracking-tight leading-[1.14] font-['Rozha_One',serif]">
+              <h1 className="text-3xl sm:text-5xl lg:text-[3.25rem] font-black text-[#262220] tracking-tight leading-[1.12] font-['Rozha_One',serif]">
                 {t.heroHeading}
               </h1>
 
               {/* Empathetic Craft Narrative */}
-              <p className="text-base sm:text-lg text-[#57534e] font-medium leading-relaxed max-w-xl">
+              <p className="text-base sm:text-lg text-[#57534e] font-normal leading-relaxed max-w-xl">
                 {t.heroSub}
               </p>
 
               {/* Dual Primary Action CTAs */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
                 <button
                   onClick={() => setArtisanModalOpen(true)}
-                  className="min-h-[54px] px-8 py-3.5 rounded-2xl font-bold text-base text-white bg-[#9c4124] hover:bg-[#83341b] artisan-btn-glow shadow-md shadow-[#9c4124]/25 transition-all duration-200 flex items-center justify-center gap-2.5 active:scale-[0.98] cursor-pointer"
+                  className="h-13 px-8 rounded-xl font-bold text-base text-white bg-[#9c4124] hover:bg-[#83341b] shadow-md shadow-[#9c4124]/20 transition-all duration-200 inline-flex items-center justify-center gap-2.5 active:scale-[0.98] cursor-pointer"
                 >
                   <span>{t.primaryCta}</span>
                   <ArrowRight className="w-4.5 h-4.5 group-hover:translate-x-1" />
@@ -158,7 +158,7 @@ export function LandingPage() {
 
                 <button
                   onClick={handleStartTutorial}
-                  className="min-h-[54px] px-6 py-3.5 rounded-2xl font-bold text-base text-[#9c4124] bg-white hover:bg-[#fff7ed] border border-[#fed7aa] hover:border-[#9c4124] shadow-2xs transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+                  className="h-13 px-6 rounded-xl font-bold text-base text-[#9c4124] bg-white hover:bg-[#fff7ed] border border-[#fed7aa] hover:border-[#9c4124] shadow-2xs transition-all duration-200 inline-flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
                 >
                   <Volume2 className="w-4.5 h-4.5 text-[#9c4124] animate-pulse" />
                   <span>{t.voiceTourButton}</span>
@@ -169,9 +169,9 @@ export function LandingPage() {
               <div className="flex flex-wrap items-center gap-2.5 pt-1">
                 <button
                   onClick={() => openWelcomeModal()}
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#fff7ed] hover:bg-[#ffedd5] border border-[#fed7aa] text-[#9c4124] text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
+                  className="h-8 inline-flex items-center gap-2 px-3 rounded-lg bg-[#fff7ed] hover:bg-[#ffedd5] border border-[#fed7aa] text-[#9c4124] text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
                 >
-                  <span className="text-base">🌱</span>
+                  <span>🌱</span>
                   <span>{t.startArtisanJourney}</span>
                   <span className="bg-[#9c4124] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider">
                     9 Levels
@@ -180,7 +180,7 @@ export function LandingPage() {
 
                 <button
                   onClick={() => startDemoJourney()}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-[#faf7f2] border border-[#eadfd4] hover:border-[#9c4124] text-[#9c4124] text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
+                  className="h-8 inline-flex items-center gap-1.5 px-3 rounded-lg bg-white hover:bg-[#faf7f2] border border-[#eadfd4] hover:border-[#9c4124] text-[#78716c] hover:text-[#9c4124] text-xs font-semibold transition-all shadow-2xs cursor-pointer active:scale-95"
                   title="Fast-track to Level 3 for SIH judges & evaluators"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-[#d97706]" />
@@ -191,15 +191,15 @@ export function LandingPage() {
 
             {/* Right Column: Visual Craft Spotlight Card */}
             <div className="lg:col-span-5 animate-scale-in">
-              <div className="artisan-card p-5 sm:p-6 relative overflow-hidden bg-white shadow-[0_12px_36px_-6px_rgba(38,34,32,0.08)] border border-[#eadfd4]">
+              <div className="artisan-card p-5 sm:p-6 rounded-2xl relative overflow-hidden bg-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-[#eadfd4]">
                 {/* Visual Craft Card Header */}
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="w-8 h-8 rounded-xl bg-[#fff7ed] border border-[#fed7aa] text-[#9c4124] flex items-center justify-center font-bold text-sm">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-9 h-9 rounded-xl bg-[#fff7ed] border border-[#fed7aa] text-[#9c4124] flex items-center justify-center font-bold text-sm shrink-0">
                       🏺
                     </span>
                     <div>
-                      <span className="text-xs font-black text-[#262220] block">Terracotta Water Pot</span>
+                      <span className="text-xs font-black text-[#262220] block leading-tight">Terracotta Water Pot</span>
                       <span className="text-[10px] text-[#78716c] font-semibold">Gorakhpur Clay Heritage</span>
                     </div>
                   </div>
@@ -209,7 +209,7 @@ export function LandingPage() {
                 </div>
 
                 {/* Craft Image Simulation */}
-                <div className="relative aspect-4/3 rounded-2xl overflow-hidden bg-[#f5efeb] mb-4 border border-[#eadfd4] group">
+                <div className="relative aspect-4/3 rounded-xl overflow-hidden bg-[#f5efeb] mb-4 border border-[#eadfd4] group">
                   <img
                     src="https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80"
                     alt="Artisan Terracotta Craft"
@@ -220,20 +220,20 @@ export function LandingPage() {
                     <Sparkles className="w-3 h-3 text-[#fbbf24]" />
                     <span>AI Studio Enhanced (4K)</span>
                   </div>
-                  <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-md text-[#9c4124] text-[10px] font-black shadow-xs">
+                  <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-md text-[#9c4124] text-[10px] font-black shadow-2xs">
                     0% Commission
                   </div>
                 </div>
 
                 {/* Fair-Price Metric Pill */}
-                <div className="p-3 rounded-xl bg-[#faf7f2] border border-[#eadfd4] flex items-center justify-between mb-3">
+                <div className="p-3.5 rounded-xl bg-[#faf7f2] border border-[#eadfd4] flex items-center justify-between mb-3">
                   <div>
-                    <span className="text-[10px] text-[#78716c] font-bold uppercase block">Verified Fair Wage</span>
-                    <span className="text-sm font-black text-[#262220]">₹1,250 <span className="text-[10px] font-bold text-[#15803d]">✓ Cost-Plus Fair Price</span></span>
+                    <span className="text-[10px] text-[#78716c] font-bold uppercase block tracking-wider">Verified Fair Wage</span>
+                    <span className="text-sm font-black text-[#262220]">₹1,250 <span className="text-[10px] font-bold text-[#15803d] ml-1">✓ Cost-Plus Floor</span></span>
                   </div>
                   <button
                     onClick={handleListenWelcome}
-                    className="artisan-listen-btn cursor-pointer"
+                    className="h-8 px-3 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 bg-white border border-[#fed7aa] text-[#9c4124] hover:bg-[#fff7ed] transition-colors cursor-pointer shadow-2xs active:scale-95"
                     title="Listen to welcome audio"
                   >
                     <Volume2 className="w-3.5 h-3.5 text-[#9c4124]" />
@@ -295,24 +295,24 @@ export function LandingPage() {
       {/* 4. ETHICAL COMMITMENT & TRUST ASSURANCE           */}
       {/* ================================================== */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-xs text-center animate-fade-in-up">
+        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#eadfd4] shadow-xs text-center animate-fade-in-up">
           <div className="flex items-center justify-center gap-2 mb-3">
-            <ShieldCheck className="w-6 h-6 text-[#15803d]" />
-            <span className="text-base sm:text-lg font-black text-[#262220] font-['Rozha_One',serif]">
+            <ShieldCheck className="w-5 h-5 text-[#15803d]" />
+            <h3 className="text-base sm:text-lg font-black text-[#262220] font-['Rozha_One',serif]">
               {t.ethicalCommitmentTitle}
-            </span>
+            </h3>
           </div>
-          <p className="text-xs sm:text-sm text-[#57534e] leading-relaxed max-w-2xl mx-auto mb-5">
+          <p className="text-xs sm:text-sm text-[#57534e] leading-relaxed max-w-2xl mx-auto mb-5 font-normal">
             {t.ethicalCommitmentDesc}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-bold">
-            <span className="px-3.5 py-1.5 bg-[#fff7ed] border border-[#fed7aa] text-[#9c4124] rounded-full shadow-2xs">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 text-xs font-bold">
+            <span className="h-8 inline-flex items-center px-3.5 bg-[#fff7ed] border border-[#fed7aa] text-[#9c4124] rounded-lg shadow-2xs">
               ✓ 0% Platform Commission on Craft Sales
             </span>
-            <span className="px-3.5 py-1.5 bg-[#dcfce7] border border-[#bbf7d0] text-[#15803d] rounded-full shadow-2xs">
+            <span className="h-8 inline-flex items-center px-3.5 bg-[#dcfce7] border border-[#bbf7d0] text-[#15803d] rounded-lg shadow-2xs">
               ✓ 100% Direct UPI & Bank Settlement
             </span>
-            <span className="px-3.5 py-1.5 bg-white border border-[#eadfd4] text-[#262220] rounded-full shadow-2xs">
+            <span className="h-8 inline-flex items-center px-3.5 bg-white border border-[#eadfd4] text-[#262220] rounded-lg shadow-2xs">
               ✓ 12 Regional Indian Languages Supported
             </span>
           </div>
@@ -322,25 +322,25 @@ export function LandingPage() {
       {/* ================================================== */}
       {/* FOOTER */}
       {/* ================================================== */}
-      <footer className="bg-white text-stone-600 py-10 px-4 border-t border-[#eadfd4] text-center text-xs">
+      <footer className="bg-white text-stone-600 py-12 px-4 border-t border-[#eadfd4] text-center text-xs">
         <div className="max-w-3xl mx-auto space-y-3">
           <div className="flex items-center justify-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[#9c4124] flex items-center justify-center text-white font-black text-sm">
+            <div className="w-8 h-8 rounded-xl bg-[#9c4124] flex items-center justify-center text-white font-black text-sm shadow-xs">
               SS
             </div>
             <span className="font-extrabold text-[#262220] text-base font-['Rozha_One',serif]">
               ShilpSetu
             </span>
-            <span className="text-[#9c4124] text-xs">शिल्पसेतु</span>
+            <span className="text-[#9c4124] text-xs font-bold font-['Noto_Sans_Devanagari',sans-serif]">शिल्पसेतु</span>
             <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[#fdf2e9] text-[#9c4124] border border-[#f8d7c2] rounded uppercase">ShilpSetu</span>
           </div>
-          <p className="text-stone-700 font-medium">
+          <p className="text-[#57534e] font-medium max-w-lg mx-auto">
             {t.tagline}
           </p>
-          <p className="text-[11px] text-stone-500">
+          <p className="text-[11px] text-[#78716c]">
             {t.footerAccessibility}
           </p>
-          <p className="text-[11px] text-stone-400 pt-2 border-t border-stone-100">
+          <p className="text-[11px] text-[#a8a29e] pt-3 border-t border-stone-100">
             Smart India Hackathon • Made with reverence for India's living cultural craft heritage.
           </p>
         </div>
@@ -349,10 +349,10 @@ export function LandingPage() {
       {/* ================================================== */}
       {/* MOBILE STICKY BOTTOM ACTION BAR */}
       {/* ================================================== */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#eadfd4] p-2.5 sm:hidden flex items-center justify-between gap-2 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#eadfd4] px-4 py-2.5 sm:hidden flex items-center justify-between gap-2.5 shadow-lg">
         <button
           onClick={handleListenWelcome}
-          className="min-h-[46px] px-3.5 rounded-xl bg-[#fdf2e9] border border-[#f8d7c2] text-[#9c4124] font-bold text-xs flex items-center gap-1.5 shrink-0"
+          className="h-11 px-4 rounded-xl bg-[#fff7ed] border border-[#fed7aa] text-[#9c4124] font-bold text-xs inline-flex items-center gap-2 shrink-0 active:scale-95"
         >
           <Volume2 className="w-4 h-4 text-[#9c4124]" />
           <span>{t.voiceListen}</span>
@@ -360,19 +360,19 @@ export function LandingPage() {
 
         <button
           onClick={() => setArtisanModalOpen(true)}
-          className="min-h-[46px] flex-1 py-2 px-4 rounded-xl font-black text-sm text-white bg-[#9c4124] shadow-sm flex items-center justify-center gap-2"
+          className="h-11 flex-1 px-4 rounded-xl font-bold text-sm text-white bg-[#9c4124] hover:bg-[#83341b] shadow-sm inline-flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
         >
           <span>{t.primaryCta} →</span>
         </button>
       </div>
 
       {/* ================================================== */}
-      {/* AUTOMATIC VOICE STATE & LANGUAGE SELECTION MODAL */}
+      {/* AUTO DETECT LOCATION + RECOMMEND LANGUAGE MODAL */}
       {/* ================================================== */}
       {isLanguageModalOpen && (
-        <LanguageSelectionModal
+        <LocationLanguageModal
           isOpen={isLanguageModalOpen}
-          initialStep={initialModalStep}
+          initialMode={initialModalStep === 'language' ? 'language-only' : 'auto'}
           onClose={closeLanguageModal}
           onComplete={handleLanguageSetupComplete}
         />

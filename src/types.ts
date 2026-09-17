@@ -48,12 +48,28 @@ export type HandicraftCategory =
   | 'Embroidery'
   | 'Other';
 
+export interface ArtisanLocation {
+  state: string;
+  district?: string;
+  place?: string;
+  preferredLanguage?: LanguageCode;
+}
+
+export interface LocationLanguageRecommendation {
+  location: ArtisanLocation;
+  recommendedLanguages: LanguageCode[];
+  primaryLanguage: LanguageCode;
+}
+
 export interface User {
   id: string;
   phone: string;
   name: string;
   role: 'seller' | 'buyer' | 'admin';
   preferred_language: LanguageCode;
+  district?: string;
+  place?: string;
+  preferredLanguage?: LanguageCode;
   created_at: string;
 }
 
@@ -64,6 +80,8 @@ export interface Artisan {
   category: string;
   state: string;
   district: string;
+  place?: string;
+  preferredLanguage?: LanguageCode;
   bio: string;
   experience_years: number;
   profile_image_url: string;

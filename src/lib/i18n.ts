@@ -40,8 +40,16 @@ const REGIONAL_VOICE_TAGS: Record<LanguageCode, string> = {
   as: 'as-IN',
 };
 
-export function speakText(text: string, lang: LanguageCode = 'en') {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+export function speakText(
+  text: string,
+  lang: LanguageCode = 'en',
+  onEnd?: () => void,
+  onStart?: () => void
+) {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    if (onEnd) setTimeout(onEnd, 100);
+    return;
+  }
   try {
     window.speechSynthesis.cancel();
     if (window.speechSynthesis.paused) {
@@ -51,6 +59,7 @@ export function speakText(text: string, lang: LanguageCode = 'en') {
     const targetLocale = REGIONAL_VOICE_TAGS[lang] || 'en-IN';
     utterance.lang = targetLocale;
 
+    let selectedVoiceName = 'default';
     if ('getVoices' in window.speechSynthesis) {
       const voices = window.speechSynthesis.getVoices();
       const match = voices.find(
@@ -58,16 +67,56 @@ export function speakText(text: string, lang: LanguageCode = 'en') {
           v.lang.toLowerCase() === targetLocale.toLowerCase() ||
           v.lang.toLowerCase().replace('_', '-').startsWith(lang)
       );
-      if (match) utterance.voice = match;
+      if (match) {
+        utterance.voice = match;
+        selectedVoiceName = match.name;
+      }
+    }
+
+    if ((import.meta as any).env?.DEV) {
+      console.log(`[VOICE] TTS starting`);
+      console.log(`[VOICE] voiceSelected = ${selectedVoiceName}`);
     }
 
     utterance.rate = 0.93;
+
+    let hasEnded = false;
+    let fallbackTimer: any = null;
+
+    const triggerEnd = () => {
+      if (!hasEnded) {
+        hasEnded = true;
+        if (fallbackTimer) clearTimeout(fallbackTimer);
+        if ((import.meta as any).env?.DEV) {
+          console.log(`[VOICE] TTS ended`);
+        }
+        if (onEnd) onEnd();
+      }
+    };
+
+    utterance.onstart = () => {
+      if (onStart) onStart();
+    };
+
+    utterance.onend = triggerEnd;
+    utterance.onerror = (err) => {
+      if ((import.meta as any).env?.DEV) {
+        console.warn(`[VOICE] TTS error:`, err);
+      }
+      triggerEnd();
+    };
+
     window.speechSynthesis.speak(utterance);
     if (window.speechSynthesis.paused) {
       window.speechSynthesis.resume();
     }
+
+    // Safety timeout in case browser TTS event doesn't fire (speechSynthesis bug in some browsers)
+    const approxDurationMs = Math.max(2000, Math.min(20000, text.length * 90));
+    fallbackTimer = setTimeout(triggerEnd, approxDurationMs + 1000);
   } catch (e) {
     console.error('Speech synthesis error:', e);
+    if (onEnd) onEnd();
   }
 }
 

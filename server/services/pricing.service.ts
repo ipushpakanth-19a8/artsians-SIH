@@ -22,7 +22,7 @@ export class PricingService {
    * Validate raw pricing input fields.
    * Enforces non-negative values and proper types.
    */
-  static validatePricingInputs(input: Partial<FairPricingRequest>): { valid: boolean; errors: string[] } {
+  static validatePricingInputs(input: Partial<FairPricingRequest & { targetMargin?: number }>): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
 
     if (input.materialCost !== undefined && (typeof input.materialCost !== 'number' || isNaN(input.materialCost) || input.materialCost < 0)) {
@@ -33,8 +33,12 @@ export class PricingService {
       errors.push('Labor hours cannot be negative and must be a valid number');
     }
 
-    if (input.fairHourlyWage !== undefined && (typeof input.fairHourlyWage !== 'number' || isNaN(input.fairHourlyWage) || input.fairHourlyWage < 0)) {
-      errors.push('Fair wage cannot be negative and must be a valid number');
+    if (input.fairHourlyWage !== undefined && (typeof input.fairHourlyWage !== 'number' || isNaN(input.fairHourlyWage) || input.fairHourlyWage <= 0)) {
+      errors.push('Fair wage must be a valid positive number');
+    }
+
+    if (input.targetMargin !== undefined && (typeof input.targetMargin !== 'number' || isNaN(input.targetMargin) || input.targetMargin < 0 || input.targetMargin >= 1)) {
+      errors.push('Target margin must be greater than or equal to 0 and less than 1');
     }
 
     if (input.quantity !== undefined && (typeof input.quantity !== 'number' || isNaN(input.quantity) || input.quantity <= 0)) {
@@ -51,22 +55,27 @@ export class PricingService {
     };
   }
 
-  validatePricingInputs(input: Partial<FairPricingRequest>): { valid: boolean; errors: string[] } {
+  validatePricingInputs(input: Partial<FairPricingRequest & { targetMargin?: number }>): { valid: boolean; errors: string[] } {
     return PricingService.validatePricingInputs(input);
   }
 
   /**
    * Deterministic, explainable Fair Pricing calculation.
    * Uses project's canonical formula:
-   *   Labor Value = Labor Hours * Fair Hourly Wage
-   *   Base Cost = Material Cost + Labor Value (+ Other Cost)
-   *   Margin/Contingency = Base Cost * 0.25 (25% safety margin)
-   *   Recommended Fair Price = Base Cost + Margin/Contingency
+   *   Labor Cost = Labor Hours * Fair Hourly Wage
+   *   Production Cost = Material Cost + Labor Cost (+ Other Cost)
+   *   Fair Price = Production Cost / (1 - Target Margin)
    *
-   * Gemini may help identify/classify product information, but Gemini DOES NOT
-   * directly decide the final price.
+   * Example:
+   *   Material Cost = ₹800
+   *   Labor Hours = 20
+   *   Fair Wage = ₹150/hr
+   *   Target Margin = 20% (0.20)
+   *   Labor Cost: 20 * 150 = ₹3,000
+   *   Production Cost: ₹800 + ₹3,000 = ₹3,800
+   *   Fair Price: ₹3,800 / 0.80 = ₹4,750
    */
-  static async calculateFairPrice(input: FairPricingRequest): Promise<FairPricingResponse> {
+  static async calculateFairPrice(input: FairPricingRequest & { targetMargin?: number }): Promise<FairPricingResponse> {
     const validation = PricingService.validatePricingInputs(input);
     if (!validation.valid) {
       throw new Error(`Pricing validation failed: ${validation.errors.join(', ')}`);
@@ -74,73 +83,105 @@ export class PricingService {
 
     const qty = Math.max(1, Math.round(Number(input.quantity) || 1));
     const materialCost = Math.max(0, Math.round(Number(input.materialCost) || 0));
-    // Statutory fair living wage floor: minimum ₹100/hr based on traditional craft cluster benchmarks
+    // Fair hourly wage: minimum ₹100/hr floor, default ₹150/hr
     const livingWageRateFloor = 100;
-    const rawWage = input.fairHourlyWage && input.fairHourlyWage > 0 ? Math.round(input.fairHourlyWage) : livingWageRateFloor;
+    const rawWage = input.fairHourlyWage && input.fairHourlyWage > 0 ? Math.round(input.fairHourlyWage) : 150;
     const fairHourlyWage = Math.max(livingWageRateFloor, rawWage);
-    // Default labor hours: 10 if unprovided or 0
     const laborHours = input.laborHours !== undefined && input.laborHours >= 0 ? Number(input.laborHours) : 10;
     const otherCost = Math.max(0, Math.round(Number(input.otherCost) || 0));
 
-    // 1. Labor Value = labor hours * fair hourly wage
-    const laborValue = Math.round(laborHours * fairHourlyWage);
+    // 1. Labor Cost = Labor Hours * Fair Hourly Wage
+    const laborCost = Math.round(laborHours * fairHourlyWage);
 
-    // 2. Base Production Cost = material cost + labor value + other cost
-    const baseCost = materialCost + laborValue + otherCost;
+    // 2. Production Cost = Material Cost + Labor Cost + Other Cost
+    const productionCost = materialCost + laborCost + otherCost;
 
-    // 3. Margin / Contingency = 25% of base cost (contingency & business expenses)
-    const marginOrContingency = Math.round(baseCost * 0.25);
+    // 3. Target Margin (default 20% = 0.20)
+    const targetMargin = (input.targetMargin !== undefined && input.targetMargin >= 0 && input.targetMargin < 1)
+      ? Number(input.targetMargin)
+      : 0.20;
 
-    // 4. Baseline Recommended Fair Price
-    let recommendedFairPrice = baseCost + marginOrContingency;
+    // 4. Deterministic Fair Price Formula:
+    // Fair Price = Production Cost / (1 - Target Margin)
+    const recommendedFairPrice = Math.round(productionCost / (1 - targetMargin));
+    const marginAmount = recommendedFairPrice - productionCost;
 
     // 5. Market Benchmark Calibrations (PostgreSQL / Curated benchmarks)
     let dbBenchmarks: any[] = [];
-    const category = input.category || input.craftType || 'Handicraft';
+    const category = input.category || input.craftType || '';
 
     try {
       if (prisma && (prisma as any).marketPriceBenchmark) {
         dbBenchmarks = await (prisma as any).marketPriceBenchmark.findMany({
-          where: {
-            category: {
-              equals: category,
-              mode: 'insensitive'
-            }
-          }
+          where: category ? {
+            OR: [
+              { category: { equals: category, mode: 'insensitive' } },
+              { craft_type: { equals: category, mode: 'insensitive' } },
+              { craft_name: { contains: category, mode: 'insensitive' } },
+            ]
+          } : undefined
         });
       }
     } catch (err) {
       // Graceful fallback if PostgreSQL table not populated
     }
 
-    let marketStats = {
-      min: Math.round(recommendedFairPrice * 0.88),
-      avg: Math.round(recommendedFairPrice * 1.15),
-      max: Math.round(recommendedFairPrice * 1.45),
-      count: dbBenchmarks.length,
-      typicalMiddlemanCut: 60
+    let marketStats: {
+      available: boolean;
+      min: number;
+      median: number;
+      avg: number;
+      max: number;
+      count: number;
+      typicalMiddlemanCut?: number;
+      message?: string;
     };
 
     if (dbBenchmarks.length > 0) {
-      const validPrices = dbBenchmarks.map(b => b.average_price).filter(p => typeof p === 'number' && p > 0);
-      if (validPrices.length > 0) {
-        const avg = Math.round(validPrices.reduce((a: number, b: number) => a + b, 0) / validPrices.length);
-        const min = Math.min(...dbBenchmarks.map(b => b.price_low || avg * 0.8));
-        const max = Math.max(...dbBenchmarks.map(b => b.price_high || avg * 1.3));
-        marketStats = {
-          min: Math.round(min),
-          avg: Math.round(avg),
-          max: Math.round(max),
-          count: dbBenchmarks.length,
-          typicalMiddlemanCut: Math.round(dbBenchmarks[0]?.typical_middleman_cut || 60)
-        };
-      }
-    }
+      const validPrices: number[] = [];
+      const lowPrices: number[] = [];
+      const highPrices: number[] = [];
 
-    // Guardrail: Recommended Fair Price can NEVER fall below baseCost + marginOrContingency (living wage floor)
-    const livingWageFloor = baseCost + marginOrContingency;
-    if (recommendedFairPrice < livingWageFloor) {
-      recommendedFairPrice = livingWageFloor;
+      for (const b of dbBenchmarks) {
+        if (typeof b.average_price === 'number' && b.average_price > 0) validPrices.push(b.average_price);
+        if (typeof b.price_low === 'number' && b.price_low > 0) lowPrices.push(b.price_low);
+        if (typeof b.price_high === 'number' && b.price_high > 0) highPrices.push(b.price_high);
+      }
+
+      const allComparablePrices = [...validPrices, ...lowPrices, ...highPrices].sort((a, b) => a - b);
+      const min = lowPrices.length ? Math.min(...lowPrices) : (validPrices.length ? Math.min(...validPrices) : 0);
+      const max = highPrices.length ? Math.max(...highPrices) : (validPrices.length ? Math.max(...validPrices) : 0);
+      const avg = validPrices.length ? Math.round(validPrices.reduce((a, b) => a + b, 0) / validPrices.length) : 0;
+
+      // Calculate median
+      let median = avg;
+      if (allComparablePrices.length > 0) {
+        const mid = Math.floor(allComparablePrices.length / 2);
+        median = allComparablePrices.length % 2 !== 0
+          ? allComparablePrices[mid]
+          : Math.round((allComparablePrices[mid - 1] + allComparablePrices[mid]) / 2);
+      }
+
+      marketStats = {
+        available: true,
+        min: Math.round(min),
+        median: Math.round(median),
+        avg: Math.round(avg),
+        max: Math.round(max),
+        count: dbBenchmarks.length,
+        typicalMiddlemanCut: Math.round(dbBenchmarks[0]?.typical_middleman_cut || 60),
+      };
+    } else {
+      // Section 16 & Test 12 require NO fake market prices when benchmark data is unavailable
+      marketStats = {
+        available: false,
+        min: 0,
+        median: 0,
+        avg: 0,
+        max: 0,
+        count: 0,
+        message: 'Market benchmark data is currently unavailable for this specific craft category.'
+      };
     }
 
     // 6. Generate detailed multilingual voice explanations
@@ -149,8 +190,10 @@ export class PricingService {
       materialCost,
       laborHours,
       fairHourlyWage,
-      laborValue,
-      marginOrContingency
+      laborCost,
+      productionCost,
+      targetMargin,
+      marketStats
     });
 
     const explanation = {
@@ -171,16 +214,28 @@ export class PricingService {
       telugu: rawExplanation.telugu
     };
 
+    // Separate artisanApprovedPrice vs recommendedFairPrice (Section 18 & 19)
+    const artisanApprovedPrice = input.artisanApprovedPrice !== undefined && Number(input.artisanApprovedPrice) > 0
+      ? Number(input.artisanApprovedPrice)
+      : recommendedFairPrice;
+
     const breakdown = {
       materialCost,
       laborHours,
       fairHourlyWage,
-      laborValue,
-      baseCost,
-      marginAmount: marginOrContingency,
+      laborCost,
+      laborValue: laborCost,
+      productionCost,
+      baseCost: productionCost,
+      targetMargin,
+      marginAmount,
+      marginOrContingency: marginAmount,
       recommendedFairPrice,
-      totalRecommendedFairPrice: recommendedFairPrice * qty,
-      quantity: qty
+      artisanApprovedPrice,
+      quantity: qty,
+      unitPrice: artisanApprovedPrice,
+      subtotal: artisanApprovedPrice * qty,
+      totalRecommendedFairPrice: recommendedFairPrice * qty
     };
 
     return {
@@ -189,16 +244,21 @@ export class PricingService {
       materialCost,
       laborHours,
       fairHourlyWage,
-      laborValue,
-      baseCost,
-      marginOrContingency,
-      marginAmount: marginOrContingency,
+      laborCost,
+      laborValue: laborCost,
+      productionCost,
+      baseCost: productionCost,
+      targetMargin,
+      marginOrContingency: marginAmount,
+      marginAmount,
       recommendedFairPrice,
-      artisanApprovedPrice: input.artisanApprovedPrice || recommendedFairPrice,
+      artisanApprovedPrice,
       quantity: qty,
       unitFairPrice: recommendedFairPrice,
+      unitPrice: artisanApprovedPrice,
+      subtotal: artisanApprovedPrice * qty,
       currency: 'INR',
-      pricingFormulaVersion: 'v1.0-fair-wage',
+      pricingFormulaVersion: 'v2.0-deterministic-margin',
       breakdown,
       explanation,
       calculatedAt: new Date().toISOString(),
@@ -206,34 +266,60 @@ export class PricingService {
     } as any;
   }
 
-  async calculateFairPrice(input: FairPricingRequest): Promise<FairPricingResponse> {
+  async calculateFairPrice(input: FairPricingRequest & { targetMargin?: number }): Promise<FairPricingResponse> {
     return PricingService.calculateFairPrice(input);
   }
 
   /**
    * Generates localized human-spoken explanations of the calculation components.
-   * Explains the actual formula components: material cost, labor hours, wage rate, labor value, and margin.
+   * Explains the formula: material cost, labor hours, wage rate, production cost, margin, and market benchmarks.
    */
   static generateExplanations(data: {
     recommendedFairPrice: number;
     materialCost: number;
     laborHours: number;
     fairHourlyWage: number;
-    laborValue: number;
-    marginOrContingency: number;
+    laborCost?: number;
+    laborValue?: number;
+    productionCost?: number;
+    targetMargin?: number;
+    marginOrContingency?: number;
+    marketStats?: { available: boolean; min: number; max: number; median: number; count: number };
   }): FairPricingExplanation {
-    const { recommendedFairPrice, materialCost, laborHours, fairHourlyWage, laborValue } = data;
+    const { recommendedFairPrice, materialCost, laborHours, fairHourlyWage, marketStats } = data;
+    const laborCost = data.laborCost !== undefined ? data.laborCost : (data.laborValue !== undefined ? data.laborValue : Math.round(laborHours * fairHourlyWage));
+    const productionCost = data.productionCost !== undefined ? data.productionCost : (materialCost + laborCost);
+    const targetMargin = data.targetMargin !== undefined ? data.targetMargin : 0.20;
 
     const formattedFair = `₹${recommendedFairPrice.toLocaleString('en-IN')}`;
     const formattedMat = `₹${materialCost.toLocaleString('en-IN')}`;
     const formattedWage = `₹${fairHourlyWage.toLocaleString('en-IN')}`;
-    const formattedLaborVal = `₹${laborValue.toLocaleString('en-IN')}`;
+    const formattedLabor = `₹${laborCost.toLocaleString('en-IN')}`;
+    const formattedProd = `₹${productionCost.toLocaleString('en-IN')}`;
+    const marginPct = Math.round(targetMargin * 100);
 
-    const english = `Your recommended fair price is ${formattedFair}. You spent ${formattedMat} on materials. You worked for ${laborHours} hours. At a fair wage of ${formattedWage} per hour, your labor value is ${formattedLaborVal}. The remaining amount covers the configured margin and business expenses. Your recommended fair price is ${formattedFair}.`;
+    let marketEn = "";
+    let marketHi = "";
+    let marketTe = "";
 
-    const hindi = `आपकी अनुशंसित उचित कीमत ${formattedFair} है। आपने सामग्री पर ${formattedMat} खर्च किए। आपने ${laborHours} घंटे काम किया। ${formattedWage} प्रति घंटे की उचित मजदूरी पर, आपके श्रम का मूल्य ${formattedLaborVal} है। शेष राशि मार्जिन और व्यावसायिक खर्चों को कवर करती है। आपकी अनुशंसित उचित कीमत ${formattedFair} है।`;
+    if (marketStats && marketStats.available && marketStats.count > 0) {
+      const formattedMin = `₹${marketStats.min.toLocaleString('en-IN')}`;
+      const formattedMax = `₹${marketStats.max.toLocaleString('en-IN')}`;
+      const formattedMedian = `₹${marketStats.median.toLocaleString('en-IN')}`;
+      marketEn = ` Comparable products are selling between ${formattedMin} and ${formattedMax}, with a market median of ${formattedMedian}.`;
+      marketHi = ` समान उत्पाद बाज़ार में ${formattedMin} से ${formattedMax} के बीच बिक रहे हैं, और औसत बाज़ार मूल्य ${formattedMedian} है।`;
+      marketTe = ` సమానమైన ఉత్పత్తులు మార్కెట్‌లో ${formattedMin} నుండి ${formattedMax} మధ్య అమ్ముడవుతున్నాయి, మార్కెట్ మధ్యస్థ ధర ${formattedMedian}.`;
+    } else {
+      marketEn = ` Market benchmark data is currently unavailable for this specific craft.`;
+      marketHi = ` इस विशिष्ट शिल्प के लिए बाज़ार डेटा वर्तमान में उपलब्ध नहीं है।`;
+      marketTe = ` ఈ కళాఖండానికి సంబంధించి మార్కెట్ గణాంకాలు ప్రస్తుతం అందుబాటులో లేవు.`;
+    }
 
-    const telugu = `మీ సిఫార్సు చేయబడిన సరసమైన ధర ${formattedFair}. మీరు ముడిసరుకుపై ${formattedMat} ఖర్చు చేశారు. మీరు ${laborHours} గంటలు పనిచేశారు. గంటకు ${formattedWage} సరసమైన వేతనంతో మీ శ్రమ విలువ ${formattedLaborVal}. మిగిలిన మొత్తం మార్జిన్ మరియు వ్యాపార ఖర్చులను భర్తీ చేస్తుంది. మీ సిఫార్సు చేయబడిన సరసమైన ధర ${formattedFair}.`;
+    const english = `Your material cost is ${formattedMat}. Your labor cost is ${formattedLabor} for ${laborHours} hours at ${formattedWage} per hour. Your production cost is ${formattedProd}. Based on the selected ${marginPct} percent margin, the fair price is ${formattedFair}.${marketEn}`;
+
+    const hindi = `आपकी सामग्री लागत ${formattedMat} है। ${formattedWage} प्रति घंटे की दर से ${laborHours} घंटे के लिए आपकी श्रम लागत ${formattedLabor} है। आपकी उत्पादन लागत ${formattedProd} है। ${marginPct} प्रतिशत मार्जिन के आधार पर, उचित मूल्य ${formattedFair} है।${marketHi}`;
+
+    const telugu = `మీ ముడిసరుకు ఖర్చు ${formattedMat}. గంటకు ${formattedWage} చొప్పున ${laborHours} గంటల మీ శ్రమ ఖర్చు ${formattedLabor}. మీ మొత్తం తయారీ ఖర్చు ${formattedProd}. ${marginPct} శాతం మార్జిన్ ఆధారంగా, సరసమైన ధర ${formattedFair}.${marketTe}`;
 
     return {
       english,
@@ -242,14 +328,7 @@ export class PricingService {
     };
   }
 
-  generateExplanations(data: {
-    recommendedFairPrice: number;
-    materialCost: number;
-    laborHours: number;
-    fairHourlyWage: number;
-    laborValue: number;
-    marginOrContingency: number;
-  }): FairPricingExplanation {
+  generateExplanations(data: any): FairPricingExplanation {
     return PricingService.generateExplanations(data);
   }
 
