@@ -9,8 +9,6 @@ import { useLanguage } from '../../lib/LanguageContext';
 import { useAuth } from '../../lib/AuthContext';
 import { translations, speakText } from '../../lib/i18n';
 import { formatINR } from '../../lib/billingService';
-import { DailyMiniMissionsCard } from '../tutorial/DailyMiniMissionsCard';
-import { ShowMeButton } from '../tutorial/ContextualHelp';
 import { MetricCard } from './ui/MetricCard';
 
 export function SellerDashboard() {
@@ -225,12 +223,7 @@ export function SellerDashboard() {
       </div>
 
       {/* ================================================== */}
-      {/* 3. TODAY'S ARTISAN MISSIONS                        */}
-      {/* ================================================== */}
-      <DailyMiniMissionsCard />
-
-      {/* ================================================== */}
-      {/* 4. QUICK ACTIONS                                   */}
+      {/* 3. QUICK ACTIONS                                   */}
       {/* ================================================== */}
       <div className="space-y-3">
         <h2 className="text-lg font-bold text-[#29221D] font-serif flex items-center gap-2">

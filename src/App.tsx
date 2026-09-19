@@ -27,14 +27,6 @@ import { PublicProvenancePage } from './components/provenance/PublicProvenancePa
 import { useLanguage } from './lib/LanguageContext';
 import { useAuth } from './lib/AuthContext';
 
-// Artisan Journey Game-Style Tutorial Components
-import { TutorialProvider } from './components/tutorial/TutorialContext';
-import { GameHUD } from './components/tutorial/GameHUD';
-import { TutorialOverlay } from './components/tutorial/TutorialOverlay';
-import { WelcomeJourneyModal } from './components/tutorial/WelcomeJourneyModal';
-import { RewardCelebrationModal } from './components/tutorial/RewardCelebrationModal';
-import { CompletionJourneyModal } from './components/tutorial/CompletionJourneyModal';
-import { ReturningArtisanBanner } from './components/tutorial/ReturningArtisanBanner';
 import { OfflineBanner } from './components/common/OfflineBanner';
 import { initNativeAppChrome } from './lib/nativeBridge';
 
@@ -55,12 +47,6 @@ export default function App() {
     <TutorialProvider>
       <div className="min-h-screen bg-stone-50 font-sans relative">
         <OfflineBanner />
-        <GameHUD />
-        <TutorialOverlay />
-        <WelcomeJourneyModal />
-        <RewardCelebrationModal />
-        <CompletionJourneyModal />
-        <ReturningArtisanBanner />
 
         {/* Global Location & Language Modal for non-landing pages (e.g. /seller, /buyer) */}
         {isLanguageModalOpen && location.pathname !== '/' && (

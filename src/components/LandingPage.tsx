@@ -19,7 +19,6 @@ import { BuyerAuthModal } from './auth/BuyerAuthModal';
 import { SellerAuthModal } from './auth/SellerAuthModal';
 import { LanguageSelectionModal } from './common/LanguageSelectionModal';
 import { LocationLanguageModal } from './common/LocationLanguageModal';
-import { useTutorial } from './tutorial/TutorialContext';
 
 // ── Indian Heritage Cultural Data ─────────────────────────────────────────────
 
@@ -117,7 +116,6 @@ export function LandingPage() {
   } = useLanguage();
   const { user, role } = useAuth();
   const navigate = useNavigate();
-  const { startJourney, startDemoJourney, openWelcomeModal } = useTutorial();
   const t = PORTAL_TRANSLATIONS[language];
 
   // Voice Assistant Hook
@@ -331,33 +329,6 @@ export function LandingPage() {
               </div>
 
               {/* Journey Pills & Fast-Track Judge Demo */}
-              <div
-                className={`transition-all duration-700 flex flex-wrap items-center gap-2.5 pt-2 ${
-                  heroLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                }`}
-                style={{ transitionDelay: '520ms' }}
-              >
-                <button
-                  onClick={() => openWelcomeModal()}
-                  className="h-8 inline-flex items-center gap-2 px-3.5 rounded-full bg-[#FFFDF8]/10 hover:bg-[#FFFDF8]/20 border border-[#C88732]/30 text-[#FFFDF8] text-xs font-semibold transition-all shadow-xs cursor-pointer active:scale-95"
-                >
-                  <span>🌱</span>
-                  <span className="text-[#C88732]">{t.startArtisanJourney}</span>
-                  <span className="bg-[#A8462D] text-[#FFFDF8] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    9 Levels
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => startDemoJourney()}
-                  className="h-8 inline-flex items-center gap-1.5 px-3.5 rounded-full bg-[#FFFDF8]/10 hover:bg-[#FFFDF8]/20 border border-[#D9CEB8]/30 hover:border-[#C88732] text-[#D9CEB8] hover:text-[#FFFDF8] text-xs font-semibold transition-all shadow-xs cursor-pointer active:scale-95"
-                  title="Fast-track to Level 3 for SIH judges & evaluators"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-[#C88732]" />
-                  <span>⚡ 2-Min Demo (Judges)</span>
-                </button>
-              </div>
-
               {/* Stats Row */}
               <div
                 className={`transition-all duration-700 pt-8 border-t border-[#D9CEB8]/20 grid grid-cols-2 sm:grid-cols-4 gap-6 ${
@@ -912,7 +883,6 @@ export function LandingPage() {
               <ul className="space-y-2 text-xs text-[#7A6E65]">
                 <li><button onClick={() => setArtisanModalOpen(true)} className="hover:text-[#FFFDF8] cursor-pointer">Join as Artisan</button></li>
                 <li><button onClick={() => setSellerModalOpen(true)} className="hover:text-[#FFFDF8] cursor-pointer">Seller Dashboard</button></li>
-                <li><button onClick={() => openWelcomeModal()} className="hover:text-[#FFFDF8] cursor-pointer">Artisan Journey Game</button></li>
                 <li><button onClick={() => openLanguageModal('language')} className="hover:text-[#FFFDF8] cursor-pointer">Regional Dialects</button></li>
               </ul>
             </div>

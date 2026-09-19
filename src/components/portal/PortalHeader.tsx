@@ -3,7 +3,6 @@ import { Volume2, Sparkles, LogIn, ChevronDown, User, Store, MapPin, Globe } fro
 import { LanguageCode } from '../../types';
 import { PORTAL_TRANSLATIONS } from '../../lib/portalI18n';
 import { SihStoryDemoModal } from '../common/SihStoryDemoModal';
-import { useTutorial } from '../tutorial/TutorialContext';
 import { useLanguage } from '../../lib/LanguageContext';
 
 interface PortalHeaderProps {
@@ -27,7 +26,6 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
   const t = PORTAL_TRANSLATIONS[language];
   const [showStoryModal, setShowStoryModal] = useState(false);
   const [showSignInDropdown, setShowSignInDropdown] = useState(false);
-  const { openWelcomeModal } = useTutorial();
 
   return (
     <>
@@ -137,19 +135,6 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
             >
               <Sparkles className="w-3.5 h-3.5 text-[#C88732]" />
               <span>1-Min Story</span>
-            </button>
-
-            {/* Artisan Journey Game Tutorial Trigger */}
-            <button
-              onClick={() => openWelcomeModal()}
-              className="hidden md:inline-flex items-center gap-1.5 h-9 px-3 rounded-full bg-[#F7F2E8] hover:bg-[#E8DFC9] border border-[#D9CEB8] text-[#29221D] text-xs font-semibold transition-all shadow-xs cursor-pointer active:scale-95"
-              title="Start the interactive Artisan Journey game tutorial"
-            >
-              <span>🌱</span>
-              <span className="text-[#A8462D]">Journey</span>
-              <span className="bg-[#A8462D] text-[#FFFDF8] text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
-                9 Lvl
-              </span>
             </button>
 
             {/* Sign In Dropdown */}

@@ -265,30 +265,9 @@ export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (parsed.unlockedBadges) setUnlockedBadges(parsed.unlockedBadges);
         if (parsed.isActive !== undefined) setIsActive(parsed.isActive);
         if (parsed.isPaused !== undefined) setIsPaused(parsed.isPaused);
-
-        // If user returned halfway through (e.g. Level 2 to 9) and journey is not active, greet them!
-        if (parsed.currentLevel > 1 && parsed.currentLevel <= TUTORIAL_MISSIONS.length && !parsed.isActive && !isCompleted) {
-          setReturningBanner(true);
-        }
-      }
-
-      if (!isCompleted && location.pathname.startsWith('/seller')) {
-        setShowWelcomeModal(true);
       }
     } catch {}
   }, []);
-
-  // Listen for navigation into /seller: if user has not completed journey, trigger welcome
-  useEffect(() => {
-    if (location.pathname.startsWith('/seller')) {
-      try {
-        const isCompleted = localStorage.getItem(COMPLETED_KEY) === 'true';
-        if (!isCompleted && !isActive && !showWelcomeModal) {
-          setShowWelcomeModal(true);
-        }
-      } catch {}
-    }
-  }, [location.pathname, isActive, showWelcomeModal]);
 
   // Persist state updates
   useEffect(() => {
