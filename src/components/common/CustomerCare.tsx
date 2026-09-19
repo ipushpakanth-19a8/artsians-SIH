@@ -96,11 +96,11 @@ export function CustomerCare({ defaultRole = 'seller', embedded = false }: Custo
   };
 
   return (
-    <div className={`flex flex-col bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden ${embedded ? 'h-full min-h-[500px]' : 'max-w-3xl mx-auto h-[650px]'}`}>
+    <div className={`flex flex-col bg-[#FFFDF8] rounded-2xl border border-[#D9CEB8] shadow-sm overflow-hidden ${embedded ? 'h-full min-h-[500px]' : 'max-w-3xl mx-auto h-[650px]'}`}>
       {/* Chat Header */}
-      <div className="p-4 bg-stone-900 text-stone-100 flex items-center justify-between">
+      <div className="p-4 bg-[#29221D] text-[#FFFDF8] flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-md">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#A8462D] to-[#C88732] flex items-center justify-center text-white shadow-md">
             <Bot className="w-5 h-5" />
           </div>
           <div>
@@ -108,7 +108,7 @@ export function CustomerCare({ defaultRole = 'seller', embedded = false }: Custo
               {t.customerCare}
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             </h2>
-            <p className="text-[11px] text-amber-400 font-medium">Multilingual AI Handicraft Advisor</p>
+            <p className="text-[11px] text-[#C88732] font-medium">Multilingual AI Handicraft Advisor</p>
           </div>
         </div>
 
@@ -131,7 +131,7 @@ export function CustomerCare({ defaultRole = 'seller', embedded = false }: Custo
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-stone-50/50">
+      <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-[#F7F2E8]/40">
         {messages.map((m) => (
           <div
             key={m.id}
@@ -140,8 +140,8 @@ export function CustomerCare({ defaultRole = 'seller', embedded = false }: Custo
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
                 m.role === 'user'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-stone-800 text-amber-300'
+                  ? 'bg-[#A8462D] text-white'
+                  : 'bg-[#29221D] text-[#C88732]'
               }`}
             >
               {m.role === 'user' ? <UserIcon className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
@@ -150,14 +150,14 @@ export function CustomerCare({ defaultRole = 'seller', embedded = false }: Custo
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed shadow-xs ${
                 m.role === 'user'
-                  ? 'bg-amber-600 text-white rounded-tr-xs'
-                  : 'bg-white text-stone-800 border border-stone-200 rounded-tl-xs'
+                  ? 'bg-[#A8462D] text-white rounded-tr-xs'
+                  : 'bg-[#FFFDF8] text-[#29221D] border border-[#D9CEB8] rounded-tl-xs'
               }`}
             >
               <p className="whitespace-pre-line">{m.content}</p>
               <span
                 className={`text-[9px] block mt-1 ${
-                  m.role === 'user' ? 'text-amber-200 text-right' : 'text-stone-400'
+                  m.role === 'user' ? 'text-white/80 text-right' : 'text-stone-400'
                 }`}
               >
                 {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -168,13 +168,13 @@ export function CustomerCare({ defaultRole = 'seller', embedded = false }: Custo
 
         {isTyping && (
           <div className="flex items-center gap-2 text-stone-400 text-xs pl-2">
-            <div className="w-6 h-6 rounded-full bg-stone-800 text-amber-300 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-full bg-[#29221D] text-[#C88732] flex items-center justify-center">
               <Bot className="w-3.5 h-3.5" />
             </div>
-            <div className="bg-white border border-stone-200 rounded-xl px-3 py-2 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-stone-400 animate-bounce"></span>
-              <span className="w-1.5 h-1.5 rounded-full bg-stone-400 animate-bounce [animation-delay:0.2s]"></span>
-              <span className="w-1.5 h-1.5 rounded-full bg-stone-400 animate-bounce [animation-delay:0.4s]"></span>
+            <div className="bg-[#FFFDF8] border border-[#D9CEB8] rounded-xl px-3 py-2 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#A8462D] animate-bounce"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#A8462D] animate-bounce [animation-delay:0.2s]"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#A8462D] animate-bounce [animation-delay:0.4s]"></span>
             </div>
           </div>
         )}
@@ -182,12 +182,12 @@ export function CustomerCare({ defaultRole = 'seller', embedded = false }: Custo
       </div>
 
       {/* Suggested Quick Questions */}
-      <div className="px-4 py-2 bg-white border-t border-stone-100 flex gap-2 overflow-x-auto no-scrollbar">
+      <div className="px-4 py-2 bg-[#FFFDF8] border-t border-[#D9CEB8] flex gap-2 overflow-x-auto no-scrollbar">
         {quickPrompts.map((qp, i) => (
           <button
             key={i}
             onClick={() => handleSend(qp)}
-            className="whitespace-nowrap px-3 py-1 bg-stone-100 hover:bg-amber-50 hover:text-amber-900 border border-stone-200 rounded-full text-[11px] font-medium text-stone-600 transition-colors"
+            className="whitespace-nowrap px-3 py-1 bg-[#F7F2E8] hover:bg-[#FDF6F0] hover:text-[#A8462D] border border-[#D9CEB8] rounded-full text-[11px] font-medium text-stone-700 transition-colors"
           >
             {qp}
           </button>
@@ -195,7 +195,7 @@ export function CustomerCare({ defaultRole = 'seller', embedded = false }: Custo
       </div>
 
       {/* Input Box */}
-      <div className="p-3 bg-white border-t border-stone-200">
+      <div className="p-3 bg-[#FFFDF8] border-t border-[#D9CEB8]">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -214,12 +214,12 @@ export function CustomerCare({ defaultRole = 'seller', embedded = false }: Custo
                 ? 'మీ ప్రశ్నను ఇక్కడ టైప్ చేయండి...'
                 : 'Ask anything about pricing, bills, orders, or handicrafts...'
             }
-            className="flex-1 px-4 py-2.5 border border-stone-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-stone-50"
+            className="flex-1 px-4 py-2.5 border border-[#D9CEB8] rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#A8462D] bg-[#FFFDF8] text-[#29221D]"
           />
           <button
             type="submit"
             disabled={!inputValue.trim() || isTyping}
-            className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm transition-all"
+            className="px-4 py-2.5 bg-[#A8462D] hover:bg-[#8E3822] disabled:opacity-50 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
           >
             <span>{t.submit}</span>
             <Send className="w-3.5 h-3.5" />

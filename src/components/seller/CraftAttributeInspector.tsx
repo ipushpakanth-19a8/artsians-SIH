@@ -441,10 +441,10 @@ export const CraftAttributeInspector: React.FC<CraftAttributeInspectorProps> = (
   return (
     <div className="space-y-6">
       {/* Top Banner: Confidence & AI Provider Badge */}
-      <div className="bg-white rounded-3xl p-5 border border-[#eadfd4] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="artisan-card p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div
-            className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm ${
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-sm ${
               isHighConfidence
                 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                 : 'bg-amber-100 text-amber-800 border border-amber-200'
@@ -454,14 +454,14 @@ export const CraftAttributeInspector: React.FC<CraftAttributeInspectorProps> = (
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-black text-[#262220] font-['Rozha_One',serif]">
+              <h3 className="text-base font-bold text-[#29221D] font-serif">
                 {labels.craftDetailsHeading}
               </h3>
               <span
-                className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
                   inspectionResult.isFallback
                     ? 'bg-amber-50 text-amber-900 border-amber-200'
-                    : 'bg-[#fdf2e9] text-[#9c4124] border-[#f8d7c2]'
+                    : 'bg-[#FDF6F0] text-[#A8462D] border-[#D9CEB8]'
                 }`}
               >
                 {inspectionResult.isFallback ? labels.demoBadge : labels.geminiBadge}
@@ -614,17 +614,17 @@ export const CraftAttributeInspector: React.FC<CraftAttributeInspectorProps> = (
         </div>
 
         {/* Right Column: Detected Attributes Grid with Manual Edit ✏️ */}
-        <div className="lg:col-span-8 bg-white rounded-3xl p-6 border border-[#eadfd4] shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#eadfd4]">
+        <div className="lg:col-span-8 artisan-card p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#D9CEB8]">
             <div>
-              <span className="text-[10px] font-extrabold uppercase text-[#9c4124] tracking-wider">
+              <span className="text-[10px] font-bold uppercase text-[#A8462D] tracking-wider">
                 Language: {language.toUpperCase()} ({recognitionLocale})
               </span>
-              <h4 className="text-lg font-black text-[#262220] font-['Rozha_One',serif]">
+              <h4 className="text-lg font-bold text-[#29221D] font-serif">
                 {localized.craftName || canonical.craftName || 'Artisan Handicraft'}
               </h4>
             </div>
-            <span className="text-xs font-bold text-stone-500 bg-stone-100 px-3 py-1 rounded-full">
+            <span className="text-xs font-bold text-stone-600 bg-[#F7F2E8] border border-[#D9CEB8] px-3 py-1 rounded-full">
               {localized.productType || canonical.productType || 'Handmade Craft'}
             </span>
           </div>
@@ -632,12 +632,12 @@ export const CraftAttributeInspector: React.FC<CraftAttributeInspectorProps> = (
           {/* 6 Core Craft Attribute Chips */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* 1. Craft Category */}
-            <div className="p-3.5 rounded-2xl bg-[#faf7f2] border border-[#eadfd4] flex items-start justify-between group">
+            <div className="p-3.5 rounded-2xl bg-[#FFFDF8] border border-[#D9CEB8] flex items-start justify-between group">
               <div>
-                <span className="text-[10px] font-extrabold text-[#9c4124] uppercase block mb-0.5">
+                <span className="text-[10px] font-bold text-[#A8462D] uppercase block mb-0.5">
                   {labels.category}
                 </span>
-                <p className="text-sm font-bold text-[#262220]">
+                <p className="text-sm font-bold text-[#29221D]">
                   {localized.craftCategory || canonical.craftCategory || 'Handicraft'}
                 </p>
               </div>

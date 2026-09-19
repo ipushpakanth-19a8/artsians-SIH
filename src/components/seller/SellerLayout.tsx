@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, PlusCircle, BarChart3, FileText, ShoppingCart,
-  TrendingUp, Headphones, LogOut, Menu, X, Globe, WifiOff, Wifi, Sparkles, Home, User, Volume2
+  TrendingUp, Headphones, LogOut, Menu, X, Globe, WifiOff, Sparkles, User, Volume2, Home
 } from 'lucide-react';
 import { useLanguage } from '../../lib/LanguageContext';
 import { useAuth } from '../../lib/AuthContext';
@@ -72,132 +72,138 @@ export function SellerLayout() {
     };
   }, []);
 
-  const navItems = [
-    { to: '/seller', icon: LayoutDashboard, label: t.sellerDashboard || 'Dashboard', end: true },
-    { to: '/seller/handicrafts', icon: Package, label: t.myHandicrafts || 'My Products' },
-    { to: '/seller/add', icon: PlusCircle, label: `+ ${t.addHandicraft || 'Add Product'}` },
-    { to: '/seller/market-analysis', icon: BarChart3, label: t.marketPriceAnalysis || 'Fair Price Assistant' },
-    { to: '/seller/create-bill', icon: FileText, label: t.createBill || 'Create Bill' },
-    { to: '/seller/orders', icon: ShoppingCart, label: t.orders || 'Orders' },
-    { to: '/seller/sales', icon: TrendingUp, label: t.salesHistory || 'My Earnings' },
-    { to: '/seller/customer-care', icon: Sparkles, label: t.customerCare ? `${t.customerCare} (AI)` : 'Artisan Saathi (AI)' },
+  const navSections = [
+    {
+      title: 'ARTISAN WORKSPACE',
+      items: [
+        { to: '/seller', icon: LayoutDashboard, label: t.sellerDashboard || 'Artisan Studio', end: true },
+        { to: '/seller/handicrafts', icon: Package, label: t.myHandicrafts || 'My Handicrafts' },
+        { to: '/seller/add', icon: PlusCircle, label: t.addHandicraft || 'Add Handicraft' },
+      ],
+    },
+    {
+      title: 'BUSINESS',
+      items: [
+        { to: '/seller/market-analysis', icon: BarChart3, label: t.marketPriceAnalysis || 'Market Price Analysis' },
+        { to: '/seller/create-bill', icon: FileText, label: t.createBill || 'Create Bill' },
+        { to: '/seller/orders', icon: ShoppingCart, label: t.orders || 'Orders' },
+        { to: '/seller/sales', icon: TrendingUp, label: t.salesHistory || 'Sales History' },
+      ],
+    },
+    {
+      title: 'SUPPORT',
+      items: [
+        { to: '/seller/customer-care', icon: Headphones, label: t.customerCare || 'Customer Care' },
+      ],
+    },
   ];
-
-  const artisanSubtitle =
-    language === 'hi'
-      ? 'कारीगर डिजिटल सहायक'
-      : language === 'te'
-      ? 'కళాకారుల డిజిటల్ సహాయకుడు'
-      : language === 'ta'
-      ? 'கைவினைஞர் டிஜிட்டல் உதவியாளர்'
-      : language === 'kn'
-      ? 'ಕರಕುಶಲಕರ್ಮಿ ಡಿಜಿಟಲ್ ಸಹಾಯಕ'
-      : language === 'ml'
-      ? 'കരകൗശല ഡിജിറ്റൽ സഹായി'
-      : language === 'mr'
-      ? 'कारागीर डिजिटल सहाय्यक'
-      : language === 'gu'
-      ? 'કારીગર ડિજિટલ સહાયક'
-      : language === 'bn'
-      ? 'কারিগর ডিজিটাল সহকারী'
-      : language === 'or'
-      ? 'କାରିଗର ଡିଜିଟାଲ୍ ସହାୟକ'
-      : language === 'pa'
-      ? 'ਕਾਰੀਗਰ ਡਿਜੀਟਲ ਸਹਾਇਕ'
-      : language === 'as'
-      ? 'কাৰিকৰ ডিজিটেল সহায়ক'
-      : 'Artisan Business Assistant';
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
+  const artisanName = user?.name || 'Pavan';
+  const artisanSubtitle = user?.craft_type
+    ? `${user.craft_type} • ${user.district || selectedState}`
+    : `Master Artisan • ${selectedState}`;
+
   return (
-    <div className="min-h-screen bg-[#faf7f2] flex flex-col lg:flex-row text-[#262220] font-sans">
-      {/* Offline Status Alert Banner */}
+    <div className="min-h-screen bg-[#F7F2E8] flex flex-col font-sans text-[#29221D]">
+      {/* Offline Status Warning Bar */}
       {!isOnline && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-600 text-white px-4 py-2 text-xs font-bold text-center flex items-center justify-center gap-2 shadow-md">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-[#A8462D] text-[#FFFDF8] px-4 py-2 text-xs font-bold text-center flex items-center justify-center gap-2 shadow-md">
           <WifiOff className="w-4 h-4 animate-pulse" />
           <span>Offline Mode — Your changes and drafts are saved locally and will sync automatically when reconnected.</span>
         </div>
       )}
 
       {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-[#eadfd4] fixed h-full z-30 shadow-xs">
-        <div className="p-4 border-b border-[#eadfd4]">
-          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="w-10 h-10 rounded-2xl bg-[#9c4124] flex items-center justify-center text-white font-black text-sm shadow-xs">
-              SS
+      <aside className="hidden lg:flex flex-col w-64 bg-[#FFFDF8] border-r border-[#D9CEB8] fixed h-full z-30 shadow-xs">
+        {/* Sidebar Header: Artisans Studio */}
+        <div className="p-4 border-b border-[#D9CEB8]">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+            <div className="w-10 h-10 rounded-xl bg-[#A8462D]/10 border border-[#A8462D]/20 flex items-center justify-center shrink-0 shadow-2xs">
+              <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+                <path d="M14 2L17 10.5H26L19 15.5L21.5 24L14 19L6.5 24L9 15.5L2 10.5H11L14 2Z" fill="#A8462D" />
+                <path d="M14 5L16.2 11.8H23.5L17.7 15.7L19.9 22.5L14 18.6L8.1 22.5L10.3 15.7L4.5 11.8H11.8L14 5Z" fill="#C88732" opacity="0.6" />
+              </svg>
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-black text-[#262220] font-['Rozha_One',serif] text-base">ShilpSetu</span>
-                <span className="px-1.5 py-0.2 text-[9px] font-extrabold bg-[#fdf2e9] text-[#9c4124] border border-[#f8d7c2] rounded uppercase">
-                  ShilpSetu
+                <span className="font-bold text-[#29221D] font-serif text-base tracking-tight">Artisans</span>
+                <span className="px-1.5 py-0.5 text-[9px] font-bold bg-[#A8462D]/10 text-[#A8462D] border border-[#A8462D]/20 rounded uppercase">
+                  Studio
                 </span>
               </div>
-              <p className="text-[11px] text-[#9c4124] font-bold truncate max-w-[170px]">
+              <p className="text-[11px] text-[#7A6E65] font-semibold truncate max-w-[170px]">
                 {artisanSubtitle}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Navigation Items */}
-        <nav className="flex-1 py-3 px-2 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                  isActive
-                    ? 'bg-[#9c4124] text-white shadow-xs'
-                    : 'text-stone-600 hover:bg-[#f5efeb] hover:text-[#262220]'
-                }`
-              }
-            >
-              <item.icon className="w-4.5 h-4.5 shrink-0" />
-              <span>{item.label}</span>
-            </NavLink>
+        {/* Sectioned Navigation Items */}
+        <nav className="flex-1 py-4 px-3 space-y-5 overflow-y-auto">
+          {navSections.map((section) => (
+            <div key={section.title} className="space-y-1">
+              <div className="px-3 pb-1 text-[10px] font-bold text-[#7A6E65] tracking-[0.16em] uppercase">
+                {section.title}
+              </div>
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-150 ${
+                      isActive
+                        ? 'bg-[#A8462D] text-[#FFFDF8] shadow-xs translate-x-0.5'
+                        : 'text-[#5C4A3A] hover:bg-[#F7F2E8] hover:text-[#29221D]'
+                    }`
+                  }
+                >
+                  <item.icon className="w-4 h-4 shrink-0" />
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
 
-        {/* Artisan Journey Quick Banner */}
-        <div className="px-3 py-2 border-t border-[#eadfd4]">
+        {/* Artisan Journey Quick Widget */}
+        <div className="px-3 py-2 border-t border-[#D9CEB8]/70">
           <button
             onClick={startJourney}
-            className="w-full p-2.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 border border-amber-200 text-left flex items-center justify-between transition-all cursor-pointer group shadow-2xs"
+            className="w-full p-2.5 rounded-xl bg-[#F7F2E8] hover:bg-[#E8DFC9]/70 border border-[#D9CEB8] text-left flex items-center justify-between transition-all cursor-pointer group shadow-2xs active:scale-98"
           >
             <div className="flex items-center gap-2">
               <span className="text-base">🌱</span>
               <div>
-                <span className="text-[10px] font-black uppercase text-amber-800 tracking-wider block">
+                <span className="text-[10px] font-bold uppercase text-[#A8462D] tracking-wider block">
                   {language === 'hi' ? 'शिल्प यात्रा' : language === 'te' ? 'శిల్ప యాత్ర' : 'Artisan Journey'}
                 </span>
-                <span className="text-xs font-bold text-slate-800">
-                  {language === 'hi' ? `लेवल ${currentLevel}/8` : language === 'te' ? `లెవల్ ${currentLevel}/8` : `Level ${currentLevel}/8`}
+                <span className="text-xs font-semibold text-[#29221D]">
+                  Level {currentLevel}/9
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-1 bg-amber-200/60 px-2 py-0.5 rounded-lg text-[11px] font-black text-amber-900">
-              <Sparkles className="w-3 h-3 text-amber-700" />
+            <div className="flex items-center gap-1 bg-[#C88732]/20 px-2 py-0.5 rounded-lg text-[11px] font-bold text-[#A8462D]">
+              <Sparkles className="w-3 h-3 text-[#C88732]" />
               <span>{journeyPoints}</span>
             </div>
           </button>
         </div>
 
-        {/* Footer actions in sidebar */}
-        <div className="p-3 border-t border-[#eadfd4] bg-[#faf7f2]/60">
-          <div className="flex flex-col gap-1.5 mb-3 bg-white p-2 rounded-xl border border-[#eadfd4]">
+        {/* Footer actions in sidebar: Language, Account, Logout */}
+        <div className="p-3 border-t border-[#D9CEB8] bg-[#F7F2E8]/60 space-y-2">
+          <div className="flex flex-col gap-1.5 bg-[#FFFDF8] p-2 rounded-xl border border-[#D9CEB8]">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold text-stone-500 uppercase px-0.5 flex items-center gap-1">
-                <Globe className="w-3 h-3 text-[#9c4124]" />
+              <span className="text-[10px] font-bold text-[#7A6E65] uppercase px-0.5 flex items-center gap-1">
+                <Globe className="w-3 h-3 text-[#A8462D]" />
                 {t.selectLanguage || 'Language'}
               </span>
-              <span className="text-[10px] font-black text-[#9c4124] bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md">
+              <span className="text-[10px] font-bold text-[#A8462D] bg-[#A8462D]/10 border border-[#A8462D]/20 px-1.5 py-0.5 rounded-md">
                 {selectedLanguageName}
               </span>
             </div>
@@ -207,7 +213,7 @@ export function SellerLayout() {
                   key={l}
                   onClick={() => setLanguage(l)}
                   className={`flex-1 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    language === l ? 'bg-[#9c4124] text-white shadow-xs' : 'text-stone-600 hover:bg-[#f5efeb]'
+                    language === l ? 'bg-[#A8462D] text-[#FFFDF8] shadow-xs' : 'text-[#7A6E65] hover:bg-[#F7F2E8]'
                   }`}
                 >
                   {l === 'en' ? 'EN' : l === 'hi' ? 'हिं' : 'తె'}
@@ -215,7 +221,7 @@ export function SellerLayout() {
               ))}
               <button
                 onClick={() => openLanguageModal('language')}
-                className="px-2 py-1 rounded-lg text-xs font-bold text-[#9c4124] hover:bg-[#fdf2e9] border border-[#f8d7c2] cursor-pointer transition-colors"
+                className="px-2 py-1 rounded-lg text-xs font-semibold text-[#A8462D] hover:bg-[#F7F2E8] border border-[#D9CEB8] cursor-pointer transition-colors"
                 title="View all 12 Indian Languages"
               >
                 + More
@@ -225,18 +231,18 @@ export function SellerLayout() {
 
           <button
             onClick={() => setAuthModalOpen(true)}
-            className="flex items-center gap-2 w-full px-3 py-2 mb-1 rounded-xl bg-amber-50 hover:bg-amber-100 text-[#9c4124] border border-amber-200 text-xs font-bold transition-colors cursor-pointer"
-            title="Sign In / Switch Account with Voice Assist"
+            className="flex items-center gap-2 w-full px-3 py-1.5 rounded-xl bg-[#FFFDF8] hover:bg-[#F7F2E8] text-[#5C4A3A] hover:text-[#A8462D] border border-[#D9CEB8] text-xs font-semibold transition-colors cursor-pointer"
+            title="Sign In / Switch Account"
           >
-            <User className="w-4 h-4 text-[#9c4124]" />
-            <span>{language === 'hi' ? 'खाता बदलें (लॉगिन)' : 'Switch / Sign In'}</span>
+            <User className="w-3.5 h-3.5 text-[#A8462D]" />
+            <span>{language === 'hi' ? 'खाता बदलें' : 'Account / Sign In'}</span>
           </button>
 
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-stone-600 hover:bg-red-50 hover:text-red-700 text-xs font-bold transition-colors cursor-pointer"
+            className="flex items-center gap-2 w-full px-3 py-1.5 rounded-xl text-[#7A6E65] hover:bg-rose-50 hover:text-rose-700 text-xs font-semibold transition-colors cursor-pointer"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
             <span>{t.logout}</span>
           </button>
         </div>
@@ -245,44 +251,55 @@ export function SellerLayout() {
       {/* Mobile Drawer Overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={() => setSidebarOpen(false)} />
-          <aside className="absolute left-0 top-0 bottom-0 w-72 bg-white text-[#262220] flex flex-col shadow-2xl border-r border-[#eadfd4]">
-            <div className="p-4 border-b border-[#eadfd4] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-[#9c4124] flex items-center justify-center text-white font-black text-sm">
-                  SS
+          <div className="absolute inset-0 bg-[#29221D]/40 backdrop-blur-xs" onClick={() => setSidebarOpen(false)} />
+          <aside className="absolute left-0 top-0 bottom-0 w-72 bg-[#FFFDF8] text-[#29221D] flex flex-col shadow-2xl border-r border-[#D9CEB8]">
+            <div className="p-4 border-b border-[#D9CEB8] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#A8462D]/10 border border-[#A8462D]/20 flex items-center justify-center shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
+                    <path d="M14 2L17 10.5H26L19 15.5L21.5 24L14 19L6.5 24L9 15.5L2 10.5H11L14 2Z" fill="#A8462D" />
+                  </svg>
                 </div>
                 <div>
-                  <span className="font-bold text-[#262220] font-['Rozha_One',serif]">ShilpSetu</span>
-                  <span className="text-[10px] text-[#9c4124] block font-semibold">ShilpSetu Assistant</span>
+                  <span className="font-bold text-[#29221D] font-serif">Artisans</span>
+                  <span className="text-[10px] text-[#A8462D] block font-semibold">Studio</span>
                 </div>
               </div>
-              <button onClick={() => setSidebarOpen(false)} className="p-1 text-stone-500 hover:text-stone-800">
+              <button onClick={() => setSidebarOpen(false)} className="p-1 text-[#7A6E65] hover:text-[#29221D]">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <nav className="flex-1 py-3 px-2 space-y-1 overflow-y-auto">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  onClick={() => setSidebarOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-bold transition-colors ${
-                      isActive ? 'bg-[#9c4124] text-white shadow-xs' : 'text-stone-700 hover:bg-[#f5efeb]'
-                    }`
-                  }
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span>{item.label}</span>
-                </NavLink>
+            <nav className="flex-1 py-4 px-3 space-y-4 overflow-y-auto">
+              {navSections.map((section) => (
+                <div key={section.title} className="space-y-1">
+                  <div className="px-3 pb-1 text-[10px] font-bold text-[#7A6E65] tracking-[0.16em] uppercase">
+                    {section.title}
+                  </div>
+                  {section.items.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.end}
+                      onClick={() => setSidebarOpen(false)}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                          isActive
+                            ? 'bg-[#A8462D] text-[#FFFDF8] shadow-xs'
+                            : 'text-[#5C4A3A] hover:bg-[#F7F2E8] hover:text-[#29221D]'
+                        }`
+                      }
+                    >
+                      <item.icon className="w-4.5 h-4.5 shrink-0" />
+                      <span>{item.label}</span>
+                    </NavLink>
+                  ))}
+                </div>
               ))}
             </nav>
-            <div className="p-3 border-t border-[#eadfd4]">
+            <div className="p-3 border-t border-[#D9CEB8]">
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 w-full px-3 py-2 text-red-600 text-xs font-bold"
+                className="flex items-center gap-2 w-full px-3 py-2 text-rose-700 text-xs font-semibold"
               >
                 <LogOut className="w-4 h-4" />
                 <span>{t.logout}</span>
@@ -295,16 +312,18 @@ export function SellerLayout() {
       {/* Main Content Area */}
       <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
         {/* Mobile Top Navigation Bar */}
-        <header className="lg:hidden sticky top-0 z-30 bg-[#faf7f2]/95 backdrop-blur-md border-b border-[#eadfd4] px-4 py-3 flex items-center justify-between">
+        <header className="lg:hidden sticky top-0 z-30 bg-[#FFFDF8]/95 backdrop-blur-md border-b border-[#D9CEB8] px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <button onClick={() => setSidebarOpen(true)} className="p-1.5 text-stone-700 hover:text-stone-900 rounded-lg hover:bg-stone-100">
+            <button onClick={() => setSidebarOpen(true)} className="p-1.5 text-[#29221D] rounded-lg hover:bg-[#F7F2E8]">
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-              <div className="w-7 h-7 rounded-xl bg-[#9c4124] flex items-center justify-center text-white font-black text-xs">
-                SS
+              <div className="w-7 h-7 rounded-lg bg-[#A8462D]/10 border border-[#A8462D]/20 flex items-center justify-center shrink-0">
+                <svg width="18" height="18" viewBox="0 0 28 28" fill="none">
+                  <path d="M14 2L17 10.5H26L19 15.5L21.5 24L14 19L6.5 24L9 15.5L2 10.5H11L14 2Z" fill="#A8462D" />
+                </svg>
               </div>
-              <span className="font-extrabold text-sm text-[#262220] font-['Rozha_One',serif]">ShilpSetu</span>
+              <span className="font-bold text-sm text-[#29221D] font-serif">Artisans</span>
             </div>
           </div>
 
@@ -312,21 +331,21 @@ export function SellerLayout() {
             {/* Step-by-Step App Tour Button on Mobile */}
             <button
               onClick={() => setManualTourOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#9c4124] hover:bg-[#83341b] text-white text-xs font-bold cursor-pointer shadow-xs active:scale-95 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#A8462D] text-[#FFFDF8] text-xs font-semibold cursor-pointer shadow-xs active:scale-95 transition-all"
               title="Voice step-by-step tutorial on how to use the app"
             >
               <Volume2 className="w-3.5 h-3.5 animate-pulse" />
               <span>{language === 'hi' ? 'गाइड' : 'Tour'}</span>
             </button>
 
-            {/* Quick Language Pills on Mobile with All Indian Languages trigger */}
-            <div className="flex items-center bg-white p-0.5 rounded-lg border border-[#eadfd4]">
+            {/* Quick Language Pills on Mobile */}
+            <div className="flex items-center bg-[#F7F2E8] p-0.5 rounded-full border border-[#D9CEB8]">
               {(['en', 'hi', 'te'] as LanguageCode[]).map((l) => (
                 <button
                   key={l}
                   onClick={() => setLanguage(l)}
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
-                    language === l ? 'bg-[#9c4124] text-white' : 'text-stone-600 hover:bg-stone-100'
+                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors ${
+                    language === l ? 'bg-[#A8462D] text-[#FFFDF8]' : 'text-[#7A6E65] hover:bg-[#E8DFC9]/40'
                   }`}
                 >
                   {l === 'en' ? 'EN' : l === 'hi' ? 'हिं' : 'తె'}
@@ -334,7 +353,7 @@ export function SellerLayout() {
               ))}
               <button
                 onClick={() => openLanguageModal('language')}
-                className="px-1.5 py-0.5 rounded text-[10px] font-black text-[#9c4124] hover:bg-amber-50 cursor-pointer"
+                className="px-1.5 py-0.5 rounded-full text-[10px] font-bold text-[#A8462D] hover:bg-[#A8462D]/10 cursor-pointer"
                 title="All 12 Indian Languages"
               >
                 🌐+
@@ -344,13 +363,13 @@ export function SellerLayout() {
         </header>
 
         {/* Desktop Top Navigation Header */}
-        <header className="hidden lg:flex sticky top-0 z-20 bg-[#faf7f2]/95 backdrop-blur-md border-b border-[#eadfd4] px-8 py-3.5 items-center justify-between shadow-2xs">
+        <header className="hidden lg:flex sticky top-0 z-20 bg-[#FFFDF8]/95 backdrop-blur-md border-b border-[#D9CEB8] px-8 py-3.5 items-center justify-between shadow-2xs">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-black uppercase tracking-wider text-stone-500">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#7A6E65]">
               Artisan Studio
             </span>
-            <span className="text-stone-300">•</span>
-            <span className="text-xs font-bold text-[#9c4124]">
+            <span className="text-[#D9CEB8]">•</span>
+            <span className="text-xs font-semibold text-[#A8462D]">
               {artisanSubtitle}
             </span>
           </div>
@@ -359,22 +378,22 @@ export function SellerLayout() {
             {/* Dedicated Step-by-Step Voice Assistance Tutorial Button */}
             <button
               onClick={() => setManualTourOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-xs font-black transition-all shadow-xs cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#A8462D] hover:bg-[#C5614A] text-[#FFFDF8] text-xs font-semibold transition-all shadow-xs cursor-pointer active:scale-95"
               title="Voice step-by-step tutorial on how to use the app"
             >
-              <Volume2 className="w-4 h-4 animate-bounce" />
+              <Volume2 className="w-3.5 h-3.5" />
               <span>{language === 'hi' ? '🔊 आवाज़ गाइड' : language === 'te' ? '🔊 వాయిస్ గైడ్' : '🔊 Voice Tour'}</span>
             </button>
 
             {/* Artisan Journey Voice Tutorial Launch Button */}
             <button
               onClick={startJourney}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-100/80 hover:bg-amber-200/80 border border-amber-300 text-amber-950 text-xs font-black transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F7F2E8] hover:bg-[#E8DFC9] border border-[#D9CEB8] text-[#29221D] text-xs font-semibold transition-all shadow-xs cursor-pointer active:scale-95"
               title="Launch Artisan Saathi Voice Guided Journey"
             >
-              <span className="text-sm animate-bounce">🌱</span>
+              <span className="text-sm">🌱</span>
               <span>{language === 'hi' ? 'शिल्प यात्रा' : language === 'te' ? 'శిల్ప యాత్ర' : 'Artisan Journey'}</span>
-              <span className="px-1.5 py-0.5 rounded bg-amber-300/80 text-amber-950 text-[10px] font-mono font-black">
+              <span className="px-1.5 py-0.5 rounded-full bg-[#C88732]/20 text-[#A8462D] text-[10px] font-mono font-bold">
                 L{currentLevel}/9
               </span>
             </button>
@@ -383,19 +402,19 @@ export function SellerLayout() {
             <button
               id="seller-header-state-lang-btn"
               onClick={() => openLanguageModal('state')}
-              className="h-9 inline-flex items-center gap-1.5 px-3 rounded-xl bg-white hover:bg-stone-50 border border-[#eadfd4] hover:border-[#9c4124] text-xs font-semibold transition-all shadow-2xs cursor-pointer"
+              className="h-9 inline-flex items-center gap-1.5 px-3 rounded-full bg-[#FFFDF8] hover:bg-[#F7F2E8] border border-[#D9CEB8] hover:border-[#A8462D] text-xs font-semibold transition-all shadow-2xs cursor-pointer active:scale-95"
               title="Change State or Language"
             >
-              <span className="text-[#9c4124] font-bold flex items-center gap-1">
+              <span className="text-[#A8462D] font-bold flex items-center gap-1">
                 📍 {selectedState}
               </span>
-              <span className="text-stone-300">•</span>
-              <Globe className="w-3.5 h-3.5 text-stone-600" />
-              <span className="text-stone-700">{selectedLanguageName}</span>
+              <span className="text-[#D9CEB8]">•</span>
+              <Globe className="w-3.5 h-3.5 text-[#4A7A52]" />
+              <span className="text-[#29221D]">{selectedLanguageName}</span>
             </button>
 
             {/* Quick Language Switcher on Desktop Top Bar */}
-            <div className="hidden sm:inline-flex items-center h-9 bg-white px-1.5 rounded-xl border border-[#eadfd4] gap-0.5 shadow-2xs">
+            <div className="hidden sm:inline-flex items-center h-9 bg-[#F7F2E8] px-1.5 rounded-full border border-[#D9CEB8] gap-0.5 shadow-2xs">
               {(
                 [
                   { code: 'en' as const, label: 'EN' },
@@ -408,10 +427,10 @@ export function SellerLayout() {
                   <button
                     key={langItem.code}
                     onClick={() => setLanguage(langItem.code)}
-                    className={`h-7 px-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    className={`h-7 px-2 text-xs font-bold rounded-full transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-[#9c4124] text-white shadow-xs'
-                        : 'text-stone-600 hover:text-stone-900 hover:bg-[#f5efeb]'
+                        ? 'bg-[#A8462D] text-[#FFFDF8] shadow-xs'
+                        : 'text-[#7A6E65] hover:text-[#29221D] hover:bg-[#E8DFC9]/40'
                     }`}
                   >
                     {langItem.label}
@@ -420,7 +439,7 @@ export function SellerLayout() {
               })}
               <button
                 onClick={() => openLanguageModal('language')}
-                className="h-7 px-1.5 text-[11px] font-bold text-[#9c4124] hover:underline cursor-pointer"
+                className="h-7 px-2 text-[11px] font-semibold text-[#A8462D] hover:underline cursor-pointer"
                 title="All 12 Indian Languages"
               >
                 More
@@ -435,10 +454,9 @@ export function SellerLayout() {
                 sessionStorage.removeItem('ShilpSetu_seen_buyer_tour');
                 navigate('/buyer');
               }}
-              className="h-9 inline-flex items-center gap-2 px-3.5 rounded-xl bg-white hover:bg-emerald-50 hover:text-emerald-800 text-stone-700 hover:border-emerald-300 text-xs font-bold transition-colors border border-[#eadfd4] cursor-pointer shadow-2xs"
+              className="h-9 inline-flex items-center gap-2 px-3.5 rounded-full bg-[#FFFDF8] hover:bg-[#F7F2E8] text-[#29221D] hover:text-[#A8462D] text-xs font-semibold transition-colors border border-[#D9CEB8] hover:border-[#A8462D] cursor-pointer shadow-2xs active:scale-95"
             >
-              <Volume2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>🛍️ Buyer Marketplace →</span>
+              <span>🛍️ Buyer Market →</span>
             </button>
           </div>
         </header>
@@ -452,7 +470,7 @@ export function SellerLayout() {
         {/* MOBILE-FIRST BOTTOM NAVIGATION BAR (Prominent + Add) */}
         {/* ================================================== */}
         <nav
-          className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#eadfd4] px-2 pt-1.5 pb-safe lg:hidden flex items-center justify-around shadow-lg"
+          className="fixed bottom-0 left-0 right-0 z-30 bg-[#FFFDF8]/95 backdrop-blur-md border-t border-[#D9CEB8] px-2 pt-1.5 pb-safe lg:hidden flex items-center justify-around shadow-lg"
           aria-label="Mobile Navigation"
         >
           {/* 1. Home */}
@@ -462,7 +480,7 @@ export function SellerLayout() {
             onClick={() => triggerHaptic('light')}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
-                isActive ? 'text-[#9c4124] font-bold' : 'text-stone-500 font-medium'
+                isActive ? 'text-[#A8462D] font-bold' : 'text-[#7A6E65] font-medium'
               }`
             }
           >
@@ -476,7 +494,7 @@ export function SellerLayout() {
             onClick={() => triggerHaptic('light')}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
-                isActive ? 'text-[#9c4124] font-bold' : 'text-stone-500 font-medium'
+                isActive ? 'text-[#A8462D] font-bold' : 'text-[#7A6E65] font-medium'
               }`
             }
           >
@@ -488,15 +506,13 @@ export function SellerLayout() {
           <NavLink
             to="/seller/add"
             onClick={() => triggerHaptic('medium')}
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center -mt-5 relative group`
-            }
+            className="flex flex-col items-center justify-center -mt-5 relative group"
             aria-label="Add New Product"
           >
-            <div className="w-13 h-13 rounded-full bg-[#9c4124] text-white flex items-center justify-center shadow-lg shadow-[#9c4124]/30 border-4 border-white transition-transform active:scale-95 group-hover:bg-[#83341b]">
+            <div className="w-13 h-13 rounded-full bg-[#A8462D] text-[#FFFDF8] flex items-center justify-center shadow-lg shadow-[#A8462D]/30 border-4 border-[#FFFDF8] transition-transform active:scale-95 hover:bg-[#C5614A]">
               <PlusCircle className="w-6 h-6" />
             </div>
-            <span className="text-[10px] font-extrabold text-[#9c4124] mt-0.5">
+            <span className="text-[10px] font-bold text-[#A8462D] mt-0.5">
               {t.addHandicraft ? `+ ${t.addHandicraft.replace(/^\+\s*/, '')}` : (language === 'hi' ? '+ जोड़ें' : language === 'te' ? '+ జోడించు' : '+ Add')}
             </span>
           </NavLink>
@@ -507,7 +523,7 @@ export function SellerLayout() {
             onClick={() => triggerHaptic('light')}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
-                isActive ? 'text-[#9c4124] font-bold' : 'text-stone-500 font-medium'
+                isActive ? 'text-[#A8462D] font-bold' : 'text-[#7A6E65] font-medium'
               }`
             }
           >
@@ -515,16 +531,16 @@ export function SellerLayout() {
             <span className="text-[10px]">{t.orders || (language === 'hi' ? 'ऑर्डर्स' : language === 'te' ? 'ఆర్డర్లు' : 'Orders')}</span>
           </NavLink>
 
-          {/* 5. Artisan Saathi (AI Business Mentor) */}
+          {/* 5. Artisan Saathi */}
           <NavLink
             to="/seller/customer-care"
             className={({ isActive }) =>
               `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
-                isActive ? 'text-[#9c4124] font-bold' : 'text-stone-500 font-medium'
+                isActive ? 'text-[#A8462D] font-bold' : 'text-[#7A6E65] font-medium'
               }`
             }
           >
-            <Sparkles className="w-5 h-5 mb-0.5 text-amber-600" />
+            <Sparkles className="w-5 h-5 mb-0.5 text-[#C88732]" />
             <span className="text-[10px]">{language === 'hi' ? 'साथी AI' : language === 'te' ? 'సాథీ AI' : 'Saathi AI'}</span>
           </NavLink>
         </nav>

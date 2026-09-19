@@ -308,11 +308,140 @@ model AIProcessingResult {
 model OtpVerification {
   id         String   @id @default(cuid())
   phone      String
-  otp        String
+  otp        String   // SHA-256 hashed OTP
+  attempts   Int      @default(0)
   expires_at DateTime
   verified   Boolean  @default(false)
   created_at DateTime @default(now())
 
   @@index([phone])
   @@map("otp_verifications")
+}
+
+model CraftCluster {
+  id          String   @id @default(cuid())
+  name        String
+  state       String
+  district    String
+  craft_type  String
+  description String?  @db.Text
+  created_at  DateTime @default(now())
+
+  @@index([state, district])
+  @@index([craft_type])
+  @@map("craft_clusters")
+}
+
+model ProvenanceTag {
+  id              String   @id // e.g. PRV-POC-2026-8941
+  product_id      String
+  artisan_id      String
+  craft_name      String
+  craft_type      String
+  origin_district String
+  origin_state    String
+  materials       String?
+  technique       String?
+  tamper_hash     String   // SHA-256 tamper-evident provenance seal
+  qr_payload      String   @db.Text
+  status          String   @default("active") // 'active' | 'revoked'
+  created_at      DateTime @default(now())
+
+  @@index([product_id])
+  @@index([artisan_id])
+  @@map("provenance_tags")
+}
+
+model MarketplaceListing {
+  id             String    @id @default(cuid())
+  product_id     String
+  platform       String    // 'private_marketplace' | 'b2b' | 'whatsapp' | 'ondc'
+  status         String    @default("active") // 'active' | 'inactive' | 'pending' | 'draft'
+  external_id    String?
+  sync_status    String    @default("synced") // 'synced' | 'pending' | 'failed'
+  sync_error     String?   @db.Text
+  last_synced_at DateTime? @default(now())
+  created_at     DateTime  @default(now())
+
+  @@index([product_id])
+  @@index([platform])
+  @@map("marketplace_listings")
+}
+
+model MarketplaceEnquiry {
+  id                 String   @id @default(cuid())
+  product_id         String
+  artisan_id         String
+  buyer_name         String
+  buyer_phone        String
+  buyer_email        String?
+  requested_quantity Int      @default(1)
+  proposed_price     Float?
+  message            String   @db.Text
+  channel            String   @default("internal") // 'internal' | 'b2b' | 'whatsapp' | 'ondc'
+  status             String   @default("new") // 'new' | 'in_progress' | 'responded' | 'closed'
+  created_at         DateTime @default(now())
+
+  @@index([artisan_id])
+  @@index([product_id])
+  @@index([channel])
+  @@map("marketplace_enquiries")
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  order_id   String
+  product_id String
+  quantity   Int      @default(1)
+  unit_price Float
+  subtotal   Float
+  created_at DateTime @default(now())
+
+  @@index([order_id])
+  @@index([product_id])
+  @@map("order_items")
+}
+
+model Payment {
+  id             String   @id @default(cuid())
+  order_id       String
+  payment_method String   // 'upi_direct' | 'razorpay_test' | 'cash_on_delivery'
+  transaction_id String?
+  amount         Float
+  currency       String   @default("INR")
+  status         String   @default("success") // 'success' | 'pending' | 'failed'
+  created_at     DateTime @default(now())
+
+  @@index([order_id])
+  @@map("payments")
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  user_id    String
+  type       String   // 'order_created' | 'b2b_enquiry' | 'inventory_alert' | 'system'
+  title      String
+  message    String   @db.Text
+  channel    String   @default("in_app") // 'in_app' | 'sms' | 'email' | 'whatsapp'
+  read       Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@index([user_id])
+  @@index([read])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  user_id     String?
+  action      String
+  entity_type String
+  entity_id   String?
+  details     Json?
+  ip_address  String?
+  created_at  DateTime @default(now())
+
+  @@index([action])
+  @@index([entity_type])
+  @@map("audit_logs")
 }

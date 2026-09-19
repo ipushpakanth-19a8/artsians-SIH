@@ -579,7 +579,7 @@ export const LocationLanguageModal: React.FC<LocationLanguageModalProps> = ({
               </div>
               <div>
                 <h3 className="text-xl font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                  <span>KALAtech</span>
+                  <span>Artisans</span>
                   <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 font-semibold uppercase tracking-wider">
                     {activeStrings.detectedTitle}
                   </span>

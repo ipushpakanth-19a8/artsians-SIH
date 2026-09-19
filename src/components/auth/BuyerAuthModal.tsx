@@ -230,9 +230,9 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/70 backdrop-blur-xs">
-      <div className="relative bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-stone-200 overflow-hidden max-h-[92vh] flex flex-col">
+      <div className="relative bg-[#FFFDF8] rounded-3xl max-w-lg w-full shadow-2xl border border-[#D9CEB8] overflow-hidden max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-teal-800 p-6 text-white relative">
+        <div className="bg-gradient-to-r from-[#A8462D] via-[#8D3823] to-[#29221D] p-6 text-white relative">
           <button
             onClick={() => {
               voice.stopAssistant();
@@ -247,14 +247,14 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
               <ShoppingBag className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-black font-['Rozha_One',serif]">
+              <h2 className="text-xl font-black font-serif">
                 {step === 'otp'
                   ? t.enterOtp
                   : tab === 'signin'
                   ? t.buyerSignInTitle
                   : t.buyerSignUpTitle}
               </h2>
-              <p className="text-emerald-100 text-xs">
+              <p className="text-[#F3E5AB] text-xs">
                 {step === 'otp'
                   ? '🔒 Passwordless OTP Verification'
                   : 'Direct Artisan Heritage Marketplace • No Password Required'}
@@ -264,7 +264,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
 
           {/* Tab Switcher (Only in Phone Step) */}
           {step === 'phone' && (
-            <div className="flex bg-black/20 p-1 rounded-xl mt-4">
+            <div className="flex bg-black/25 p-1 rounded-xl mt-4">
               <button
                 onClick={() => {
                   voice.stopAssistant();
@@ -272,7 +272,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                   setError(null);
                 }}
                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  tab === 'signin' ? 'bg-white text-stone-900 shadow' : 'text-emerald-100 hover:text-white'
+                  tab === 'signin' ? 'bg-[#FFFDF8] text-[#29221D] shadow-xs' : 'text-[#F3E5AB] hover:text-white'
                 }`}
               >
                 {t.signIn}
@@ -284,7 +284,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                   setError(null);
                 }}
                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  tab === 'signup' ? 'bg-white text-stone-900 shadow' : 'text-emerald-100 hover:text-white'
+                  tab === 'signup' ? 'bg-[#FFFDF8] text-[#29221D] shadow-xs' : 'text-[#F3E5AB] hover:text-white'
                 }`}
               >
                 {t.signUp}
@@ -301,9 +301,9 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
               <button
                 type="button"
                 onClick={handleQuickDemoFill}
-                className="flex-1 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                className="flex-1 py-2 px-3 rounded-xl bg-[#C88732]/15 hover:bg-[#C88732]/25 border border-[#C88732]/40 text-[#A8462D] text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs"
               >
-                <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+                <Sparkles className="w-3.5 h-3.5 text-[#C88732]" />
                 <span>⚡ {t.quickDemoLogin} (9444077889)</span>
               </button>
             </div>
@@ -320,28 +320,28 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
           <button
             type="button"
             onClick={voice.startGuidedFlow}
-            className="w-full py-2.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 hover:from-emerald-100 hover:to-teal-100 border-2 border-emerald-300 text-emerald-950 font-black text-xs sm:text-sm flex items-center justify-between shadow-xs transition-all active:scale-[0.99] cursor-pointer group"
+            className="w-full py-2.5 px-4 rounded-2xl bg-[#FFFDF8] hover:bg-[#F7F2E8] border-2 border-[#D9CEB8] hover:border-[#A8462D] text-[#29221D] font-black text-xs sm:text-sm flex items-center justify-between shadow-xs transition-all active:scale-[0.99] cursor-pointer group"
           >
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#A8462D] to-[#C88732] text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
                 <Mic className="w-4 h-4" />
               </div>
               <div className="text-left">
-                <span className="block leading-tight font-extrabold text-stone-900 text-xs sm:text-sm">
+                <span className="block leading-tight font-extrabold text-[#29221D] text-xs sm:text-sm">
                   {language === 'hi'
                     ? '🎙️ बोलकर विवरण भरें (आवाज़ सहायक)'
                     : language === 'te'
                     ? '🎙️ వాయిస్ అసిస్టెంట్ ద్వారా వివరాలు నమోదు'
                     : '🎙️ Voice Assist Login Details'}
                 </span>
-                <span className="text-[10px] text-emerald-800 font-bold block">
+                <span className="text-[10px] text-[#A8462D] font-bold block">
                   {step === 'otp'
                     ? (language === 'hi' ? 'ओटीपी बोलें (डेमो: 123456)' : 'Speak 6-digit OTP (Demo: 123456)')
                     : (language === 'hi' ? 'क्लिक करें और 10 अंकों का मोबाइल नंबर बोलें' : 'Speak your 10-digit mobile number')}
                 </span>
               </div>
             </div>
-            <span className="bg-emerald-700 hover:bg-emerald-800 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 shadow-2xs">
+            <span className="bg-[#A8462D] hover:bg-[#8D3823] text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 shadow-2xs">
               {language === 'hi' ? 'आवाज़ से भरें' : language === 'te' ? 'వాయిస్' : 'Speak'}
             </span>
           </button>
@@ -359,14 +359,14 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
           {step === 'otp' ? (
             <form onSubmit={handleVerifyOtp} className="space-y-4">
               {/* Phone number badge with edit button */}
-              <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-2xl flex items-center justify-between">
+              <div className="p-3.5 bg-[#F7F2E8] border border-[#D9CEB8] rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-[#A8462D] text-white flex items-center justify-center">
                     <KeyRound className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-[11px] font-semibold text-stone-500 block">OTP sent to mobile</span>
-                    <span className="text-sm font-black text-stone-900 font-mono tracking-wide">+91 {phone}</span>
+                    <span className="text-[11px] font-semibold text-[#6B5E55] block">OTP sent to mobile</span>
+                    <span className="text-sm font-black text-[#29221D] font-mono tracking-wide">+91 {phone}</span>
                   </div>
                 </div>
                 <button
@@ -375,7 +375,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                     setStep('phone');
                     setError(null);
                   }}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-stone-300 text-stone-700 text-xs font-bold hover:bg-stone-50 cursor-pointer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FFFDF8] border border-[#D9CEB8] text-[#29221D] text-xs font-bold hover:bg-[#F7F2E8] cursor-pointer"
                 >
                   <Edit3 className="w-3 h-3" />
                   <span>{language === 'hi' ? 'बदलें' : 'Change'}</span>
@@ -383,15 +383,15 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
               </div>
 
               {/* Demo OTP Banner */}
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs text-emerald-900">
+              <div className="p-3 bg-[#C88732]/15 border border-[#C88732]/35 rounded-xl flex items-center justify-between text-xs text-[#29221D]">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Demo OTP code is <strong className="font-mono text-sm font-black text-emerald-700">123456</strong></span>
+                  <CheckCircle2 className="w-4 h-4 text-[#A8462D] shrink-0" />
+                  <span>Demo OTP code is <strong className="font-mono text-sm font-black text-[#A8462D]">123456</strong></span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setOtp('123456')}
-                  className="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer"
+                  className="px-2 py-0.5 rounded bg-[#A8462D] hover:bg-[#8D3823] text-white text-[11px] font-bold cursor-pointer"
                 >
                   Auto-Fill
                 </button>
@@ -399,7 +399,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
 
               {/* OTP Input */}
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1.5">
+                <label className="block text-xs font-bold text-[#6B5E55] mb-1.5">
                   {t.enterOtp}
                 </label>
                 <div className="relative">
@@ -410,10 +410,10 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
                     placeholder="123456"
-                    className={`w-full pl-4 pr-11 py-3 bg-stone-50 border rounded-xl text-stone-900 text-center tracking-[0.4em] font-mono text-xl font-black focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all ${
+                    className={`w-full pl-4 pr-11 py-3 bg-[#FFFDF8] border rounded-xl text-[#29221D] text-center tracking-[0.4em] font-mono text-xl font-black focus:outline-none focus:ring-2 focus:ring-[#A8462D] transition-all ${
                       voice.activeFieldKey === 'otp'
-                        ? 'border-emerald-500 ring-2 ring-emerald-300 bg-emerald-50/50'
-                        : 'border-stone-300'
+                        ? 'border-[#A8462D] ring-2 ring-[#C88732]/40 bg-[#FFFDF8]'
+                        : 'border-[#D9CEB8]'
                     }`}
                   />
                   <button
@@ -422,7 +422,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                     className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all cursor-pointer ${
                       voice.activeFieldKey === 'otp' && voice.isListening
                         ? 'bg-red-500 text-white animate-pulse'
-                        : 'text-stone-400 hover:text-emerald-700 hover:bg-emerald-100/60'
+                        : 'text-[#8C827A] hover:text-[#A8462D] hover:bg-[#F7F2E8]'
                     }`}
                     title={language === 'hi' ? 'ओटीपी बोलें' : 'Speak OTP'}
                   >
@@ -435,7 +435,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-emerald-700/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="artisan-btn-primary w-full py-3 bg-[#A8462D] hover:bg-[#8D3823] text-white rounded-xl font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -450,14 +450,14 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
               {/* Resend Link */}
               <div className="text-center pt-1">
                 {resendCooldown > 0 ? (
-                  <span className="text-xs text-stone-500 font-medium">
-                    Resend OTP in <strong className="font-mono text-stone-700">{resendCooldown}s</strong>
+                  <span className="text-xs text-[#6B5E55] font-medium">
+                    Resend OTP in <strong className="font-mono text-[#29221D]">{resendCooldown}s</strong>
                   </span>
                 ) : (
                   <button
                     type="button"
                     onClick={() => handleSendOtp()}
-                    className="inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:underline font-bold cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-xs text-[#A8462D] hover:underline font-bold cursor-pointer"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>{t.resendOtp}</span>
@@ -472,7 +472,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
             tab === 'signin' ? (
               <form onSubmit={handleSendOtp} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1.5">{t.emailOrMobile}</label>
+                  <label className="block text-xs font-bold text-[#6B5E55] mb-1.5">{t.emailOrMobile}</label>
                   <div className="relative">
                     <input
                       type="tel"
@@ -481,10 +481,10 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                       value={phone}
                       onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
                       placeholder="e.g. 9444077889"
-                      className={`w-full pl-3.5 pr-11 py-3 bg-stone-50 border rounded-xl text-stone-900 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all ${
+                      className={`w-full pl-3.5 pr-11 py-3 bg-[#FFFDF8] border rounded-xl text-[#29221D] text-base font-semibold focus:outline-none focus:ring-2 focus:ring-[#A8462D] transition-all ${
                         voice.activeFieldKey === 'phone'
-                          ? 'border-emerald-500 ring-2 ring-emerald-300 bg-emerald-50/50'
-                          : 'border-stone-300'
+                          ? 'border-[#A8462D] ring-2 ring-[#C88732]/40 bg-[#FFFDF8]'
+                          : 'border-[#D9CEB8]'
                       }`}
                     />
                     <button
@@ -493,14 +493,14 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                       className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all cursor-pointer ${
                         voice.activeFieldKey === 'phone' && voice.isListening
                           ? 'bg-red-500 text-white animate-pulse'
-                          : 'text-stone-400 hover:text-emerald-700 hover:bg-emerald-100/60'
+                          : 'text-[#8C827A] hover:text-[#A8462D] hover:bg-[#F7F2E8]'
                       }`}
                       title={language === 'hi' ? 'मोबाइल नंबर बोलें' : 'Speak mobile number'}
                     >
                       <Mic className="w-4 h-4" />
                     </button>
                   </div>
-                  <p className="text-[11px] text-stone-500 mt-1">
+                  <p className="text-[11px] text-[#6B5E55] mt-1">
                     No password required. Instant OTP login.
                   </p>
                 </div>
@@ -508,7 +508,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-emerald-700/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="artisan-btn-primary w-full py-3 bg-[#A8462D] hover:bg-[#8D3823] text-white rounded-xl font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {loading ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -521,7 +521,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                 </button>
 
                 <div className="text-center pt-2">
-                  <p className="text-xs text-stone-500">
+                  <p className="text-xs text-[#6B5E55]">
                     {t.noAccount}{' '}
                     <button
                       type="button"
@@ -529,7 +529,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                         setTab('signup');
                         setError(null);
                       }}
-                      className="text-emerald-700 font-bold hover:underline"
+                      className="text-[#A8462D] font-bold hover:underline cursor-pointer"
                     >
                       {t.createAccount}
                     </button>
@@ -540,7 +540,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
               /* Buyer Sign Up Tab */
               <form onSubmit={handleSendOtp} className="space-y-3">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Full Name *</label>
+                  <label className="block text-xs font-bold text-[#6B5E55] mb-1">Full Name *</label>
                   <div className="relative">
                     <input
                       type="text"
@@ -548,12 +548,12 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="e.g. Anita Deshmukh"
-                      className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-3 pr-10 py-2 bg-[#FFFDF8] border border-[#D9CEB8] rounded-xl text-[#29221D] text-sm focus:outline-none focus:ring-2 focus:ring-[#A8462D]"
                     />
                     <button
                       type="button"
                       onClick={() => voice.recordSingleField('fullName')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-emerald-700"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[#8C827A] hover:text-[#A8462D]"
                     >
                       <Mic className="w-4 h-4" />
                     </button>
@@ -561,7 +561,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Mobile Number (10 digits) *</label>
+                  <label className="block text-xs font-bold text-[#6B5E55] mb-1">Mobile Number (10 digits) *</label>
                   <div className="relative">
                     <input
                       type="tel"
@@ -570,12 +570,12 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                       value={phone}
                       onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
                       placeholder="9444077889"
-                      className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-3 pr-10 py-2 bg-[#FFFDF8] border border-[#D9CEB8] rounded-xl text-[#29221D] text-sm focus:outline-none focus:ring-2 focus:ring-[#A8462D]"
                     />
                     <button
                       type="button"
                       onClick={() => voice.recordSingleField('phone')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-emerald-700"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[#8C827A] hover:text-[#A8462D]"
                     >
                       <Mic className="w-4 h-4" />
                     </button>
@@ -584,32 +584,32 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">City</label>
+                    <label className="block text-xs font-bold text-[#6B5E55] mb-1">City</label>
                     <div className="relative">
                       <input
                         type="text"
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                         placeholder="Bengaluru"
-                        className="w-full pl-3 pr-8 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="w-full pl-3 pr-8 py-2 bg-[#FFFDF8] border border-[#D9CEB8] rounded-xl text-[#29221D] text-sm focus:outline-none focus:ring-2 focus:ring-[#A8462D]"
                       />
                       <button
                         type="button"
                         onClick={() => voice.recordSingleField('location')}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-emerald-700"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[#8C827A] hover:text-[#A8462D]"
                       >
                         <Mic className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">State</label>
+                    <label className="block text-xs font-bold text-[#6B5E55] mb-1">State</label>
                     <input
                       type="text"
                       value={state}
                       onChange={(e) => setState(e.target.value)}
                       placeholder="Karnataka"
-                      className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 bg-[#FFFDF8] border border-[#D9CEB8] rounded-xl text-[#29221D] text-sm focus:outline-none focus:ring-2 focus:ring-[#A8462D]"
                     />
                   </div>
                 </div>
@@ -617,7 +617,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full mt-2 py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-emerald-700/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="artisan-btn-primary w-full mt-2 py-3 bg-[#A8462D] hover:bg-[#8D3823] text-white rounded-xl font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {loading ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -630,7 +630,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                 </button>
 
                 <div className="text-center pt-1">
-                  <p className="text-xs text-stone-500">
+                  <p className="text-xs text-[#6B5E55]">
                     {t.haveAccount}{' '}
                     <button
                       type="button"
@@ -638,7 +638,7 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
                         setTab('signin');
                         setError(null);
                       }}
-                      className="text-emerald-700 font-bold hover:underline"
+                      className="text-[#A8462D] font-bold hover:underline cursor-pointer"
                     >
                       {t.signIn}
                     </button>
@@ -649,12 +649,12 @@ export function BuyerAuthModal({ isOpen, onClose, defaultTab = 'signin' }: Buyer
           )}
 
           {/* Direct Benefits Footnote */}
-          <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
+          <div className="pt-2 border-t border-[#D9CEB8] flex items-center justify-between text-[11px] text-[#6B5E55]">
             <span className="flex items-center gap-1 font-medium">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
               100% Authentic GI & Artisan Direct
             </span>
-            <span className="text-emerald-700 font-bold">Encrypted OTP Access</span>
+            <span className="text-[#A8462D] font-bold">Encrypted OTP Access</span>
           </div>
         </div>
       </div>

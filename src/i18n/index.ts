@@ -16,7 +16,7 @@ import { as } from './as';
 export * from './types';
 export { en, hi, te, ta, kn, ml, mr, gu, bn, or, pa, as };
 
-export const translations: Record<LanguageCode, TranslationKeys> = {
+const rawTranslations: Record<LanguageCode, TranslationKeys> = {
   en,
   hi,
   te,
@@ -31,6 +31,22 @@ export const translations: Record<LanguageCode, TranslationKeys> = {
   as,
 };
 
+/**
+ * Crash-proof translation dictionary.
+ * Unknown languages safely fall back to English.
+ * Missing keys in any regional language safely fall back to English values.
+ */
+export const translations: Record<LanguageCode, TranslationKeys> = new Proxy(rawTranslations, {
+  get(target, prop: string) {
+    const langDict = (target as any)[prop] || target.en;
+    return new Proxy(langDict, {
+      get(dTarget, key: string) {
+        return (dTarget as any)[key] ?? (target.en as any)[key] ?? '';
+      }
+    });
+  }
+}) as Record<LanguageCode, TranslationKeys>;
+
 // Aliased as coreTranslations for existing callers
 export const coreTranslations = translations;
 
@@ -39,7 +55,7 @@ export const coreTranslations = translations;
  */
 export function t(key: keyof TranslationKeys, lang: LanguageCode = 'en'): string {
   const dict = translations[lang] || translations.en;
-  const val = dict?.[key] ?? translations.en[key] ?? String(key);
+  const val = (dict as any)?.[key] ?? (translations.en as any)[key] ?? String(key);
   return typeof val === 'string' ? val : (Array.isArray(val) ? val.join(', ') : String(val));
 }
 

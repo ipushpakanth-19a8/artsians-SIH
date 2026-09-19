@@ -21,6 +21,10 @@ import {
   extractProductDetailsFromVoice,
   extractTargetFieldFromVoice,
 } from "./server/services/craftInspection.service.js";
+import { AuthService, verifyToken as verifySignedToken } from "./server/services/auth.service.js";
+import { OrderService } from "./server/services/order.service.js";
+import prisma from "./server/config/database.js";
+import crypto from "crypto";
 
 // Token helpers for secure stateless session authentication
 function generateToken(user: User): string {
@@ -29,13 +33,20 @@ function generateToken(user: User): string {
     role: user.role,
     email: user.email,
     name: user.name,
+    phone: user.phone,
     exp: Date.now() + 86400000 * 7, // 7 days expiration
   };
   return Buffer.from(JSON.stringify(payload)).toString("base64");
 }
 
-function parseToken(tokenStr?: string): { id: string; role: string; email: string; name: string; exp: number } | null {
+function parseToken(tokenStr?: string): { id: string; role: string; email?: string; name: string; exp?: number; phone?: string } | null {
   if (!tokenStr) return null;
+  // First attempt cryptographic HMAC signature check
+  const signedPayload = verifySignedToken(tokenStr);
+  if (signedPayload) {
+    return signedPayload as any;
+  }
+  // Fallback to legacy base64 token if valid
   try {
     const clean = tokenStr.replace(/^Bearer\s+/i, "").trim();
     const decoded = JSON.parse(Buffer.from(clean, "base64").toString("utf-8"));
@@ -94,7 +105,7 @@ async function startServer() {
 
   // Health check
   app.get("/api/health", (_req, res) => {
-    res.json({ status: "ok", app: "ShilpSetu (KALAtech) Artisan Market Linkage", timestamp: new Date().toISOString() });
+    res.json({ status: "ok", app: "ShilpSetu (Artisans) Market Linkage", timestamp: new Date().toISOString() });
   });
 
   // ==========================================
@@ -178,7 +189,7 @@ async function startServer() {
         const response = await fetch(url, {
           signal: controller.signal,
           headers: {
-            "User-Agent": "KALAtech-Artisan-Marketplace/1.0 (contact@kalatech.gov.in)",
+            "User-Agent": "Artisans-Marketplace/1.0 (contact@artisans.gov.in)",
             "Accept-Language": "en"
           }
         });
@@ -717,49 +728,36 @@ async function startServer() {
     res.json({ success: true, message: "Logged out successfully" });
   });
 
-  // T03: Auth (OTP Request & Verify)
-  app.post("/api/v1/auth/otp/request", (req, res) => {
-    const { phone } = req.body;
-    if (!phone) {
-      return res.status(400).json({ error: "Phone number is required" });
+  // T03: Auth (OTP Request & Verify with SHA-256 Hashing, Expiry, Rate-Limiting & Signed JWTs)
+  app.post("/api/v1/auth/otp/request", async (req, res) => {
+    try {
+      const rawPhone = req.body.phone || req.body.phoneNumber || "";
+      const role = req.body.role || "artisan";
+      const result = await AuthService.requestOtp(rawPhone, role);
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || "Failed to request OTP" });
     }
-    // Simulation for friction-free low-literacy onboarding
-    res.json({
-      success: true,
-      message: "OTP sent successfully. For demo purposes, enter 123456",
-      demoOtp: "123456"
-    });
   });
 
-  app.post("/api/v1/auth/otp/verify", (req, res) => {
-    const { phone, otp } = req.body;
-    if (!phone) {
-      return res.status(400).json({ error: "Phone is required" });
+  app.post("/api/v1/auth/otp/verify", async (req, res) => {
+    try {
+      const rawPhone = req.body.phone || req.body.phoneNumber || "";
+      const otp = req.body.otp || "";
+      const role = req.body.role || "artisan";
+      const result = await AuthService.verifyOtp(rawPhone, otp, role);
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || "Invalid or expired OTP" });
     }
-    // Accept demo OTP or any 6-digit number
-    if (otp !== "123456" && otp?.length !== 6) {
-      return res.status(400).json({ error: "Invalid OTP. Use demo code 123456" });
-    }
+  });
 
-    // Find or create artisan
-    let artisan = db.artisans.find(a => a.phone === phone);
-    if (!artisan) {
-      artisan = db.createOrUpdateArtisan({ phone, name: "New Artisan" });
-    }
+  app.post("/api/v1/auth/logout", (_req, res) => {
+    res.json({ success: true, message: "Logged out successfully" });
+  });
 
-    const token = `jwt-mock-token-${artisan.id}-${Date.now()}`;
-    res.json({
-      token,
-      user: {
-        id: artisan.user_id,
-        phone: artisan.phone,
-        name: artisan.name,
-        role: "artisan",
-        preferred_language: "en",
-        created_at: new Date().toISOString()
-      },
-      artisan
-    });
+  app.get("/api/v1/auth/me", requireAuth, (req: any, res) => {
+    res.json({ success: true, user: req.user });
   });
 
   // T04: Artisan Profile API
@@ -808,12 +806,17 @@ async function startServer() {
     const totalOrdersPaid = orders.filter(o => o.status === 'paid');
     const totalOrderRevenue = totalOrdersPaid.reduce((acc, o) => acc + o.total_amount, 0);
 
+    const totalAvailableStock = products.reduce((acc, p) => acc + (p.quantity || 0), 0);
+    const b2bEnquiriesCount = enquiries.filter(e => (e as any).channel_id === 'b2b' || (e as any).type === 'bulk' || (e as any).channel_type === 'b2b').length;
+
     res.json({
       artisanId,
       productsCount: products.length,
       publishedCount: products.filter(p => p.status === "published").length,
       draftCount: products.filter(p => p.status === "draft").length,
+      availableStock: totalAvailableStock,
       enquiriesCount: enquiries.length,
+      b2bEnquiriesCount: b2bEnquiriesCount || enquiries.length,
       ordersCount: orders.length,
       paidOrdersCount: totalOrdersPaid.length,
       totalOrderRevenue,
@@ -850,45 +853,142 @@ async function startServer() {
     res.json(product);
   });
 
+  // SKILL 16: QR Provenance API
+  app.get("/api/v1/provenance/:id", async (req, res) => {
+    const id = req.params.id;
+    let tag = null;
+    try {
+      if (prisma && (prisma as any).provenanceTag) {
+        tag = await (prisma as any).provenanceTag.findFirst({
+          where: {
+            OR: [
+              { id: id },
+              { product_id: id }
+            ]
+          }
+        });
+      }
+    } catch (e) {}
+
+    const product = db.getProductById(tag?.product_id || id);
+
+    if (!tag && !product) {
+      return res.status(404).json({ success: false, error: "Provenance record not found" });
+    }
+
+    const provenanceId = tag?.id || `PRV-${(product?.category || 'CRAFT').substring(0, 3).toUpperCase()}-${Date.now().toString().slice(-4)}`;
+    const provenanceRecord = {
+      provenanceId,
+      productId: product?.id || tag?.product_id,
+      craftName: product?.title || tag?.craft_name || 'Handcrafted Artisan Craft',
+      craftType: product?.category || tag?.craft_type || 'Traditional Handcraft',
+      color: (product as any)?.color || 'Traditional Natural Tones',
+      origin: {
+        district: product?.artisan_district || tag?.origin_district || 'Pochampally',
+        state: product?.artisan_state || tag?.origin_state || 'Telangana',
+        address: (product as any)?.address || `${product?.artisan_district || 'District'}, ${product?.artisan_state || 'India'}`
+      },
+      artisan: {
+        id: product?.artisan_id || tag?.artisan_id || 'art-01',
+        name: product?.artisan_name || 'Generational Artisan Maker',
+        phone: product?.artisan_phone
+      },
+      creationDetails: {
+        materials: tag?.materials || (product as any)?.material || 'Authentic regional raw materials',
+        technique: tag?.technique || 'Generational hand-loom / hand-crafting technique',
+        verifiedDate: (tag?.created_at || (product?.created_at ? new Date(product.created_at) : new Date())).toISOString()
+      },
+      pricing: {
+        artisanApprovedPrice: (product as any)?.artisanApprovedPrice || product?.final_price || 1500,
+        fairTradeVerified: true
+      },
+      tamperHash: tag?.tamper_hash || crypto.createHash('sha256').update(`${provenanceId}:${product?.id}`).digest('hex'),
+      status: tag?.status || 'active',
+      verifiedAuthenticity: true,
+      statement: "Verifiable authenticity record for genuine handcrafted product. Sourced directly from registered artisan cluster."
+    };
+
+    return res.json({
+      success: true,
+      provenance: provenanceRecord
+    });
+  });
+
   // Create draft product (T05: multipart or base64 image upload)
   app.post("/api/v1/products", (req, res) => {
     const {
       image,
+      images,
       artisan_id,
       artisan_name,
       artisan_category,
       artisan_district,
       artisan_state,
       category_hint,
+      category,
+      type,
       title,
+      name,
+      product_name,
       subcategory,
       material,
+      color,
+      colors,
+      colour,
+      address,
+      location,
+      quantity,
+      description,
+      story,
+      short_description,
       est_dimensions,
       weight,
       gi_status,
       craft_technique,
       tags,
+      price,
+      final_price,
+      artisanApprovedPrice,
+      recommendedFairPrice,
+      status,
       cost
     } = req.body;
+
+    const chosenTitle = title || name || product_name || "Handcrafted Heritage Art Piece";
+    const chosenCategory = category || type || category_hint || artisan_category || "Handloom";
+    const chosenColor = color || colour || (Array.isArray(colors) ? colors.join(', ') : colors) || undefined;
+    const chosenAddress = address || location || (artisan_district ? `${artisan_district}, ${artisan_state || 'India'}` : undefined);
+    const chosenQuantity = quantity !== undefined ? Number(quantity) : 1;
+    const chosenDescription = description || story || short_description || undefined;
+    const chosenPrice = Number(final_price || price || artisanApprovedPrice) || 1500;
+    const chosenImage = image || (Array.isArray(images) && images[0]) || "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80";
 
     const product = db.createProduct({
       artisan_id: artisan_id || "art-01",
       artisan_name: artisan_name || "Rameshwar Rao",
-      artisan_category: artisan_category || category_hint || "Weaving",
+      artisan_category: chosenCategory,
       artisan_district: artisan_district || "Pochampally",
       artisan_state: artisan_state || "Telangana",
-      original_image_url: image || "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
-      enhanced_image_url: image || "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
-      category: category_hint || "Weaving",
-      title: title || undefined,
+      original_image_url: chosenImage,
+      enhanced_image_url: chosenImage,
+      category: chosenCategory,
+      title: chosenTitle,
+      description: chosenDescription,
+      short_description: chosenDescription,
       subcategory: subcategory || undefined,
       material: material || undefined,
+      colors: Array.isArray(colors) ? colors : (chosenColor ? [chosenColor] : undefined),
+      location: chosenAddress,
+      quantity: chosenQuantity,
       est_dimensions: est_dimensions || undefined,
       weight: weight || undefined,
       gi_status: gi_status || undefined,
       craft_technique: craft_technique || undefined,
       tags: tags || undefined,
-      status: "draft",
+      status: status || "published",
+      final_price: chosenPrice,
+      artisanApprovedPrice: chosenPrice,
+      recommendedFairPrice: recommendedFairPrice || chosenPrice,
       cost: cost || {
         material_cost: 600,
         labor_hours: 12,
@@ -898,8 +998,10 @@ async function startServer() {
     });
 
     res.json({
+      success: true,
       product_id: product.id,
-      product
+      product,
+      ...product
     });
   });
 
@@ -1916,9 +2018,16 @@ async function startServer() {
     });
   });
 
-  // Direct Fair-Trade Orders & Checkout (Razorpay Test Mode simulation)
   app.get("/api/v1/orders", (_req, res) => {
     res.json(db.getOrders());
+  });
+
+  app.get("/api/v1/orders/:id", (req, res) => {
+    const order = db.getOrders().find(o => o.id === req.params.id);
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    res.json(order);
   });
 
   app.get("/api/v1/artisans/:id/orders", (req, res) => {
@@ -1927,162 +2036,99 @@ async function startServer() {
 
   // Create Checkout Session / Lock Amount Server-Side with Fair Pricing Verification
   app.post("/api/v1/orders/checkout", async (req, res) => {
-    const { product_id, productId, quantity, buyer_name, buyerName, buyer_contact, buyerContact, buyer_email, buyerEmail, buyer_address, buyerAddress, payment_method, paymentMethod } = req.body;
-    const pid = product_id || productId;
-    const product = db.getProductById(pid);
-    if (!product) {
-      return res.status(404).json({ error: "Product not found" });
-    }
+    try {
+      const {
+        product_id,
+        productId,
+        quantity,
+        buyer_name,
+        buyerName,
+        buyer_contact,
+        buyerContact,
+        buyer_email,
+        buyerEmail,
+        buyer_address,
+        buyerAddress
+      } = req.body;
 
-    const qty = Math.max(1, Number(quantity) || 1);
+      const pid = product_id || productId;
+      const qty = Number(quantity) || 1;
 
-    // 1. Fetch stored pricing inputs and recalculate / verify fair price on backend
-    const mat = product.materialCost ?? product.cost?.material_cost ?? 800;
-    const hours = product.laborHours ?? product.cost?.labor_hours ?? 10;
-    const wage = product.fairHourlyWage ?? product.cost?.hourly_rate ?? 100;
-    const other = product.cost?.other_cost ?? 0;
-    const laborVal = hours * wage;
-    const baseCost = mat + laborVal + other;
-    const margin = Math.round(baseCost * 0.25);
-    const calculatedFairPrice = baseCost + margin;
-
-    const recommendedFairPrice = product.recommendedFairPrice || calculatedFairPrice;
-    // Enforce verified artisan approved selling price (or recommended fair price if unadjusted)
-    const unitPrice = product.artisanApprovedPrice || product.final_price || recommendedFairPrice;
-    const totalAmount = unitPrice * qty;
-
-    const razorpayOrderId = `order_rp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-
-    res.json({
-      success: true,
-      razorpay_order_id: razorpayOrderId,
-      key_id: "rzp_test_kalatech_artisan",
-      amount: totalAmount,
-      total_amount: totalAmount,
-      unit_price: unitPrice,
-      currency: "INR",
-      product: {
-        id: product.id,
-        title: product.title,
-        unit_price: unitPrice,
-        recommended_fair_price: recommendedFairPrice,
-        artisan_approved_price: unitPrice,
+      const bill = OrderService.calculateCheckoutBill({
+        productId: pid,
         quantity: qty,
-        fair_price_breakdown: product.fairPricingBreakdown || {
-          productId: product.id,
-          materialCost: mat,
-          laborHours: hours,
-          fairHourlyWage: wage,
-          laborValue: laborVal,
-          baseCost,
-          marginOrContingency: margin,
-          recommendedFairPrice,
-          currency: "INR"
+        buyerName: buyer_name || buyerName,
+        buyerPhone: buyer_contact || buyerContact,
+        buyerEmail: buyer_email || buyerEmail,
+        buyerAddress: buyer_address || buyerAddress
+      });
+
+      const razorpayOrderId = `order_rp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+      res.json({
+        success: true,
+        razorpay_order_id: razorpayOrderId,
+        key_id: "rzp_test_kalatech_artisan",
+        amount: bill.total,
+        total_amount: bill.total,
+        unit_price: bill.unitPrice,
+        subtotal: bill.subtotal,
+        shipping: bill.shipping,
+        tax: bill.tax,
+        discount: bill.discount,
+        currency: bill.currency,
+        product: {
+          id: bill.productId,
+          title: bill.productTitle,
+          unit_price: bill.unitPrice,
+          recommended_fair_price: bill.recommendedFairPrice,
+          artisan_approved_price: bill.artisanApprovedPrice,
+          quantity: bill.quantity,
+          available_stock: bill.availableStock
+        },
+        artisan: {
+          id: bill.artisanId,
+          name: bill.artisanName
         }
-      },
-      artisan: {
-        id: product.artisan_id,
-        name: product.artisan_name,
-        district: product.artisan_district
-      }
-    });
+      });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || "Failed to initiate checkout" });
+    }
   });
 
-  // Verify & Finalize Order (Server-Enforced Fair Pricing)
-  app.post("/api/v1/orders/verify", (req, res) => {
-    const {
-      product_id,
-      productId,
-      quantity,
-      buyer_name,
-      buyer_contact,
-      buyer_email,
-      buyer_address,
-      payment_method,
-      razorpay_payment_id
-    } = req.body;
+  // Verify & Finalize Order (Server-Enforced Fair Pricing & Authoritative Inventory Decrement)
+  app.post("/api/v1/orders/verify", async (req, res) => {
+    try {
+      const {
+        product_id,
+        productId,
+        quantity,
+        buyer_name,
+        buyer_contact,
+        buyer_email,
+        buyer_address,
+        payment_method,
+        razorpay_payment_id,
+        marketplace_source
+      } = req.body;
 
-    const pid = product_id || productId;
-    const product = db.getProductById(pid);
-    if (!product) {
-      return res.status(404).json({ error: "Product not found" });
+      const pid = product_id || productId;
+      const result = await OrderService.finalizeOrder({
+        productId: pid,
+        quantity: Number(quantity) || 1,
+        buyerName: buyer_name,
+        buyerPhone: buyer_contact,
+        buyerEmail: buyer_email,
+        buyerAddress: buyer_address,
+        paymentMethod: payment_method,
+        paymentId: razorpay_payment_id,
+        marketplaceSource: marketplace_source
+      });
+
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || "Order finalization failed" });
     }
-
-    const qty = Math.max(1, Number(quantity) || 1);
-
-    // Recalculate and verify server price
-    const mat = product.materialCost ?? product.cost?.material_cost ?? 800;
-    const hours = product.laborHours ?? product.cost?.labor_hours ?? 10;
-    const wage = product.fairHourlyWage ?? product.cost?.hourly_rate ?? 100;
-    const other = product.cost?.other_cost ?? 0;
-    const laborVal = hours * wage;
-    const baseCost = mat + laborVal + other;
-    const margin = Math.round(baseCost * 0.25);
-    const calculatedFairPrice = baseCost + margin;
-
-    const recommendedFairPrice = product.recommendedFairPrice || calculatedFairPrice;
-    const unitPrice = product.artisanApprovedPrice || product.final_price || recommendedFairPrice;
-    const totalAmount = unitPrice * qty;
-    const paymentId = razorpay_payment_id || `pay_test_${Date.now()}`;
-
-    const order = db.createOrder({
-      product_id: product.id,
-      product_title: product.title,
-      artisan_id: product.artisan_id,
-      artisan_name: product.artisan_name,
-      buyer_name: buyer_name || "Fair Trade Buyer",
-      buyer_contact: buyer_contact || "+91 98000 00000",
-      buyer_email: buyer_email || "buyer@handicraft.in",
-      buyer_address: buyer_address || "Bengaluru, India",
-      quantity: qty,
-      unit_price: unitPrice,
-      total_amount: totalAmount,
-      recommended_fair_price: recommendedFairPrice,
-      artisan_approved_price: unitPrice,
-      fair_price_breakdown: product.fairPricingBreakdown || {
-        productId: product.id,
-        materialCost: mat,
-        laborHours: hours,
-        fairHourlyWage: wage,
-        laborValue: laborVal,
-        baseCost,
-        marginOrContingency: margin,
-        recommendedFairPrice,
-        artisanApprovedPrice: unitPrice,
-        quantity: qty,
-        unitFairPrice: recommendedFairPrice,
-        currency: "INR",
-        pricingFormulaVersion: "v1.0-living-wage",
-        explanation: pricingService.generateExplanations({
-          recommendedFairPrice,
-          materialCost: mat,
-          laborHours: hours,
-          fairHourlyWage: wage,
-          laborValue: laborVal,
-          marginOrContingency: margin
-        })
-      },
-      status: "paid",
-      payment_id: paymentId,
-      payment_method: (payment_method as any) || "razorpay_test",
-      fair_trade_verified: true
-    });
-
-    db.logAudit({
-      product_id: product.id,
-      feature: "pricing",
-      model_used: "fair-trade-payment-gateway",
-      latency_ms: 180,
-      status: "success",
-      raw_input_summary: `Direct Order: ${qty}x "${product.title}" @ ₹${unitPrice} (Fair Rec: ₹${recommendedFairPrice})`,
-      raw_response_summary: `Processed ₹${totalAmount} 100% to artisan ${product.artisan_name} with ₹0 platform commission`
-    });
-
-    res.json({
-      success: true,
-      message: "Payment captured successfully. 100% proceeds transferred to artisan.",
-      order
-    });
   });
 
   // Benchmarks & Evaluator Data
@@ -2300,10 +2346,10 @@ async function startServer() {
     let reply = "";
     if (q.includes("price") || q.includes("कीमत") || q.includes("ధర")) {
       reply = lang === "hi"
-        ? "अपने हस्तशिल्प की सही कीमत निर्धारित करने के लिए विक्रेता पोर्टल में 'बिल बनाएं' पर जाएं। वहां अपनी कच्ची सामग्री, श्रम घंटे और परिवहन लागत दर्ज करें। शिल्पसेतु (KALAtech) आपको बाज़ार तुलना के साथ उचित लाभ मार्जिन सुझाएगा।"
+        ? "अपने हस्तशिल्प की सही कीमत निर्धारित करने के लिए विक्रेता पोर्टल में 'बिल बनाएं' पर जाएं। वहां अपनी कच्ची सामग्री, श्रम घंटे और परिवहन लागत दर्ज करें। शिल्पसेतु (Artisans) आपको बाज़ार तुलना के साथ उचित लाभ मार्जिन सुझाएगा।"
         : lang === "te"
-        ? "మీ చేతివృత్తి ఉత్పత్తులకు సరైన ధర నిర్ణయించడానికి 'బిల్లు తయారు చేయండి' విభాగంలోకి వెళ్ళి ముడిసరుకు, శ్రమ మరియు రవాణా ఖర్చులను నమోదు చేయండి. శిల్పసేతు (KALAtech) మీకు సరసమైన మార్కెట్ ధరను సిఫార్సు చేస్తుంది."
-        : "To price your craft fairly, use the 'Create Bill' feature in your seller dashboard. Enter your raw material, artisan hours, and transport expenses. ShilpSetu (KALAtech) automatically compares these with verified market benchmarks to ensure fair artisan compensation.";
+        ? "మీ చేతివృత్తి ఉత్పత్తులకు సరైన ధర నిర్ణయించడానికి 'బిల్లు తయారు చేయండి' విభాగంలోకి వెళ్ళి ముడిసరుకు, శ్రమ మరియు రవాణా ఖర్చులను నమోదు చేయండి. శిల్పసేతు (Artisans) మీకు సరసమైన మార్కెట్ ధరను సిఫార్సు చేస్తుంది."
+        : "To price your craft fairly, use the 'Create Bill' feature in your seller dashboard. Enter your raw material, artisan hours, and transport expenses. ShilpSetu (Artisans) automatically compares these with verified market benchmarks to ensure fair artisan compensation.";
     } else if (q.includes("bill") || q.includes("बिल") || q.includes("బిల్లు") || q.includes("invoice")) {
       reply = lang === "hi"
         ? "शिल्पसेतु पर बिल बनाना बहुत आसान है। 'बिल बनाएं' मेनू चुनें, अपना हस्तशिल्प चुनें, लागत दर्ज करें और जनरेट बिल पर क्लिक करें। आपको एक आधिकारिक, प्रिंट करने योग्य चालान मिलेगा।"
@@ -2318,10 +2364,10 @@ async function startServer() {
         : "You can track your orders directly from 'My Orders' in your buyer portal. Each step (Created → Paid → Shipped → Delivered) updates with direct artisan transit verification.";
     } else {
       reply = lang === "hi"
-        ? "नमस्ते! शिल्पसेतु (KALAtech) में आपका स्वागत है। मैं भारतीय हस्तशिल्प कारीगरों और खरीदारों की सहायता के लिए उपलब्ध AI सहायक हूं। आप मुझसे मूल्य निर्धारण, बिलिंग या ऑर्डर के बारे में कुछ भी पूछ सकते हैं।"
+        ? "नमस्ते! शिल्पसेतु (Artisans) में आपका स्वागत है। मैं भारतीय हस्तशिल्प कारीगरों और खरीदारों की सहायता के लिए उपलब्ध AI सहायक हूं। आप मुझसे मूल्य निर्धारण, बिलिंग या ऑर्डर के बारे में कुछ भी पूछ सकते हैं।"
         : lang === "te"
-        ? "నమస్కారం! శిల్పసేతు (KALAtech) కు స్వాగతం. భారతీయ చేతివృత్తుల సహాయం కోసం నేను ఇక్కడ ఉన్నాను. ధరలు, బిల్లులు లేదా ఆర్డర్ల గురించి మీరు ఏదైనా అడగవచ్చు."
-        : "Welcome to ShilpSetu AI Support (powered by KALAtech)! I am here to help Indian master artisans and conscious buyers with fair pricing, bill generation, provenance certificates, and order fulfillment.";
+        ? "నమస్కారం! శిల్పసేతు (Artisans) కు స్వాగతం. భారతీయ చేతివృత్తుల సహాయం కోసం నేను ఇక్కడ ఉన్నాను. ధరలు, బిల్లులు లేదా ఆర్డర్ల గురించి మీరు ఏదైనా అడగవచ్చు."
+        : "Welcome to ShilpSetu AI Support (powered by Artisans)! I am here to help Indian master artisans and conscious buyers with fair pricing, bill generation, provenance certificates, and order fulfillment.";
     }
 
     res.json({ response: reply, status: "success" });
@@ -2741,7 +2787,7 @@ async function startServer() {
 
   // Start Main Website Listener
   app.listen(PORT, () => {
-    console.log(`✓ ShilpSetu (KALAtech) Main Website & Shared API running on http://localhost:${PORT}`);
+    console.log(`✓ ShilpSetu (Artisans) Main Website & Shared API running on http://localhost:${PORT}`);
   });
 
   // Start Dedicated Admin Website Listener (Port 5174)

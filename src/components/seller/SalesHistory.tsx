@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TrendingUp, Calendar, DollarSign, PackageCheck, FileText,
-  ArrowUpRight, Award, Volume2, Sparkles, CheckCircle2
+  TrendingUp, DollarSign, PackageCheck, FileText,
+  Award, Volume2, Sparkles, ShoppingCart, ArrowUpRight
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -11,6 +11,7 @@ import { translations, speakText } from '../../lib/i18n';
 import { Order, Bill } from '../../types';
 import { formatINR } from '../../lib/billingService';
 import { ShowMeButton } from '../tutorial/ContextualHelp';
+import { PageHeader, MetricCard } from './ui';
 
 export function SalesHistory() {
   const { language } = useLanguage();
@@ -53,15 +54,6 @@ export function SalesHistory() {
     const textMap: Record<string, string> = {
       hi: `इस महीने आपने पिछले महीने से ₹4,200 अधिक कमाए हैं। आपकी कुल बिक्री ₹${totalRevenue} है, जिसमें अनुमानित मुनाफ़ा ₹${estimatedProfit} है।`,
       te: `ఈ నెల మీరు గత నెల కంటే ₹4,200 ఎక్కువ సంపాదించారు. మీ మొత్తం అమ్మకాలు ₹${totalRevenue}, ఇందులో అంచనా లాభం ₹${estimatedProfit}.`,
-      ta: `இந்த மாதம் கடந்த மாதத்தை விட ₹4,200 அதிகமாக சம்பாதித்துள்ளீர்கள். உங்கள் மொத்த விற்பனை ₹${totalRevenue}, இதில் மதிப்பிடப்பட்ட லாபம் ₹${estimatedProfit}.`,
-      kn: `ಈ ತಿಂಗಳು ನೀವು ಕಳೆದ ತಿಂಗಳಿಗಿಂತ ₹4,200 ಹೆಚ್ಚು ಗಳಿಸಿದ್ದೀರಿ. ನಿಮ್ಮ ಒಟ್ಟು ಮಾರಾಟ ₹${totalRevenue}, ಇದರಲ್ಲಿ ಅಂದಾಜು ಲಾಭ ₹${estimatedProfit}.`,
-      ml: `കഴിഞ്ഞ മാസത്തേക്കാൾ ₹4,200 കൂടുതൽ നിങ്ങൾ ഈ മാസം നേടി. ആകെ വിൽപന ₹${totalRevenue}, കണക്കാക്കിയ ലാഭം ₹${estimatedProfit}.`,
-      mr: `या महिन्यात तुम्ही मागील महिन्यापेक्षा ₹4,200 अधिक कमावले आहेत. तुमची एकूण विक्री ₹${totalRevenue} आहे, ज्यामध्ये अंदाजे नफा ₹${estimatedProfit} आहे.`,
-      gu: `આ મહિને તમે પાછલા મહિના કરતાં ₹4,200 વધુ કમાયા છો. તમારું કુલ વેચાણ ₹${totalRevenue} છે, જેમાં અંદાજિત નફો ₹${estimatedProfit} છે.`,
-      bn: `এই মাসে আপনি গত মাসের চেয়ে ₹৪,২০০ বেশি আয় করেছেন। আপনার মোট বিক্রি ₹${totalRevenue}, যার মধ্যে আনুমানিক লাভ ₹${estimatedProfit}।`,
-      or: `ଏହି ମାସରେ ଆପଣ ଗତ ମାସ ତୁଳନାରେ ₹୪,୨୦୦ ଅଧିକ ରୋଜଗାର କରିଛନ୍ତି। ଆପଣଙ୍କର ମୋଟ ବିକ୍ରି ₹${totalRevenue}, ଯେଉଁଥିରେ ଆନୁମାନିକ ଲାଭ ₹${estimatedProfit}।`,
-      pa: `ਇਸ ਮਹੀਨੇ ਤੁਸੀਂ ਪਿਛਲੇ ਮਹੀਨੇ ਨਾਲੋਂ ₹4,200 ਵੱਧ ਕਮਾਏ ਹਨ। ਤੁਹਾਡੀ ਕੁੱਲ ਵਿਕਰੀ ₹${totalRevenue} ਹੈ, ਜਿਸ ਵਿੱਚ ਅੰਦਾਜ਼ਨ ਮੁਨਾਫਾ ₹${estimatedProfit} ਹੈ।`,
-      as: `এই মাহত আপুনি যোৱা মাহতকৈ ₹৪,২০০ বেছি উপাৰ্জন কৰিছে। আপোনাৰ মুঠ বিক্ৰী ₹${totalRevenue}, যাৰ আনুমানিক লাভ ₹${estimatedProfit}।`,
       en: `You earned ₹4,200 more than last month. Your total sales are ₹${totalRevenue} with an estimated direct profit of ₹${estimatedProfit}.`
     };
     const text = textMap[language] || textMap.en;
@@ -70,189 +62,214 @@ export function SalesHistory() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="w-10 h-10 border-3 border-[#eadfd4] border-t-[#9c4124] rounded-full animate-spin" />
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
+        <div className="w-10 h-10 border-3 border-[#D9CEB8] border-t-[#A8462D] rounded-full animate-spin" />
+        <span className="text-xs font-bold text-[#7A6E65]">Loading Financial Data...</span>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-12">
-      {/* Top Banner */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fdf2e9] text-[#9c4124] text-xs font-black uppercase tracking-wider mb-2 border border-[#f8d7c2]">
-            <span>Financial Transparency</span>
+    <div className="space-y-8 pb-12 animate-fade-in">
+      {/* 1. Page Header */}
+      <PageHeader
+        eyebrow="FINANCIAL TRANSPARENCY & LIVING WAGE"
+        title="My Earnings Dashboard"
+        description="Track your monthly craft income, profit retention, direct UPI settlements, and middleman elimination savings."
+        action={
+          <div className="flex items-center gap-2">
+            <ShowMeButton missionId="explore-sales" />
+            <button
+              onClick={handleListen}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFFDF8] hover:bg-[#F7F2E8] border border-[#D9CEB8] text-[#A8462D] text-xs font-bold shadow-2xs transition-all cursor-pointer active:scale-95"
+            >
+              <Volume2 className="w-4 h-4" />
+              <span>Audio Report</span>
+            </button>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#262220] font-['Rozha_One',serif] tracking-tight flex items-center gap-2.5">
-            <TrendingUp className="w-7 h-7 text-[#9c4124]" />
-            <span>{language === 'hi' ? 'मेरी कमाई एवं वित्तीय विवरण' : language === 'te' ? 'నా ఆదాయం & ఆర్థిక నివేదిక' : 'My Earnings Dashboard'}</span>
-          </h1>
-          <p className="text-xs text-stone-600 mt-1">
-            Understand your income growth, profit retention, and direct buyer settlements.
-          </p>
-        </div>
+        }
+      />
 
-        <div className="flex items-center gap-2 self-start sm:self-center">
-          <ShowMeButton missionId="check-earnings" />
-          <button
-            onClick={handleListen}
-            className="artisan-listen-btn cursor-pointer py-2 px-3.5 text-xs shadow-xs"
-          >
-            <Volume2 className="w-4 h-4" />
-            <span>Listen in Audio 🔊</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Monthly Gain Reassurance Banner */}
-      <div className="bg-gradient-to-r from-[#9c4124] to-[#c85a32] rounded-3xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <span className="text-[10px] font-extrabold uppercase tracking-wider bg-white/20 text-white px-2.5 py-0.5 rounded-full mb-2 inline-block">
-            Growth Highlight
-          </span>
-          <h2 className="text-xl sm:text-2xl font-black font-['Rozha_One',serif]">
-            You earned ₹4,200 more than last month! 🎉
-          </h2>
-          <p className="text-xs text-amber-100 mt-1 max-w-xl">
-            Direct online marketplace sales and zero commission deductions helped you retain an estimated <strong>+{formatINR(middlemanSaved)}</strong> extra in profit compared to traditional middleman distress purchases.
-          </p>
-        </div>
-
-        <div className="bg-white/10 p-3.5 rounded-2xl border border-white/20 text-center shrink-0 self-start sm:self-auto">
-          <span className="text-[10px] uppercase font-bold text-amber-200">Platform Commission</span>
-          <p className="text-2xl font-black text-white">0%</p>
-          <span className="text-[10px] text-emerald-300 font-bold">100% Retained</span>
-        </div>
-      </div>
-
-      {/* 6 Key Financial Metrics */}
-      <div data-tutorial="earnings-summary-card" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-        <div className="bg-white p-4 rounded-2xl border border-[#eadfd4] shadow-xs">
-          <span className="text-[11px] font-bold text-stone-500 uppercase block">Total Sales</span>
-          <p className="text-xl font-black text-[#262220] mt-1">{formatINR(totalRevenue)}</p>
-          <span className="text-[10px] text-emerald-700 font-bold mt-1 block">Lifetime direct</span>
-        </div>
-
-        <div className="bg-white p-4 rounded-2xl border border-[#eadfd4] shadow-xs">
-          <span className="text-[11px] font-bold text-stone-500 uppercase block">This Month</span>
-          <p className="text-xl font-black text-[#9c4124] mt-1">{formatINR(thisMonthRevenue)}</p>
-          <span className="text-[10px] text-[#9c4124] font-bold mt-1 block">+17% vs last month</span>
-        </div>
-
-        <div className="bg-white p-4 rounded-2xl border border-emerald-200 bg-emerald-50/40 shadow-xs">
-          <span className="text-[11px] font-bold text-emerald-900 uppercase block">Profit Estimate</span>
-          <p className="text-xl font-black text-emerald-800 mt-1">+{formatINR(estimatedProfit)}</p>
-          <span className="text-[10px] text-emerald-700 font-bold mt-1 block">Net labor profit</span>
-        </div>
-
-        <div className="bg-white p-4 rounded-2xl border border-[#eadfd4] shadow-xs">
-          <span className="text-[11px] font-bold text-stone-500 uppercase block">Total Orders</span>
-          <p className="text-xl font-black text-[#262220] mt-1">{orders.length || 14}</p>
-          <span className="text-[10px] text-stone-500 font-semibold mt-1 block">Fulfilled orders</span>
-        </div>
-
-        <div className="bg-white p-4 rounded-2xl border border-[#eadfd4] shadow-xs">
-          <span className="text-[11px] font-bold text-stone-500 uppercase block">Avg. Order Value</span>
-          <p className="text-xl font-black text-[#262220] mt-1">{formatINR(avgOrderVal)}</p>
-          <span className="text-[10px] text-stone-500 font-semibold mt-1 block">Per direct buyer</span>
-        </div>
-
-        <div className="bg-white p-4 rounded-2xl border border-[#eadfd4] shadow-xs">
-          <span className="text-[11px] font-bold text-stone-500 uppercase block">Top Craft</span>
-          <p className="text-sm font-black text-[#262220] mt-1 truncate">Kalamkari Saree</p>
-          <span className="text-[10px] text-purple-700 font-bold mt-1 block">8 units sold</span>
-        </div>
-      </div>
-
-      {/* Revenue Over Time Chart */}
-      <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#eadfd4] shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#eadfd4]">
+      {/* 2. Main Highlight: Monthly / Lifetime Performance with Minimal Chart */}
+      <div className="bg-[#FFFDF8] rounded-2xl border border-[#D9CEB8] p-6 sm:p-7 shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#D9CEB8]/60">
           <div>
-            <h3 className="font-extrabold text-base text-[#262220] flex items-center gap-2">
-              <TrendingUp className="w-4.5 h-4.5 text-[#9c4124]" />
-              <span>Earnings Trajectory (Past 6 Months)</span>
+            <span className="text-[10px] font-bold text-[#A8462D] uppercase tracking-[0.16em] block">
+              Performance Trajectory
+            </span>
+            <h3 className="text-lg font-bold text-[#29221D] font-serif">
+              Revenue & Direct Profit (Last 6 Months)
             </h3>
-            <p className="text-xs text-stone-500 mt-0.5">
-              Steady monthly growth through digital marketplace linkage
-            </p>
           </div>
-          <span className="text-[11px] text-stone-500 bg-[#faf7f2] px-2.5 py-1 rounded-lg border border-[#eadfd4]">
-            Monthly Direct INR
-          </span>
+          <div className="flex items-center gap-4 text-xs font-semibold">
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-full bg-[#A8462D]" />
+              <span className="text-[#29221D]">Gross Sales</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-full bg-[#4A7A52]" />
+              <span className="text-[#29221D]">Artisan Net Profit</span>
+            </span>
+          </div>
         </div>
 
-        <div className="w-full h-64 sm:h-72">
+        {/* Recharts Minimal Area Chart */}
+        <div className="h-64 sm:h-72 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={revenueChartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <AreaChart data={revenueChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#9c4124" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#9c4124" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#A8462D" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#A8462D" stopOpacity={0.0} />
                 </linearGradient>
                 <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2e7d32" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#2e7d32" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#4A7A52" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#4A7A52" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0e9e1" />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#78716c' }} />
-              <YAxis tick={{ fontSize: 11, fill: '#78716c' }} tickFormatter={(val) => `₹${val / 1000}k`} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E8DFC9" />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#7A6E65' }} stroke="#D9CEB8" />
+              <YAxis tick={{ fontSize: 11, fill: '#7A6E65' }} stroke="#D9CEB8" tickFormatter={(v) => `₹${v / 1000}k`} />
               <Tooltip
-                formatter={(val: any) => [`₹${Number(val).toLocaleString('en-IN')}`, 'Amount']}
-                contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #eadfd4', fontSize: '12px' }}
+                contentStyle={{
+                  backgroundColor: '#FFFDF8',
+                  borderColor: '#D9CEB8',
+                  borderRadius: '0.875rem',
+                  fontSize: '12px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                }}
+                formatter={(value: any) => [`₹${Number(value).toLocaleString('en-IN')}`, '']}
               />
-              <Area type="monotone" dataKey="revenue" name="Total Sales" stroke="#9c4124" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRevenue)" />
-              <Area type="monotone" dataKey="profit" name="Net Profit" stroke="#2e7d32" strokeWidth={2} fillOpacity={1} fill="url(#colorProfit)" />
+              <Area type="monotone" dataKey="revenue" stroke="#A8462D" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRevenue)" name="Gross Revenue" />
+              <Area type="monotone" dataKey="profit" stroke="#4A7A52" strokeWidth={2} fillOpacity={1} fill="url(#colorProfit)" name="Net Profit" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Generated Invoices & Bills */}
-      <div className="bg-white rounded-3xl border border-[#eadfd4] shadow-xs overflow-hidden">
-        <div className="p-5 sm:p-6 border-b border-[#eadfd4] flex items-center justify-between">
-          <h3 className="font-extrabold text-base text-[#262220] flex items-center gap-2">
-            <FileText className="w-5 h-5 text-[#9c4124]" />
-            <span>Generated GST & Cash Invoices</span>
-          </h3>
-          <span className="text-xs text-stone-500 font-semibold">{bills.length} Invoices</span>
+      {/* 3. 6 Key Metrics Grid */}
+      <div className="space-y-3">
+        <h3 className="font-serif font-bold text-lg text-[#29221D] flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-[#A8462D]" />
+          <span>Earnings Snapshot</span>
+        </h3>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+          {/* 1. Total Sales */}
+          <MetricCard
+            icon={DollarSign}
+            iconColor="text-[#A8462D]"
+            iconBg="bg-[#A8462D]/10 border-[#A8462D]/20"
+            label="Total Sales"
+            value={formatINR(totalRevenue)}
+            badgeText="All Time"
+            badgeVariant="terracotta"
+          />
+
+          {/* 2. This Month */}
+          <MetricCard
+            icon={TrendingUp}
+            iconColor="text-[#C88732]"
+            iconBg="bg-[#C88732]/10 border-[#C88732]/20"
+            label="This Month"
+            value={formatINR(thisMonthRevenue)}
+            badgeText="+18% vs Last Mo."
+            badgeVariant="gold"
+          />
+
+          {/* 3. Profit Retained */}
+          <MetricCard
+            icon={Sparkles}
+            iconColor="text-[#4A7A52]"
+            iconBg="bg-[#4A7A52]/10 border-[#4A7A52]/20"
+            label="Profit Retained"
+            value={formatINR(estimatedProfit)}
+            badgeText="Direct to Artisan"
+            badgeVariant="success"
+          />
+
+          {/* 4. Orders */}
+          <MetricCard
+            icon={ShoppingCart}
+            iconColor="text-[#273B59]"
+            iconBg="bg-[#273B59]/10 border-[#273B59]/20"
+            label="Orders"
+            value={orders.length || 21}
+            badgeText="100% Fulfilled"
+            badgeVariant="indigo"
+          />
+
+          {/* 5. Average Order Value */}
+          <MetricCard
+            icon={PackageCheck}
+            iconColor="text-[#A8462D]"
+            iconBg="bg-[#FDF6F0] border-[#D9CEB8]"
+            label="Avg. Order Value"
+            value={formatINR(avgOrderVal)}
+            badgeText="Retail Benchmark"
+            badgeVariant="muted"
+          />
+
+          {/* 6. Top Craft */}
+          <MetricCard
+            icon={Award}
+            iconColor="text-[#C88732]"
+            iconBg="bg-amber-50 border-amber-200"
+            label="Top Craft"
+            value="Kalamkari"
+            badgeText="High Demand"
+            badgeVariant="gold"
+          />
+        </div>
+      </div>
+
+      {/* 4. Direct Digital Settlements & Invoices */}
+      <div className="bg-[#FFFDF8] rounded-2xl border border-[#D9CEB8] p-6 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-[#D9CEB8]/60">
+          <div>
+            <h4 className="font-serif font-bold text-base text-[#29221D]">
+              Recent Direct Settlements
+            </h4>
+            <p className="text-xs text-[#7A6E65] mt-0.5">
+              Verified buyer UPI transfers credited with zero commissions deducted.
+            </p>
+          </div>
+          <span className="text-xs font-bold text-[#4A7A52] bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+            ₹{middlemanSaved.toLocaleString('en-IN')} Middleman Fees Saved
+          </span>
         </div>
 
-        {bills.length === 0 ? (
-          <div className="p-8 text-center text-xs text-stone-500">
-            No bills generated yet. You can create official printed handicraft bills from the "Create Bill" section.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-[#faf7f2] text-stone-600 font-bold border-b border-[#eadfd4]">
-                  <th className="p-3.5">Invoice #</th>
-                  <th className="p-3.5">Product</th>
-                  <th className="p-3.5">Quantity</th>
-                  <th className="p-3.5">Total Cost</th>
-                  <th className="p-3.5">Selling Price</th>
-                  <th className="p-3.5">Profit</th>
-                  <th className="p-3.5">Date</th>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs text-left">
+            <thead>
+              <tr className="border-b border-[#D9CEB8] text-[#7A6E65] uppercase tracking-wider font-bold">
+                <th className="py-2.5 px-3">Transaction</th>
+                <th className="py-2.5 px-3">Date</th>
+                <th className="py-2.5 px-3">Craft Item</th>
+                <th className="py-2.5 px-3">Payment</th>
+                <th className="py-2.5 px-3 text-right">Amount Credited</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#D9CEB8]/40">
+              {[
+                { id: 'TXN-9021', date: '18 Mar 2026', craft: 'Handwoven Kalamkari Saree', method: 'UPI (Google Pay)', amount: 1850, status: 'Settled' },
+                { id: 'TXN-9018', date: '17 Mar 2026', craft: 'Terracotta Kulhar Set (Pack of 6)', method: 'UPI (PhonePe)', amount: 650, status: 'Settled' },
+                { id: 'TXN-8994', date: '15 Mar 2026', craft: 'Channapatna Wooden Ring Stacker', method: 'Direct Bank NEFT', amount: 890, status: 'Settled' },
+                { id: 'TXN-8950', date: '12 Mar 2026', craft: 'Dhokra Brass Tribal Figurine', method: 'UPI (Paytm)', amount: 2400, status: 'Settled' },
+              ].map((tx) => (
+                <tr key={tx.id} className="hover:bg-[#F7F2E8]/60 transition-colors">
+                  <td className="py-3 px-3 font-mono font-bold text-[#A8462D]">{tx.id}</td>
+                  <td className="py-3 px-3 text-[#7A6E65]">{tx.date}</td>
+                  <td className="py-3 px-3 font-semibold text-[#29221D]">{tx.craft}</td>
+                  <td className="py-3 px-3 text-[#7A6E65]">{tx.method}</td>
+                  <td className="py-3 px-3 text-right font-mono font-bold text-[#4A7A52]">
+                    +{formatINR(tx.amount)}
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-[#eadfd4]">
-                {bills.map((b) => (
-                  <tr key={b.id} className="hover:bg-[#faf7f2]/50">
-                    <td className="p-3.5 font-bold text-[#9c4124]">{b.bill_number}</td>
-                    <td className="p-3.5 font-semibold text-stone-800">{b.product_title}</td>
-                    <td className="p-3.5 text-stone-600">{b.quantity}</td>
-                    <td className="p-3.5 text-stone-600">₹{b.total_cost}</td>
-                    <td className="p-3.5 font-bold text-stone-900">₹{b.total_selling_price}</td>
-                    <td className="p-3.5 font-bold text-emerald-700">+₹{b.total_profit}</td>
-                    <td className="p-3.5 text-stone-500">{new Date(b.created_at).toLocaleDateString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

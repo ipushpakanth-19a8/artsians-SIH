@@ -615,7 +615,7 @@ class PostgresDB {
   }
 
   createProduct(data: Partial<Product>): Product {
-    const id = `prod-${Date.now().toString().slice(-4)}`;
+    const id = data.id || `prod-${Date.now().toString().slice(-4)}`;
     const product: Product = {
       id,
       artisan_id: data.artisan_id || "art-01",
@@ -671,6 +671,9 @@ class PostgresDB {
       market_linkage: data.market_linkage || [],
       views_count: 1,
       enquiry_count: 0,
+      quantity: data.quantity !== undefined ? Number(data.quantity) : 10,
+      location: data.location || (data.artisan_district ? `${data.artisan_district}, ${data.artisan_state || 'India'}` : undefined),
+      colors: data.colors || [],
       materialCost: data.materialCost,
       laborHours: data.laborHours,
       fairHourlyWage: data.fairHourlyWage,
@@ -885,10 +888,10 @@ class PostgresDB {
   }
 
   // Order operations
-  createOrder(orderData: Omit<Order, "id" | "created_at">): Order {
+  createOrder(orderData: Omit<Order, "id" | "created_at"> & { id?: string }): Order {
     const order: Order = {
       ...orderData,
-      id: `ord-${Date.now().toString().slice(-4)}`,
+      id: orderData.id || `ord-${Date.now().toString().slice(-4)}`,
       created_at: new Date().toISOString()
     };
     this.orders.unshift(order);
@@ -1132,6 +1135,10 @@ class PostgresDB {
     }).catch(e => console.error('Prisma Enquiry create error:', e));
 
     return newEnquiry;
+  }
+
+  createEnquiry(enquiry: any): Enquiry {
+    return this.addEnquiry(enquiry);
   }
 
   updateEnquiryStatus(id: string, status: Enquiry['status']): Enquiry | undefined {

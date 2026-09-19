@@ -15,7 +15,8 @@ import {
   CraftInspectionResult,
   CraftAttributes,
 } from './CraftAttributeInspector';
-import { VoiceProductDetailsPricingWizard, PricingResultData } from './VoiceProductDetailsPricingWizard';
+import { SimpleVoiceProductForm } from './SimpleVoiceProductForm';
+import { Stepper } from './ui/Stepper';
 import { DevAiDebugPanel, DevDebugTelemetry } from './DevAiDebugPanel';
 import { getCraftAttributeLabels } from '../../lib/craftAttributeLabels';
 import { CameraCaptureModal } from '../common/CameraCaptureModal';
@@ -582,48 +583,31 @@ export function AddHandicraft() {
         )}
       </div>
 
-      {/* Progress Step Indicator (1 to 4) */}
-      <div className="bg-white rounded-3xl p-5 border border-[#eadfd4] shadow-xs">
-        <div className="flex items-center justify-between gap-2">
-          {[
-            { num: 1, label: '1. Photo 📷', sub: 'Take Photo' },
-            { num: 2, label: '2. Studio ✨', sub: 'AI Enhance' },
-            { num: 3, label: '3. Details 🏷️', sub: 'Craft Info' },
-            { num: 4, label: '4. Story 📝', sub: 'Review & Publish' },
-          ].map((s) => {
-            const isActive = step === s.num;
-            const isDone = step > s.num;
-            return (
-              <button
-                key={s.num}
-                onClick={() => { if (rawImage || s.num === 1) setStep(s.num); }}
-                className={`flex-1 text-center py-2 px-1 rounded-xl transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-[#9c4124] text-white shadow-xs font-black'
-                    : isDone
-                    ? 'bg-[#fdf2e9] text-[#9c4124] font-bold'
-                    : 'text-stone-400 font-medium'
-                }`}
-              >
-                <div className="text-xs font-extrabold">{s.label}</div>
-                <div className="text-[10px] hidden sm:block opacity-90">{s.sub}</div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* Refined Horizontal Stepper */}
+      <Stepper
+        steps={[
+          { id: 1, label: '1. Photo', description: 'Take or upload photo' },
+          { id: 2, label: '2. AI Studio', description: 'Enhance lighting' },
+          { id: 3, label: '3. Details', description: 'Name, materials & price' },
+          { id: 4, label: '4. Story', description: 'Review & publish' },
+        ]}
+        currentStep={step}
+        onSelectStep={(stepId) => {
+          if (rawImage || stepId === 1) setStep(stepId);
+        }}
+      />
 
       {/* ================================================== */}
       {/* STEP 1: TAKE PRODUCT PHOTO */}
       {/* ================================================== */}
       {step === 1 && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#eadfd4]">
+        <div className="artisan-card p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#D9CEB8]">
             <div>
-              <span className="text-[10px] font-extrabold text-[#9c4124] bg-[#fdf2e9] px-2.5 py-0.5 rounded-full border border-[#f8d7c2] uppercase">
+              <span className="text-[10px] font-bold text-[#A8462D] bg-[#FDF6F0] px-2.5 py-0.5 rounded-full border border-[#D9CEB8] uppercase">
                 Step 1 of 4
               </span>
-              <h2 className="text-xl sm:text-2xl font-black text-[#262220] font-['Rozha_One',serif] mt-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#29221D] font-serif mt-1">
                 {language === 'hi' ? 'अपने उत्पाद की साफ़ फ़ोटो लें' : language === 'te' ? 'మీ ఉత్పత్తి ఫోటో తీయండి' : 'Take a clear photo of your product'}
               </h2>
               <p className="text-xs text-stone-600 mt-1">
@@ -779,7 +763,7 @@ export function AddHandicraft() {
                   type="button"
                   disabled={isAnalyzingCraft}
                   onClick={handleStartAnalysis}
-                  className="w-full sm:w-auto px-8 py-3 rounded-xl text-xs font-black text-white bg-[#9c4124] hover:bg-[#83341b] disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all min-h-[44px]"
+                  className="w-full sm:w-auto px-8 py-3 rounded-xl text-xs font-bold text-white bg-[#A8462D] hover:bg-[#8E3822] disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all min-h-[44px]"
                 >
                   {isAnalyzingCraft ? (
                     <>
@@ -796,59 +780,43 @@ export function AddHandicraft() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* Option 1: Live Viewfinder Camera */}
-              <div
-                onClick={() => setIsCameraModalOpen(true)}
-                className="p-6 rounded-3xl border-2 border-dashed border-[#eadfd4] hover:border-[#9c4124] bg-[#faf7f2] flex flex-col items-center justify-center text-center cursor-pointer transition-all group hover:bg-[#fdfbf7]"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-[#fdf2e9] text-[#9c4124] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  <Camera className="w-7 h-7" />
-                </div>
-                <h3 className="font-extrabold text-sm text-[#262220]">
-                  {language === 'hi' ? '📷 लाइव कैमरा' : language === 'te' ? '📷 లైవ్ కెమెరా' : '📷 Live Viewfinder'}
+            <div className="rounded-2xl border-2 border-dashed border-[#D9CEB8] hover:border-[#A8462D] bg-[#FFFDF8] p-8 text-center space-y-5 transition-all">
+              <div className="w-16 h-16 rounded-2xl bg-[#A8462D]/10 text-[#A8462D] border border-[#A8462D]/20 flex items-center justify-center mx-auto shadow-2xs">
+                <Camera className="w-8 h-8" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-bold text-base text-[#29221D] font-serif">
+                  Capture or Upload Craft Photo
                 </h3>
-                <p className="text-[11px] text-stone-500 mt-1">
-                  HD viewfinder with guide grid
+                <p className="text-xs text-[#7A6E65] max-w-sm mx-auto">
+                  Take a photo of your handicraft or select an existing image from your gallery.
                 </p>
               </div>
 
-              {/* Option 2: Direct Phone Camera */}
-              <div
-                onClick={() => cameraInputRef.current?.click()}
-                className="p-6 rounded-3xl border-2 border-dashed border-[#eadfd4] hover:border-[#9c4124] bg-[#faf7f2] flex flex-col items-center justify-center text-center cursor-pointer transition-all group hover:bg-[#fdfbf7]"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  <Camera className="w-7 h-7" />
-                </div>
-                <h3 className="font-extrabold text-sm text-[#262220]">
-                  {language === 'hi' ? '📱 फ़ोन कैमरा' : language === 'te' ? '📱 మొబైల్ కెమెరా' : '📱 Direct Camera'}
-                </h3>
-                <p className="text-[11px] text-stone-500 mt-1">
-                  Snap instantly with your device camera
-                </p>
-              </div>
-
-              {/* Option 3: Gallery Upload */}
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="p-6 rounded-3xl border-2 border-dashed border-[#eadfd4] hover:border-[#9c4124] bg-[#faf7f2] flex flex-col items-center justify-center text-center cursor-pointer transition-all group hover:bg-[#fdfbf7]"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-stone-100 text-stone-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  <Upload className="w-7 h-7" />
-                </div>
-                <h3 className="font-extrabold text-sm text-[#262220]">
-                  {language === 'hi' ? '🖼️ गैलरी से चुनें' : language === 'te' ? '🖼️ గ్యాలరీ నుండి' : '🖼️ Upload from Gallery'}
-                </h3>
-                <p className="text-[11px] text-stone-500 mt-1">
-                  Choose JPG, PNG, WebP, HEIC
-                </p>
+              {/* Designated Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCameraModalOpen(true)}
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-[#A8462D] hover:bg-[#8E3822] text-[#FFFDF8] font-bold text-xs sm:text-sm shadow-xs inline-flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
+                >
+                  <Camera className="w-4 h-4" />
+                  <span>Take Photo</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-[#FFFDF8] hover:bg-[#F7F2E8] border border-[#D9CEB8] text-[#29221D] font-bold text-xs sm:text-sm shadow-2xs inline-flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
+                >
+                  <Upload className="w-4 h-4 text-[#A8462D]" />
+                  <span>Choose from Gallery</span>
+                </button>
               </div>
             </div>
           )}
 
           {/* Quick Demo Sample Crafts */}
-          <div className="pt-4 border-t border-[#eadfd4]">
+          <div className="pt-4 border-t border-[#D9CEB8]">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-stone-700">
                 Or tap a sample craft to test instantly:
@@ -862,7 +830,7 @@ export function AddHandicraft() {
                   key={idx}
                   data-tutorial={idx === 0 ? 'photo-preset-sample' : undefined}
                   onClick={() => handleSelectPreset(preset)}
-                  className="p-3 rounded-2xl bg-[#faf7f2] border border-[#eadfd4] hover:border-[#9c4124] flex items-center gap-3 cursor-pointer transition-all hover:bg-[#fdfbf7]"
+                  className="p-3 rounded-2xl bg-[#FFFDF8] border border-[#D9CEB8] hover:border-[#A8462D] flex items-center gap-3 cursor-pointer transition-all hover:bg-[#FDF6F0]"
                 >
                   <img
                     src={preset.rawImage}
@@ -870,8 +838,8 @@ export function AddHandicraft() {
                     className="w-12 h-12 rounded-xl object-cover shrink-0"
                   />
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-[#262220] truncate">{preset.name}</p>
-                    <p className="text-[11px] text-[#9c4124] font-semibold">{preset.category} • ₹{preset.suggestedPrice}</p>
+                    <p className="text-xs font-bold text-[#29221D] truncate">{preset.name}</p>
+                    <p className="text-[11px] text-[#A8462D] font-bold">{preset.category} • ₹{preset.suggestedPrice}</p>
                   </div>
                 </div>
               ))}
@@ -884,13 +852,13 @@ export function AddHandicraft() {
       {/* STEP 2: AI IMAGE STUDIO (BEFORE | AFTER) */}
       {/* ================================================== */}
       {step === 2 && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#eadfd4]">
+        <div className="artisan-card p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#D9CEB8]">
             <div>
-              <span className="text-[10px] font-extrabold text-[#9c4124] bg-[#fdf2e9] px-2.5 py-0.5 rounded-full border border-[#f8d7c2] uppercase">
+              <span className="text-[10px] font-bold text-[#A8462D] bg-[#FDF6F0] px-2.5 py-0.5 rounded-full border border-[#D9CEB8] uppercase">
                 Step 2 of 4 • AI Image Studio
               </span>
-              <h2 className="text-xl sm:text-2xl font-black text-[#262220] font-['Rozha_One',serif] mt-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#29221D] font-serif mt-1">
                 Make My Photo Better ✨
               </h2>
               <p className="text-xs text-stone-600 mt-1">
@@ -902,7 +870,7 @@ export function AddHandicraft() {
               <button
                 onClick={() => setActiveImageView('original')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  activeImageView === 'original' ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600'
+                  activeImageView === 'original' ? 'bg-[#29221D] text-white' : 'bg-stone-100 text-stone-600'
                 }`}
               >
                 Before (Original)
@@ -910,7 +878,7 @@ export function AddHandicraft() {
               <button
                 onClick={() => setActiveImageView('enhanced')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  activeImageView === 'enhanced' ? 'bg-[#9c4124] text-white' : 'bg-stone-100 text-stone-600'
+                  activeImageView === 'enhanced' ? 'bg-[#A8462D] text-white' : 'bg-stone-100 text-stone-600'
                 }`}
               >
                 After (AI Enhanced ✨)
@@ -919,10 +887,10 @@ export function AddHandicraft() {
           </div>
 
           {/* Interactive Before | After Display */}
-          <div className="relative rounded-3xl overflow-hidden border border-[#eadfd4] bg-stone-50 aspect-4/3 max-w-lg mx-auto flex items-center justify-center">
+          <div className="relative rounded-3xl overflow-hidden border border-[#D9CEB8] bg-stone-50 aspect-4/3 max-w-lg mx-auto flex items-center justify-center">
             {isEnhancing ? (
               <div className="text-center p-8">
-                <div className="w-12 h-12 border-3 border-[#eadfd4] border-t-[#9c4124] rounded-full animate-spin mx-auto mb-4" />
+                <div className="w-12 h-12 border-3 border-[#D9CEB8] border-t-[#A8462D] rounded-full animate-spin mx-auto mb-4" />
                 <p className="text-sm font-bold text-stone-800">Cleaning background & lighting...</p>
                 <p className="text-xs text-stone-500 mt-1">Highlighting authentic handmade texture</p>
               </div>
@@ -936,10 +904,10 @@ export function AddHandicraft() {
 
                 {/* Badge Overlay */}
                 <div className="absolute top-4 left-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-extrabold shadow-md ${
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${
                     activeImageView === 'enhanced'
-                      ? 'bg-[#9c4124] text-white'
-                      : 'bg-stone-900/80 text-stone-200'
+                      ? 'bg-[#A8462D] text-white'
+                      : 'bg-[#29221D]/80 text-stone-200'
                   }`}>
                     {activeImageView === 'enhanced' ? '✨ AI Enhanced Studio View' : 'Original Raw Photo'}
                   </span>
@@ -961,8 +929,8 @@ export function AddHandicraft() {
                 onClick={() => setBackgroundTheme(b.id as any)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                   backgroundTheme === b.id
-                    ? 'bg-[#fdf2e9] text-[#9c4124] border-[#f8d7c2]'
-                    : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                    ? 'bg-[#FDF6F0] text-[#A8462D] border-[#D9CEB8]'
+                    : 'bg-white text-stone-600 border-[#D9CEB8] hover:bg-[#FDF6F0]'
                 }`}
               >
                 {b.label}
@@ -971,7 +939,7 @@ export function AddHandicraft() {
           </div>
 
           {/* Navigation to Step 3 */}
-          <div className="flex items-center justify-between pt-4 border-t border-[#eadfd4]">
+          <div className="flex items-center justify-between pt-4 border-t border-[#D9CEB8]">
             <button
               onClick={() => setStep(1)}
               className="px-4 py-2.5 rounded-xl text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 cursor-pointer"
@@ -1002,12 +970,12 @@ export function AddHandicraft() {
       {step === 3 && (
         <div>
           {isAnalyzingCraft ? (
-            <div className="bg-white rounded-3xl p-12 border border-[#eadfd4] shadow-xs text-center space-y-4">
+            <div className="artisan-card p-12 shadow-xs text-center space-y-4">
               <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
-                <div className="w-20 h-20 border-4 border-[#eadfd4] border-t-[#9c4124] rounded-full animate-spin" />
-                <Sparkles className="w-8 h-8 text-[#9c4124] absolute animate-pulse" />
+                <div className="w-20 h-20 border-4 border-[#D9CEB8] border-t-[#A8462D] rounded-full animate-spin" />
+                <Sparkles className="w-8 h-8 text-[#A8462D] absolute animate-pulse" />
               </div>
-              <h3 className="text-xl font-black text-[#262220] font-['Rozha_One',serif]">
+              <h3 className="text-xl font-bold text-[#29221D] font-serif">
                 {labels.analyzingCraftMsg}
               </h3>
               <p className="text-xs text-stone-500 max-w-md mx-auto">
@@ -1015,11 +983,11 @@ export function AddHandicraft() {
               </p>
             </div>
           ) : analysisError ? (
-            <div className="bg-white rounded-3xl p-8 border border-red-200 shadow-xs text-center space-y-4">
+            <div className="artisan-card p-8 border border-red-200 shadow-xs text-center space-y-4">
               <div className="w-14 h-14 bg-red-100 text-red-700 rounded-2xl flex items-center justify-center mx-auto">
                 <AlertCircle className="w-7 h-7" />
               </div>
-              <h3 className="text-lg font-extrabold text-stone-900">
+              <h3 className="text-lg font-bold text-[#29221D] font-serif">
                 We couldn't analyze the image.
               </h3>
               <p className="text-xs text-stone-600 max-w-md mx-auto">
@@ -1029,7 +997,7 @@ export function AddHandicraft() {
                 <button
                   type="button"
                   onClick={() => runCraftInspection(enhancedImage || rawImage, category)}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#9c4124] hover:bg-[#83341b] cursor-pointer shadow-xs"
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#A8462D] hover:bg-[#8E3822] cursor-pointer shadow-xs"
                 >
                   Try Again
                 </button>
@@ -1060,7 +1028,7 @@ export function AddHandicraft() {
                   type="button"
                   onClick={() => runCraftInspection(enhancedImage || rawImage, category)}
                   disabled={isAnalyzingCraft}
-                  className="inline-flex items-center gap-1.5 text-[#9c4124] hover:text-[#83341b] text-xs font-bold cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-[#A8462D] hover:text-[#8E3822] text-xs font-bold cursor-pointer"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isAnalyzingCraft ? 'animate-spin' : ''}`} />
                   <span>{language === 'hi' ? 'फिर से जांचें' : language === 'te' ? 'మళ్ళీ పరిశీలించు' : 'Re-inspect Image'}</span>
@@ -1068,105 +1036,82 @@ export function AddHandicraft() {
               </div>
 
               {/* ================================================== */}
-              {/* VOICE-GUIDED PRODUCT DETAILS + PRICING WIZARD */}
+              {/* SIMPLE VOICE & TYPING PRODUCT FORM (CLASSIC PROFESSIONAL) */}
               {/* ================================================== */}
-              <VoiceProductDetailsPricingWizard
+              <SimpleVoiceProductForm
                 language={language}
-                imageUrl={enhancedImage || rawImage}
-                detectedCraft={inspectionResult ? inspectionResult.canonicalAttributes : null}
-                currentFormState={{
-                  title,
-                  category,
-                  material,
-                  craftType,
-                  colors,
-                  dimensions,
-                  story,
-                  shortDesc,
-                  suggestedPrice,
-                  materialCost,
-                  laborHours,
-                  quantity,
-                  madeInLocation,
+                photoError={analysisError}
+                detectedAiAttributes={inspectionResult ? inspectionResult.canonicalAttributes : null}
+                productImage={enhancedImage || rawImage}
+                initialData={{
+                  product_name: title || (inspectionResult?.canonicalAttributes as any)?.craftName || '',
+                  category: category || (inspectionResult?.canonicalAttributes as any)?.craftCategory || 'Handloom',
+                  material: material || (inspectionResult?.canonicalAttributes as any)?.material || '',
+                  color: (Array.isArray(colors) ? colors.join(', ') : colors) || (Array.isArray((inspectionResult?.canonicalAttributes as any)?.colors) ? ((inspectionResult?.canonicalAttributes as any)?.colors).join(', ') : ''),
+                  address: madeInLocation || (inspectionResult?.canonicalAttributes as any)?.region || 'Telangana',
+                  quantity: quantity || 1,
+                  material_cost: materialCost || 850,
+                  labor_hours: laborHours || 15,
+                  description: story || shortDesc || (inspectionResult?.canonicalAttributes as any)?.story || (inspectionResult?.canonicalAttributes as any)?.description || '',
                 }}
-                onFieldUpdated={handleVoiceFieldUpdated}
-                onProductConfirmed={(confirmedProduct) => {
-                  if (confirmedProduct.productName) setTitle(confirmedProduct.productName);
-                  if (confirmedProduct.craftCategory || confirmedProduct.category) setCategory(confirmedProduct.craftCategory || confirmedProduct.category);
-                  if (confirmedProduct.material) setMaterial(confirmedProduct.material);
-                  if (confirmedProduct.technique || confirmedProduct.craftType) setCraftType(confirmedProduct.technique || confirmedProduct.craftType);
-                  if (confirmedProduct.colors) setColors(confirmedProduct.colors);
-                  if (confirmedProduct.dimensions) setDimensions(confirmedProduct.dimensions);
-                  if (confirmedProduct.region || confirmedProduct.madeInLocation) setMadeInLocation(confirmedProduct.region || confirmedProduct.madeInLocation);
-                  if (confirmedProduct.quantity) setQuantity(Number(confirmedProduct.quantity));
-                  if (confirmedProduct.description) {
-                    setStory(confirmedProduct.description);
-                    setShortDesc(confirmedProduct.description);
+                onCancel={() => setStep(2)}
+                onSave={(data) => {
+                  if (data.product_name) setTitle(String(data.product_name));
+                  if (data.category) setCategory(String(data.category));
+                  if (data.material) setMaterial(String(data.material));
+                  if (data.color) {
+                    const colorArr = String(data.color).split(',').map(s => s.trim()).filter(Boolean);
+                    setColors(colorArr);
                   }
-                  setStep(4);
-                }}
-                onPricingCompleted={(pricingData) => {
-                  setMaterialCost(pricingData.materialCost);
-                  setLaborHours(pricingData.laborHours);
-                  setQuantity(pricingData.quantity);
-                  setSuggestedPrice(pricingData.artisanApprovedPrice);
+                  if (data.address) setMadeInLocation(String(data.address));
+                  if (data.quantity) setQuantity(Number(data.quantity) || 1);
+                  if (data.material_cost) setMaterialCost(Number(data.material_cost) || 850);
+                  if (data.labor_hours) setLaborHours(Number(data.labor_hours) || 15);
+                  if (data.description) {
+                    const desc = String(data.description);
+                    setStory(desc);
+                    setShortDesc(desc.length > 120 ? desc.slice(0, 120) + '...' : desc);
+                  }
+
+                  // Calculate recommended fair living price dynamically (Cost-Plus):
+                  const mat = Number(data.material_cost) || materialCost || 850;
+                  const hrs = Number(data.labor_hours) || laborHours || 15;
+                  const wage = 90; // Fair living wage rate
+                  const labor = hrs * wage;
+                  const tooling = Math.round(mat * 0.15);
+                  const margin = Math.round((mat + labor) * 0.20);
+                  const calculatedPrice = mat + labor + tooling + margin;
+                  setSuggestedPrice(calculatedPrice);
+
                   setTelemetry(prev => ({
                     ...prev,
+                    currentVoiceState: 'COMPLETED',
                     pricingTelemetry: {
-                      materialCost: pricingData.materialCost,
-                      laborHours: pricingData.laborHours,
-                      fairHourlyWage: pricingData.fairHourlyWage,
-                      laborCost: pricingData.laborCost,
-                      productionCost: pricingData.productionCost,
-                      targetMargin: pricingData.targetMargin,
-                      recommendedFairPrice: pricingData.recommendedFairPrice,
-                      marketMedian: pricingData.marketBenchmarks?.median,
-                      marketMin: pricingData.marketBenchmarks?.min,
-                      marketMax: pricingData.marketBenchmarks?.max,
-                      marketAvailable: pricingData.marketBenchmarks?.available,
-                      artisanApprovedPrice: pricingData.artisanApprovedPrice,
+                      materialCost: mat,
+                      laborHours: hrs,
+                      fairHourlyWage: wage,
+                      laborCost: labor,
+                      productionCost: mat + labor + tooling,
+                      targetMargin: 20,
+                      recommendedFairPrice: calculatedPrice,
+                      artisanApprovedPrice: calculatedPrice,
                     }
                   }));
+
                   setStep(4);
-                }}
-                onTelemetryUpdate={(data) => {
-                  setTelemetry(prev => ({
-                    ...prev,
-                    currentVoiceState: data.voiceState,
-                    speechLocale: data.speechLocale,
-                    speechRecognitionSupported: data.speechRecognitionSupported,
-                    ttsSupported: data.ttsSupported,
-                    lastTranscript: data.transcript,
-                    lastExtractedField: data.currentField ? `${data.currentField}: ${data.extractedValue}` : prev.lastExtractedField,
-                    lastError: data.lastError,
-                    pricingTelemetry: data.pricingData ? {
-                      materialCost: data.pricingData.materialCost,
-                      laborHours: data.pricingData.laborHours,
-                      fairHourlyWage: data.pricingData.fairHourlyWage,
-                      laborCost: data.pricingData.laborCost,
-                      productionCost: data.pricingData.productionCost,
-                      targetMargin: data.pricingData.targetMargin,
-                      recommendedFairPrice: data.pricingData.recommendedFairPrice,
-                      marketMedian: data.pricingData.marketBenchmarks?.median,
-                      marketMin: data.pricingData.marketBenchmarks?.min,
-                      marketMax: data.pricingData.marketBenchmarks?.max,
-                      marketAvailable: data.pricingData.marketBenchmarks?.available,
-                      artisanApprovedPrice: data.pricingData.artisanApprovedPrice,
-                    } : prev.pricingTelemetry,
-                  }));
                 }}
               />
             </div>
           ) : (
-            <div className="bg-white rounded-3xl p-8 border border-[#eadfd4] shadow-xs text-center space-y-4">
-              <Sparkles className="w-10 h-10 text-[#9c4124] mx-auto" />
-              <h3 className="text-lg font-black text-[#262220]">
+            <div className="artisan-card p-8 shadow-xs text-center space-y-4">
+              <Sparkles className="w-10 h-10 text-[#A8462D] mx-auto" />
+              <h3 className="text-lg font-bold text-[#29221D] font-serif">
                 Ready to Analyze Craft Details
               </h3>
               <button
                 type="button"
                 onClick={() => runCraftInspection(enhancedImage || rawImage, category)}
-                className="px-6 py-2.5 bg-[#9c4124] hover:bg-[#83341b] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+                className="artisan-btn-primary cursor-pointer px-6 py-2.5 text-xs"
               >
                 Analyze Craft Image Now ✨
               </button>
@@ -1179,13 +1124,13 @@ export function AddHandicraft() {
       {/* STEP 4: AI DESCRIPTION & REVIEW & FAIR PRICING */}
       {/* ================================================== */}
       {step === 4 && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eadfd4] shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#eadfd4]">
+        <div className="artisan-card p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#D9CEB8]">
             <div>
-              <span className="text-[10px] font-extrabold text-[#9c4124] bg-[#fdf2e9] px-2.5 py-0.5 rounded-full border border-[#f8d7c2] uppercase">
+              <span className="text-[10px] font-bold text-[#A8462D] bg-[#FDF6F0] px-2.5 py-0.5 rounded-full border border-[#D9CEB8] uppercase">
                 Step 4 of 4 • Final Product Review & Fair Pricing
               </span>
-              <h2 className="text-xl sm:text-2xl font-black text-[#262220] font-['Rozha_One',serif] mt-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#29221D] font-serif mt-1">
                 Product Details Complete ✓
               </h2>
               <p className="text-xs text-stone-600 mt-1">
@@ -1203,44 +1148,44 @@ export function AddHandicraft() {
           </div>
 
           {/* REQUIREMENT 29: PRODUCT DETAILS COMPLETE SUMMARY CARD */}
-          <div className="bg-[#faf7f2] rounded-3xl p-5 sm:p-6 border border-[#eadfd4] space-y-4">
+          <div className="bg-[#FDF6F0] rounded-3xl p-5 sm:p-6 border border-[#D9CEB8] space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-[#9c4124] uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-xs font-bold text-[#A8462D] uppercase tracking-wider flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 Verified Product Attributes
               </span>
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="text-xs text-[#9c4124] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                className="text-xs text-[#A8462D] hover:underline font-bold flex items-center gap-1 cursor-pointer"
               >
                 <Edit3 className="w-3.5 h-3.5" /> Edit via Voice/Form
               </button>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div className="bg-white p-3 rounded-2xl border border-stone-200">
-                <span className="text-[10px] font-bold text-stone-400 block uppercase">Craft Type</span>
-                <span className="font-extrabold text-[#262220]">{craftType || category}</span>
+              <div className="bg-[#FFFDF8] p-3 rounded-2xl border border-[#D9CEB8]">
+                <span className="text-[10px] font-bold text-stone-500 block uppercase">Craft Type</span>
+                <span className="font-bold text-[#29221D]">{craftType || category}</span>
               </div>
-              <div className="bg-white p-3 rounded-2xl border border-stone-200">
-                <span className="text-[10px] font-bold text-stone-400 block uppercase">Material</span>
-                <span className="font-extrabold text-[#262220]">{material || 'Pure Cotton'}</span>
+              <div className="bg-[#FFFDF8] p-3 rounded-2xl border border-[#D9CEB8]">
+                <span className="text-[10px] font-bold text-stone-500 block uppercase">Material</span>
+                <span className="font-bold text-[#29221D]">{material || 'Pure Cotton'}</span>
               </div>
-              <div className="bg-white p-3 rounded-2xl border border-stone-200">
-                <span className="text-[10px] font-bold text-stone-400 block uppercase">Handcrafted Labor</span>
-                <span className="font-extrabold text-[#262220]">{laborHours || 15} hours</span>
+              <div className="bg-[#FFFDF8] p-3 rounded-2xl border border-[#D9CEB8]">
+                <span className="text-[10px] font-bold text-stone-500 block uppercase">Handcrafted Labor</span>
+                <span className="font-bold text-[#29221D]">{laborHours || 15} hours</span>
               </div>
-              <div className="bg-white p-3 rounded-2xl border border-stone-200">
-                <span className="text-[10px] font-bold text-stone-400 block uppercase">Material Cost</span>
-                <span className="font-extrabold text-[#262220]">₹{materialCost || 850}</span>
+              <div className="bg-[#FFFDF8] p-3 rounded-2xl border border-[#D9CEB8]">
+                <span className="text-[10px] font-bold text-stone-500 block uppercase">Material Cost</span>
+                <span className="font-bold text-[#29221D]">₹{materialCost || 850}</span>
               </div>
             </div>
 
             {/* REQUIREMENT 24: SHOW AI VS USER VALUES */}
             {originalAiValues.material && material && originalAiValues.material.toLowerCase() !== material.toLowerCase() && (
               <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-900 space-y-1">
-                <div className="font-extrabold flex items-center gap-1 text-[#9c4124]">
+                <div className="font-bold flex items-center gap-1 text-[#A8462D]">
                   <Sparkles className="w-3.5 h-3.5" /> AI vs Artisan Correction
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] pt-1">
@@ -1250,11 +1195,11 @@ export function AddHandicraft() {
                   </div>
                   <div>
                     <span className="text-stone-500 font-medium">Your correction: </span>
-                    <span className="font-bold text-[#9c4124]">{material}</span>
+                    <span className="font-bold text-[#A8462D]">{material}</span>
                   </div>
                   <div>
                     <span className="text-stone-500 font-medium">Final saved value: </span>
-                    <span className="font-extrabold text-emerald-800">✓ {material}</span>
+                    <span className="font-bold text-emerald-800">✓ {material}</span>
                   </div>
                 </div>
               </div>
@@ -1265,8 +1210,8 @@ export function AddHandicraft() {
           <div className="space-y-4">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-extrabold text-stone-700">Product Title</label>
-                <button onClick={() => setEditingField(editingField === 'title' ? null : 'title')} className="text-xs text-[#9c4124] font-bold flex items-center gap-1 cursor-pointer">
+                <label className="text-xs font-bold text-stone-700">Product Title</label>
+                <button onClick={() => setEditingField(editingField === 'title' ? null : 'title')} className="text-xs text-[#A8462D] font-bold flex items-center gap-1 cursor-pointer">
                   <Edit3 className="w-3 h-3" /> Edit
                 </button>
               </div>
@@ -1274,26 +1219,26 @@ export function AddHandicraft() {
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[#eadfd4] font-extrabold text-base text-[#262220] focus:ring-2 focus:ring-[#9c4124] focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#D9CEB8] bg-[#FFFDF8] font-bold text-base text-[#29221D] focus:ring-2 focus:ring-[#A8462D] focus:outline-none"
               />
             </div>
 
             {/* Short Description */}
             <div>
-              <label className="block text-xs font-extrabold text-stone-700 mb-1">Short Description (for marketplace cards)</label>
+              <label className="block text-xs font-bold text-stone-700 mb-1">Short Description (for marketplace cards)</label>
               <textarea
                 rows={2}
                 value={shortDesc}
                 onChange={(e) => setShortDesc(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl border border-[#eadfd4] text-xs font-medium text-stone-800 focus:ring-2 focus:ring-[#9c4124] focus:outline-none"
+                className="w-full px-3.5 py-2 rounded-xl border border-[#D9CEB8] bg-[#FFFDF8] text-xs font-medium text-stone-800 focus:ring-2 focus:ring-[#A8462D] focus:outline-none"
               />
             </div>
 
             {/* Full Craft Heritage Story */}
-            <div className="p-4 rounded-2xl bg-[#faf7f2] border border-[#eadfd4] space-y-2">
+            <div className="p-4 rounded-2xl bg-[#FDF6F0] border border-[#D9CEB8] space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-[#9c4124] uppercase flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-[#c85a32]" />
+                <span className="text-xs font-bold text-[#A8462D] uppercase flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-[#C88732]" />
                   AI Craft Heritage Story
                 </span>
                 <span className="text-[10px] text-stone-500 font-semibold">Ready for English, Hindi, Telugu buyers</span>
@@ -1302,17 +1247,17 @@ export function AddHandicraft() {
                 rows={4}
                 value={story}
                 onChange={(e) => setStory(e.target.value)}
-                className="w-full p-3 bg-white rounded-xl border border-stone-200 text-xs text-stone-700 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#9c4124]"
+                className="w-full p-3 bg-[#FFFDF8] rounded-xl border border-[#D9CEB8] text-xs text-stone-700 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#A8462D]"
               />
             </div>
 
             {/* Verified Origin / Made in Badge */}
-            <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex items-center justify-between gap-2">
+            <div className="p-3.5 rounded-2xl bg-[#F7F2E8] border border-[#D9CEB8] flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#9c4124] shrink-0" />
+                <MapPin className="w-4 h-4 text-[#A8462D] shrink-0" />
                 <div>
                   <span className="text-xs font-bold text-stone-800">
-                    Made in: <span className="text-[#9c4124] font-extrabold">{madeInLocation}</span>
+                    Made in: <span className="text-[#A8462D] font-bold">{madeInLocation}</span>
                   </span>
                   <span className="text-[10px] text-stone-500 block">
                     Regional artisan place (Does not automatically imply GI certification)
@@ -1321,22 +1266,22 @@ export function AddHandicraft() {
               </div>
               <button
                 onClick={() => setStep(3)}
-                className="text-xs font-bold text-[#9c4124] hover:underline shrink-0"
+                className="text-xs font-bold text-[#A8462D] hover:underline shrink-0"
               >
                 Edit
               </button>
             </div>
 
             {/* REQUIREMENT 30: FAIR PRICING ENGINE CALCULATION BOX */}
-            <div data-tutorial="ai-price-box" className="p-5 rounded-3xl bg-emerald-50/60 border border-emerald-300 space-y-3">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-emerald-200/80 pb-3">
+            <div data-tutorial="ai-price-box" className="p-5 rounded-3xl bg-[#EAEFF5] border border-[#BAC7D5] space-y-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-[#BAC7D5] pb-3">
                 <div>
-                  <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                  <span className="text-[10px] font-bold text-[#273B59] uppercase tracking-wider bg-white/80 px-2.5 py-0.5 rounded-full border border-[#BAC7D5]">
                     Fair Pricing Engine (Cost-Plus Methodology)
                   </span>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-3xl font-black text-emerald-950">₹{suggestedPrice}</span>
-                    <span className="text-xs text-emerald-800 font-bold bg-emerald-100/70 px-2 py-0.5 rounded-md">
+                    <span className="text-3xl font-bold text-[#273B59] font-mono">₹{suggestedPrice}</span>
+                    <span className="text-xs text-[#273B59] font-bold bg-white/70 px-2 py-0.5 rounded-md border border-[#BAC7D5]">
                       Net Profit: ~₹{Math.max(suggestedPrice - (materialCost || 850), 0)}
                     </span>
                   </div>
@@ -1348,39 +1293,39 @@ export function AddHandicraft() {
                     type="number"
                     value={suggestedPrice}
                     onChange={(e) => setSuggestedPrice(Number(e.target.value))}
-                    className="w-28 px-3 py-1.5 bg-white rounded-xl border border-emerald-300 text-base font-extrabold text-stone-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                    className="w-28 px-3 py-1.5 bg-white rounded-xl border border-[#BAC7D5] text-base font-bold text-[#273B59] font-mono focus:ring-2 focus:ring-[#273B59] focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Formula Breakdown */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
-                <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-200">
+                <div className="bg-white/90 p-2.5 rounded-xl border border-[#BAC7D5]">
                   <span className="text-[10px] text-stone-500 font-semibold block">Material Cost</span>
-                  <span className="font-extrabold text-stone-900">₹{materialCost || 850}</span>
+                  <span className="font-bold text-[#29221D] font-mono">₹{materialCost || 850}</span>
                 </div>
-                <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-200">
+                <div className="bg-white/90 p-2.5 rounded-xl border border-[#BAC7D5]">
                   <span className="text-[10px] text-stone-500 font-semibold block">Artisan Labor ({laborHours || 15}h @ ₹90/h)</span>
-                  <span className="font-extrabold text-stone-900">₹{(laborHours || 15) * 90}</span>
+                  <span className="font-bold text-[#29221D] font-mono">₹{(laborHours || 15) * 90}</span>
                 </div>
-                <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-200">
+                <div className="bg-white/90 p-2.5 rounded-xl border border-[#BAC7D5]">
                   <span className="text-[10px] text-stone-500 font-semibold block">Tooling & Overhead (15%)</span>
-                  <span className="font-extrabold text-stone-900">₹{Math.round((materialCost || 850) * 0.15)}</span>
+                  <span className="font-bold text-[#29221D] font-mono">₹{Math.round((materialCost || 850) * 0.15)}</span>
                 </div>
-                <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-200">
+                <div className="bg-white/90 p-2.5 rounded-xl border border-[#BAC7D5]">
                   <span className="text-[10px] text-stone-500 font-semibold block">Fair Profit Margin (20%)</span>
-                  <span className="font-extrabold text-stone-900">₹{Math.round(((materialCost || 850) + ((laborHours || 15) * 90)) * 0.20)}</span>
+                  <span className="font-bold text-[#29221D] font-mono">₹{Math.round(((materialCost || 850) + ((laborHours || 15) * 90)) * 0.20)}</span>
                 </div>
               </div>
 
-              <p className="text-[11px] text-emerald-900/80 font-medium">
+              <p className="text-[11px] text-[#273B59]/80 font-medium">
                 Fair price dynamically calculated to prevent artisan exploitation and ensure liveable wage rates.
               </p>
             </div>
           </div>
 
           {/* Publish CTA Buttons */}
-          <div className="flex items-center justify-between pt-4 border-t border-[#eadfd4]">
+          <div className="flex items-center justify-between pt-4 border-t border-[#D9CEB8]">
             <button
               onClick={() => setStep(3)}
               className="px-4 py-2.5 rounded-xl text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 cursor-pointer"

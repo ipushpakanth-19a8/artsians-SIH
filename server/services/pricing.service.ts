@@ -135,6 +135,9 @@ export class PricingService {
       count: number;
       typicalMiddlemanCut?: number;
       message?: string;
+      priceLow?: number;
+      priceHigh?: number;
+      averagePrice?: number;
     };
 
     if (dbBenchmarks.length > 0) {
@@ -168,6 +171,9 @@ export class PricingService {
         median: Math.round(median),
         avg: Math.round(avg),
         max: Math.round(max),
+        priceLow: Math.round(min),
+        priceHigh: Math.round(max),
+        averagePrice: Math.round(avg),
         count: dbBenchmarks.length,
         typicalMiddlemanCut: Math.round(dbBenchmarks[0]?.typical_middleman_cut || 60),
       };
@@ -179,6 +185,9 @@ export class PricingService {
         median: 0,
         avg: 0,
         max: 0,
+        priceLow: 0,
+        priceHigh: 0,
+        averagePrice: 0,
         count: 0,
         message: 'Market benchmark data is currently unavailable for this specific craft category.'
       };
@@ -261,8 +270,17 @@ export class PricingService {
       pricingFormulaVersion: 'v2.0-deterministic-margin',
       breakdown,
       explanation,
-      calculatedAt: new Date().toISOString(),
-      marketBenchmarks: marketStats
+      calculation: {
+        laborCost,
+        productionCost,
+        marginAmount,
+      },
+      finalPrice: artisanApprovedPrice || recommendedFairPrice,
+      marketStats,
+      marketBenchmark: marketStats,
+      marketBenchmarks: marketStats,
+      marketMinPrice: marketStats?.min || 0,
+      marketMaxPrice: marketStats?.max || 0,
     } as any;
   }
 

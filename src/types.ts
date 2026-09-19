@@ -231,7 +231,7 @@ export interface Product {
     transparent_png?: string;
   };
   enhancement_applied?: boolean;
-  status: 'draft' | 'published' | 'disabled' | 'rejected';
+  status: 'draft' | 'published' | 'disabled' | 'rejected' | 'sold_out';
   validation_status?: 'AI Generated' | 'Needs Review' | 'Verified by Artisan' | 'Published';
   gi_status?: 'certified' | 'potential' | 'none' | 'Needs artisan confirmation';
   gi_certificate_number?: string;
@@ -323,6 +323,7 @@ export interface Order {
   product_title: string;
   artisan_id: string;
   artisan_name: string;
+  buyer_id?: string;
   buyer_name: string;
   buyer_contact?: string;
   buyer_phone?: string;

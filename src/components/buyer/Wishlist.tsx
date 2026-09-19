@@ -47,13 +47,13 @@ export function Wishlist() {
 
   if (wishlist.length === 0) {
     return (
-      <div className="max-w-xl mx-auto p-12 text-center bg-white rounded-3xl border border-stone-200 shadow-sm space-y-4">
-        <Heart className="w-16 h-16 text-stone-300 mx-auto" />
-        <h2 className="text-xl font-bold text-stone-800">{t.wishlistEmpty}</h2>
-        <p className="text-xs text-stone-500">Save handcrafted items you love and visit them anytime.</p>
+      <div className="max-w-xl mx-auto p-12 text-center artisan-card bg-[#FFFDF8] rounded-3xl border border-[#D9CEB8] shadow-sm space-y-4">
+        <Heart className="w-16 h-16 text-[#8C827A] mx-auto" />
+        <h2 className="text-xl font-black text-[#29221D] font-serif">{t.wishlistEmpty}</h2>
+        <p className="text-xs text-[#6B5E55]">Save handcrafted items you love and visit them anytime.</p>
         <Link
           to="/buyer/browse"
-          className="inline-flex items-center gap-2 px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm"
+          className="artisan-btn-primary inline-flex items-center gap-2 py-2.5 px-6 text-xs font-bold"
         >
           {t.products} <ArrowRight className="w-3.5 h-3.5" />
         </Link>
@@ -62,10 +62,10 @@ export function Wishlist() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 font-['Rozha_One',serif] flex items-center gap-2">
-          <Heart className="w-7 h-7 text-red-500 fill-red-500" />
+        <h1 className="text-2xl sm:text-3xl font-black text-[#29221D] font-serif flex items-center gap-2.5">
+          <Heart className="w-7 h-7 text-rose-500 fill-rose-500" />
           {t.wishlist} ({wishlist.length})
         </h1>
       </div>
@@ -77,20 +77,20 @@ export function Wishlist() {
           return (
             <div
               key={item.productId}
-              className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+              className="artisan-card bg-[#FFFDF8] rounded-2xl border border-[#D9CEB8] overflow-hidden shadow-xs hover:border-[#A8462D] hover:shadow-md transition-all flex flex-col justify-between"
             >
               <div
                 onClick={() => navigate(`/buyer/product/${item.productId}`)}
                 className="cursor-pointer"
               >
-                <div className="relative aspect-square bg-stone-100">
+                <div className="relative aspect-square bg-[#F7F2E8]">
                   <img src={img} alt={item.product?.title} className="w-full h-full object-cover" />
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       removeItem(item.productId);
                     }}
-                    className="absolute top-3 right-3 p-2 rounded-full bg-white/90 text-stone-500 hover:text-red-500 shadow-sm"
+                    className="absolute top-3 right-3 p-2 rounded-full bg-[#FFFDF8]/90 text-[#8C827A] hover:text-rose-600 shadow-sm cursor-pointer transition-colors"
                     title={t.removeFromWishlist}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -98,13 +98,13 @@ export function Wishlist() {
                 </div>
 
                 <div className="p-4">
-                  <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">
+                  <span className="text-[10px] font-bold text-[#A8462D] uppercase tracking-wider block">
                     {item.product?.category}
                   </span>
-                  <h3 className="font-bold text-stone-900 text-sm mt-0.5 line-clamp-1">
+                  <h3 className="font-bold text-[#29221D] text-sm mt-0.5 line-clamp-1">
                     {item.product?.translations?.[language]?.title || item.product?.title}
                   </h3>
-                  <p className="text-base font-black text-stone-900 mt-2">
+                  <p className="text-base font-black text-[#29221D] font-mono mt-2">
                     {formatINR(item.product?.final_price || 2500)}
                   </p>
                 </div>
@@ -113,7 +113,7 @@ export function Wishlist() {
               <div className="p-4 pt-0">
                 <button
                   onClick={() => moveToCart(item)}
-                  className="w-full py-2.5 px-3 bg-stone-900 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                  className="artisan-btn-primary w-full py-2.5 px-3 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-[0.99]"
                 >
                   <ShoppingCart className="w-3.5 h-3.5" />
                   {t.moveToCart}

@@ -44,10 +44,9 @@ interface DevAiDebugPanelProps {
 export const DevAiDebugPanel: React.FC<DevAiDebugPanelProps> = ({ telemetry }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
-  // In production, keep hidden unless debug URL query param (?debug=true) is present
-  const isDev = Boolean((import.meta as any).env?.DEV || (typeof window !== 'undefined' && window.location.search.includes('debug=true')));
-
-  if (!isDev) return null;
+  // Hidden: only shown if explicitly activated via ?debug=true in URL query params
+  const showDebug = typeof window !== 'undefined' && window.location.search.includes('debug=true');
+  if (!showDebug) return null;
 
   return (
     <div className="w-full mt-6 bg-stone-950 text-stone-200 rounded-2xl border border-stone-800 shadow-xl overflow-hidden font-mono text-xs">

@@ -52,7 +52,7 @@ export const WelcomeJourneyModal: React.FC = () => {
                 ? 'शिल्पसेतु में आपका स्वागत है 👋'
                 : language === 'te'
                 ? 'శిల్పసేతుకు స్వాగతం 👋'
-                : 'Welcome to Artisans 👋'}
+                : 'Welcome to ShilpSetu 👋'}
             </h2>
           </div>
         </div>

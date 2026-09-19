@@ -983,47 +983,49 @@ export const VoiceProductDetailsPricingWizard: React.FC<VoiceProductDetailsPrici
 
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
-      {/* Top Banner: Progress and Voice State */}
-      <div className="bg-white rounded-3xl p-5 border border-[#eadfd4] shadow-xs flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#fdf2e9] text-[#9c4124] flex items-center justify-center font-black">
-            {confirmedCount} / 6
+      {/* Top Banner: Progress and Voice State with Double-Bezel Framing */}
+      <div className="p-1 rounded-[2rem] bg-[#EFE7D8]/60 border border-[#D9CEB8]/80 shadow-xs">
+        <div className="bg-[#FFFDF8] rounded-[1.75rem] p-5 border border-[#E8DFC9] flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#A8462D]/10 text-[#A8462D] border border-[#A8462D]/20 flex items-center justify-center font-black">
+              {confirmedCount} / 6
+            </div>
+            <div>
+              <h3 className="font-extrabold text-sm text-[#29221D] font-['Playfair_Display',serif]">
+                Product Details Voice Verification
+              </h3>
+              <p className="text-xs text-[#7A6E65]">
+                One-by-one voice confirmation with your multilingual artisan voice assistant
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-extrabold text-sm text-[#262220]">
-              Product Details Confirmation
-            </h3>
-            <p className="text-xs text-stone-500">
-              One-by-one voice confirmation with your artisan voice assistant
-            </p>
+
+          <div className="flex items-center gap-2">
+            <span
+              className={`text-[11px] font-black px-3.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5 ${
+                voiceState === 'LISTENING'
+                  ? 'bg-rose-100 text-rose-800 animate-pulse border border-rose-300'
+                  : voiceState === 'SPEAKING'
+                  ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                  : voiceState === 'COMPLETED'
+                  ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                  : 'bg-[#F7F2E8] text-[#7A6E65] border border-[#D9CEB8]'
+              }`}
+            >
+              {voiceState === 'LISTENING' && <span className="w-2 h-2 rounded-full bg-rose-600 animate-ping" />}
+              {voiceState === 'SPEAKING' && <Volume2 className="w-3.5 h-3.5 animate-bounce text-[#A8462D]" />}
+              <span>State: {voiceState}</span>
+            </span>
+
+            <button
+              type="button"
+              onClick={startFlow}
+              title="Restart Voice Assistant"
+              className="p-2 rounded-xl bg-[#F7F2E8] hover:bg-[#EAE0CD] text-[#29221D] border border-[#D9CEB8] transition-colors cursor-pointer"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span
-            className={`text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5 ${
-              voiceState === 'LISTENING'
-                ? 'bg-rose-100 text-rose-700 animate-pulse border border-rose-300'
-                : voiceState === 'SPEAKING'
-                ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                : voiceState === 'COMPLETED'
-                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                : 'bg-stone-100 text-stone-600 border border-stone-200'
-            }`}
-          >
-            {voiceState === 'LISTENING' && <span className="w-2 h-2 rounded-full bg-rose-600 animate-ping" />}
-            {voiceState === 'SPEAKING' && <Volume2 className="w-3.5 h-3.5 animate-bounce" />}
-            <span>State: {voiceState}</span>
-          </span>
-
-          <button
-            type="button"
-            onClick={startFlow}
-            title="Restart Voice Assistant"
-            className="p-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors cursor-pointer"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
@@ -1032,65 +1034,67 @@ export const VoiceProductDetailsPricingWizard: React.FC<VoiceProductDetailsPrici
         {/* ================================================== */}
         {/* PRODUCT DETAILS (Section 1, 18, 19) */}
         {/* ================================================== */}
-        <div className="md:col-span-6 bg-white rounded-3xl p-6 border border-[#eadfd4] shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#eadfd4]">
-            <h4 className="font-extrabold text-sm text-[#262220] uppercase tracking-wider">
-              Product Details (6 Fields)
-            </h4>
-            <span className="text-xs text-stone-500 font-medium">
-              {confirmedCount} of 6 Confirmed
-            </span>
-          </div>
+        <div className="md:col-span-6 p-1 rounded-[2rem] bg-[#EFE7D8]/60 border border-[#D9CEB8]/80 shadow-xs">
+          <div className="bg-[#FFFDF8] rounded-[1.75rem] p-6 border border-[#E8DFC9] space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#D9CEB8]">
+              <h4 className="font-extrabold text-sm text-[#29221D] uppercase tracking-wider font-['Playfair_Display',serif]">
+                Product Details (6 Fields)
+              </h4>
+              <span className="text-xs text-[#7A6E65] font-semibold bg-[#F7F2E8] px-2.5 py-0.5 rounded-full border border-[#D9CEB8]">
+                {confirmedCount} of 6 Confirmed
+              </span>
+            </div>
 
-          <div className="space-y-3">
-            {PRODUCT_FIELDS.map((field, idx) => {
-              const item = productState[field];
-              const isCurrent = field === currentField;
-              const valDisplay = formatFieldValue(field, productState);
+            <div className="space-y-3">
+              {PRODUCT_FIELDS.map((field, idx) => {
+                const item = productState[field];
+                const isCurrent = field === currentField;
+                const valDisplay = formatFieldValue(field, productState);
 
-              return (
-                <div
-                  key={field}
-                  onClick={() => {
-                    setCurrentFieldIndex(idx);
-                    setFieldMode('CONFIRMING');
-                    const p = getConfirmationPrompt(field, valDisplay || 'Not specified', language);
-                    safeSpeak(p);
-                    safeListen();
-                  }}
-                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
-                    isCurrent
-                      ? 'border-[#9c4124] bg-[#fdf2e9]/40 ring-2 ring-[#9c4124]/20 shadow-xs'
-                      : item.confirmed
-                      ? 'border-emerald-200 bg-emerald-50/40'
-                      : 'border-stone-200 bg-white hover:border-stone-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-stone-500 uppercase">
-                      {idx + 1}. {getFieldLabel(field, language)}
-                    </span>
-                    {item.confirmed ? (
-                      <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> Confirmed
+                return (
+                  <div
+                    key={field}
+                    onClick={() => {
+                      setCurrentFieldIndex(idx);
+                      setFieldMode('CONFIRMING');
+                      const p = getConfirmationPrompt(field, valDisplay || 'Not specified', language);
+                      safeSpeak(p);
+                      safeListen();
+                    }}
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                      isCurrent
+                        ? 'border-[#A8462D] bg-[#A8462D]/10 ring-2 ring-[#A8462D]/20 shadow-xs'
+                        : item.confirmed
+                        ? 'border-emerald-300 bg-emerald-50/60'
+                        : 'border-[#D9CEB8] bg-[#F7F2E8]/40 hover:border-[#A8462D]/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-[#7A6E65] uppercase">
+                        {idx + 1}. {getFieldLabel(field, language)}
                       </span>
-                    ) : item.value ? (
-                      <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md">
-                        {item.source === 'ai' ? 'AI Detected' : item.source === 'geolocation' ? 'GPS Detected' : 'Unconfirmed'}
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-medium text-stone-400">
-                        Waiting for voice
-                      </span>
-                    )}
+                      {item.confirmed ? (
+                        <span className="text-[10px] font-extrabold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-md flex items-center gap-1 border border-emerald-200">
+                          <CheckCircle2 className="w-3 h-3" /> Confirmed
+                        </span>
+                      ) : item.value ? (
+                        <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200">
+                          {item.source === 'ai' ? 'AI Detected' : item.source === 'geolocation' ? 'GPS Detected' : 'Unconfirmed'}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-medium text-[#9C8F84]">
+                          Waiting for voice
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-xs font-bold text-[#29221D] mt-1 line-clamp-2">
+                      {valDisplay || <span className="italic text-[#9C8F84] font-normal">Not provided yet</span>}
+                    </p>
                   </div>
-
-                  <p className="text-xs font-black text-[#262220] mt-1 line-clamp-2">
-                    {valDisplay || <span className="italic text-stone-400 font-normal">Not provided yet</span>}
-                  </p>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -1098,40 +1102,41 @@ export const VoiceProductDetailsPricingWizard: React.FC<VoiceProductDetailsPrici
         {/* PROMINENT VOICE ASSISTANT CARD (Section 19) */}
         {/* ================================================== */}
         <div className="md:col-span-6 space-y-4">
-          <div className="bg-[#faf7f2] rounded-3xl p-6 border-2 border-[#9c4124]/30 shadow-md space-y-5">
-            {/* Speaker / Microphone Status Animation */}
-            <div className="flex flex-col items-center justify-center text-center space-y-3 pt-2">
-              <div
-                className={`w-20 h-20 rounded-3xl flex items-center justify-center transition-all shadow-md ${
-                  voiceState === 'SPEAKING'
-                    ? 'bg-amber-500 text-white scale-105 animate-pulse'
-                    : voiceState === 'LISTENING'
-                    ? 'bg-[#9c4124] text-white scale-110 ring-4 ring-[#9c4124]/30 animate-pulse'
-                    : voiceState === 'COMPLETED'
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-white text-stone-700 border border-stone-200'
-                }`}
-              >
-                {voiceState === 'SPEAKING' ? (
-                  <Volume2 className="w-10 h-10" />
-                ) : voiceState === 'LISTENING' ? (
-                  <Mic className="w-10 h-10" />
-                ) : voiceState === 'COMPLETED' ? (
-                  <CheckCircle2 className="w-10 h-10" />
-                ) : (
-                  <MicOff className="w-8 h-8 text-stone-400" />
-                )}
-              </div>
+          <div className="p-1 rounded-[2rem] bg-[#EFE7D8]/60 border border-[#D9CEB8]/80 shadow-xs">
+            <div className="bg-[#FFFDF8] rounded-[1.75rem] p-6 border border-[#E8DFC9] space-y-5">
+              {/* Speaker / Microphone Status Animation */}
+              <div className="flex flex-col items-center justify-center text-center space-y-3 pt-2">
+                <div
+                  className={`w-20 h-20 rounded-3xl flex items-center justify-center transition-all shadow-md ${
+                    voiceState === 'SPEAKING'
+                      ? 'bg-[#C88732] text-white scale-105 animate-pulse ring-4 ring-[#C88732]/20'
+                      : voiceState === 'LISTENING'
+                      ? 'bg-[#A8462D] text-white scale-110 ring-4 ring-[#A8462D]/30 animate-pulse'
+                      : voiceState === 'COMPLETED'
+                      ? 'bg-emerald-700 text-white'
+                      : 'bg-[#F7F2E8] text-[#7A6E65] border border-[#D9CEB8]'
+                  }`}
+                >
+                  {voiceState === 'SPEAKING' ? (
+                    <Volume2 className="w-10 h-10" />
+                  ) : voiceState === 'LISTENING' ? (
+                    <Mic className="w-10 h-10" />
+                  ) : voiceState === 'COMPLETED' ? (
+                    <CheckCircle2 className="w-10 h-10" />
+                  ) : (
+                    <MicOff className="w-8 h-8 text-[#9C8F84]" />
+                  )}
+                </div>
 
-              <div>
-                <span className="text-[10px] font-black uppercase text-[#9c4124] tracking-wider bg-[#fdf2e9] px-2.5 py-0.5 rounded-md border border-[#f8d7c2]">
-                  Step {currentFieldIndex + 1} of 6 • {getFieldLabel(currentField, language)}
-                </span>
-                <p className="text-base font-extrabold text-[#262220] mt-1.5 px-4">
-                  {activePrompt || 'Preparing voice prompt...'}
-                </p>
+                <div>
+                  <span className="text-[10px] font-black uppercase text-[#A8462D] tracking-wider bg-[#A8462D]/10 px-2.5 py-0.5 rounded-md border border-[#A8462D]/20">
+                    Step {currentFieldIndex + 1} of 6 • {getFieldLabel(currentField, language)}
+                  </span>
+                  <p className="text-base font-bold text-[#29221D] mt-1.5 px-4 font-['Playfair_Display',serif]">
+                    {activePrompt || 'Preparing voice prompt...'}
+                  </p>
+                </div>
               </div>
-            </div>
 
             {/* Live Transcript Display Box (Section 13) */}
             <div className="bg-white rounded-2xl p-4 border border-[#eadfd4] shadow-2xs space-y-2">
@@ -1254,13 +1259,14 @@ export const VoiceProductDetailsPricingWizard: React.FC<VoiceProductDetailsPrici
                   <button
                     type="button"
                     onClick={handleManualSubmit}
-                    className="px-4 py-2 bg-[#9c4124] text-white rounded-xl text-xs font-bold hover:bg-[#83341b] cursor-pointer shadow-xs"
+                    className="px-4 py-2 bg-[#A8462D] text-white rounded-xl text-xs font-bold hover:bg-[#8E3822] cursor-pointer shadow-xs"
                   >
                     Save & Next
                   </button>
                 </div>
               </div>
             )}
+            </div>
           </div>
 
           {/* ================================================== */}

@@ -11,7 +11,7 @@ import {
   generateAutoDescription,
 } from '../src/lib/voiceParsingService.js';
 import { inspectCraftImage } from '../server/services/craftInspection.service.js';
-import { PRODUCT_FIELDS } from '../src/components/seller/VoiceProductDetailsPricingWizard.js';
+import { PRODUCT_FIELDS } from '../src/components/seller/SimpleVoiceProductForm.js';
 
 async function runTests() {
   console.log('========================================================================');
@@ -47,28 +47,54 @@ async function runTests() {
     }
   }
 
-  // TEST 1: Exactly 6 Product Fields
-  test('Step contains ONLY the 6 required product fields', () => {
+  // TEST 1: Exactly 6 Product Fields in required order
+  test('Step contains ONLY the 6 required product fields in order', () => {
     assert.deepEqual(PRODUCT_FIELDS, [
-      'handicraftName',
-      'handicraftType',
-      'colors',
-      'location',
+      'product_name',
+      'category',
+      'color',
+      'address',
       'quantity',
       'description',
     ]);
     assert.equal(PRODUCT_FIELDS.length, 6);
   });
 
-  // TEST 2: AI Inspection returns structured attributes
-  await testAsync('AI Image Detection populates craftName, craftCategory/type, and colors', async () => {
-    const dummyImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkWPjfDwAEfQHz/7l7bAAAAABJRU5ErkJggg==';
-    const res = await inspectCraftImage(dummyImage, 'en');
+  // TEST 2: AI Inspection returns structured attributes or error fallback
+  await testAsync('AI Image Detection populates craft attributes and handles unreadable photo', async () => {
+    const sharp = (await import('sharp')).default;
+    // Generate valid craft image (terracotta earthen palette)
+    const terracottaBuf = await sharp({
+      create: {
+        width: 400,
+        height: 400,
+        channels: 3,
+        background: { r: 180, g: 90, b: 60 }
+      }
+    }).jpeg().toBuffer();
+    const terracottaBase64 = `data:image/jpeg;base64,${terracottaBuf.toString('base64')}`;
+
+    const res = await inspectCraftImage(terracottaBase64, 'en');
     assert.equal(res.success, true);
     assert.ok(res.canonicalAttributes);
     assert.ok(res.canonicalAttributes.craftName !== undefined);
     assert.ok(res.canonicalAttributes.craftCategory !== undefined);
     assert.ok(Array.isArray(res.canonicalAttributes.colors));
+
+    // Test unreadable dark photo fallback
+    const darkBuf = await sharp({
+      create: {
+        width: 100,
+        height: 100,
+        channels: 3,
+        background: { r: 5, g: 5, b: 5 }
+      }
+    }).jpeg().toBuffer();
+    const darkBase64 = `data:image/jpeg;base64,${darkBuf.toString('base64')}`;
+    const darkRes = await inspectCraftImage(darkBase64, 'en');
+    assert.equal(darkRes.success, false);
+    assert.equal(darkRes.error, 'could_not_read_photo');
+    assert.equal(darkRes.message, "Couldn't read the photo, let's fill the details by voice instead");
   });
 
   // TEST 3: Multilingual YES confirmation
@@ -103,7 +129,7 @@ async function runTests() {
     assert.equal(parseQuantityTranscript('I have five pieces.'), 5);
     assert.equal(parseQuantityTranscript('5 pieces'), 5);
     assert.equal(parseQuantityTranscript('ten pieces'), 10);
-    assert.equal(parseQuantityTranscript('పాతిక'), null); // not a direct single word, but 'ఐదు' is 5
+    assert.equal(parseQuantityTranscript('పాతిక'), 25); // Telugu for 25
     assert.equal(parseQuantityTranscript('ఐదు పీసులు'), 5);
     assert.equal(parseQuantityTranscript('पाँच'), 5);
     assert.equal(parseQuantityTranscript('0 pieces'), null); // Must be positive (>0)

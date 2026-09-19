@@ -22,6 +22,7 @@ import { Cart } from './components/buyer/Cart';
 import { Wishlist } from './components/buyer/Wishlist';
 import { BuyerOrders } from './components/buyer/BuyerOrders';
 import { BuyerCustomerCare } from './components/buyer/BuyerCustomerCare';
+import { PublicProvenancePage } from './components/provenance/PublicProvenancePage';
 
 import { useLanguage } from './lib/LanguageContext';
 import { useAuth } from './lib/AuthContext';
@@ -116,6 +117,9 @@ export default function App() {
           <Route path="orders" element={<BuyerOrders />} />
           <Route path="customer-care" element={<BuyerCustomerCare />} />
         </Route>
+
+        {/* Step 4: Public QR Provenance Certificate Route (Stall & Exhibition Tag) */}
+        <Route path="/provenance/:id" element={<PublicProvenancePage />} />
 
         {/* ABSOLUTELY NO ADMIN ON PUBLIC APP: Any attempt to navigate to /admin redirects to Landing / */}
         <Route path="/admin" element={<Navigate to="/" replace />} />

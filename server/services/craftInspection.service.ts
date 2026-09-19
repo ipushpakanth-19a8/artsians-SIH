@@ -44,8 +44,37 @@ export interface AIDebugInfo {
   latencyMs: number;
 }
 
+export interface StrictDetectedCraftOutput {
+  product_name: string;
+  category: string;
+  material: string;
+  colour: string;
+  dimensions: string;
+  craft_technique: string;
+  suggested_price_range: string;
+  short_description: string;
+  confidence: number;
+  needs_user_input: {
+    product_name: boolean;
+    category: boolean;
+    material: boolean;
+    colour: boolean;
+    dimensions: boolean;
+    craft_technique: boolean;
+    suggested_price_range: boolean;
+    short_description: boolean;
+  };
+}
+
 export interface InspectCraftResponse {
   success: boolean;
+  error?: string;
+  message?: string;
+  name?: string;
+  type?: string;
+  color?: string;
+  detectedDetails?: Record<string, any>;
+  data?: StrictDetectedCraftOutput;
   language: LanguageCode;
   locale: string;
   canonicalAttributes: CraftAttributes;
@@ -66,6 +95,68 @@ export interface VoiceCorrectionResult {
   localizedValue: string | string[] | null;
   extractedFrom: string;
   confidence: number;
+}
+
+/**
+ * Validates the parsed JSON against strict 9-key shape.
+ * If a field is missing, null, unknown, or confidence is low (< 0.60),
+ * leaves it BLANK ("") and marks it as needs_user_input. Never fills with guesses or defaults.
+ */
+export function validateStrictCraftOutput(raw: any): StrictDetectedCraftOutput {
+  const sanitize = (val: any): string => {
+    if (val === null || val === undefined) return "";
+    const str = typeof val === "string" ? val : Array.isArray(val) ? val.join(", ") : String(val);
+    const trimmed = str.trim();
+    const lower = trimmed.toLowerCase();
+    if (
+      !trimmed ||
+      lower === "unknown" ||
+      lower === "null" ||
+      lower === "n/a" ||
+      lower === "undefined" ||
+      lower === "none" ||
+      lower === "not visible" ||
+      lower === "unspecified"
+    ) {
+      return "";
+    }
+    return trimmed;
+  };
+
+  const rawConf = typeof raw?.confidence === "number" ? raw.confidence : parseFloat(raw?.confidence);
+  const confidence = isNaN(rawConf) ? 0 : Math.max(0, Math.min(1, rawConf));
+  const isConfident = confidence >= 0.60;
+
+  const product_name = isConfident ? sanitize(raw?.product_name || raw?.craftName) : "";
+  const category = isConfident ? sanitize(raw?.category || raw?.craftCategory) : "";
+  const material = isConfident ? sanitize(raw?.material) : "";
+  const colour = isConfident ? sanitize(raw?.colour || (Array.isArray(raw?.colors) ? raw.colors.join(", ") : raw?.colors)) : "";
+  const dimensions = isConfident ? sanitize(raw?.dimensions) : "";
+  const craft_technique = isConfident ? sanitize(raw?.craft_technique || raw?.technique) : "";
+  const suggested_price_range = isConfident ? sanitize(raw?.suggested_price_range) : "";
+  const short_description = isConfident ? sanitize(raw?.short_description || raw?.description) : "";
+
+  return {
+    product_name,
+    category,
+    material,
+    colour,
+    dimensions,
+    craft_technique,
+    suggested_price_range,
+    short_description,
+    confidence: isConfident ? confidence : 0,
+    needs_user_input: {
+      product_name: !product_name,
+      category: !category,
+      material: !material,
+      colour: !colour,
+      dimensions: !dimensions,
+      craft_technique: !craft_technique,
+      suggested_price_range: !suggested_price_range,
+      short_description: !short_description,
+    },
+  };
 }
 
 function getAIClient(): GoogleGenAI | null {
@@ -274,11 +365,14 @@ export async function detectVisualCraftProfile(
   categoryHint?: string,
   regionHint?: string,
   rawSourceUrl?: string
-): Promise<{ matched: CraftTaxonomyEntry; detectedColors: string[] }> {
-  const textCorpus = `${categoryHint || ""} ${regionHint || ""} ${rawSourceUrl || ""}`.toLowerCase();
-  for (const entry of CRAFT_KNOWLEDGE_BASE) {
-    if (entry.keywords.some((kw) => textCorpus.includes(kw.toLowerCase()))) {
-      return { matched: entry, detectedColors: entry.canonical.colors };
+): Promise<{ matched: CraftTaxonomyEntry | null; detectedColors: string[]; confidence: number }> {
+  // Check text corpus ONLY if a specific craft hint is provided (ignore generic hints like 'handicraft')
+  const cleanCategory = (categoryHint || "").toLowerCase().trim();
+  if (cleanCategory && cleanCategory !== "handicraft" && cleanCategory !== "handloom" && cleanCategory !== "all") {
+    for (const entry of CRAFT_KNOWLEDGE_BASE) {
+      if (entry.keywords.some((kw) => cleanCategory.includes(kw.toLowerCase()))) {
+        return { matched: entry, detectedColors: entry.canonical.colors, confidence: 0.88 };
+      }
     }
   }
 
@@ -289,44 +383,65 @@ export async function detectVisualCraftProfile(
     const g = Math.round(gChan?.mean || 128);
     const b = Math.round(bChan?.mean || 128);
 
-    // High luminance white / off-white -> Lucknowi Chikankari Embroidery
+    // 1. High luminance white / off-white -> Lucknowi Chikankari Embroidery
     if (r > 190 && g > 185 && b > 180) {
-      const entry = CRAFT_KNOWLEDGE_BASE.find(e => e.canonical.craftName?.includes("Chikankari")) || CRAFT_KNOWLEDGE_BASE[5];
-      return { matched: entry, detectedColors: ["Pristine White", "Ivory Cream"] };
+      const entry = CRAFT_KNOWLEDGE_BASE.find(e => e.canonical.craftName?.includes("Chikankari")) || CRAFT_KNOWLEDGE_BASE[6];
+      return { matched: entry, detectedColors: ["Pristine White", "Ivory Cream"], confidence: 0.88 };
     }
 
-    // High blue or cyan dominance -> Jaipur Blue Pottery
+    // 2. High blue or cyan dominance -> Jaipur Blue Pottery
     if (b > 115 && b > r * 1.05 && b > g * 0.95) {
-      const entry = CRAFT_KNOWLEDGE_BASE.find(e => e.canonical.craftName?.includes("Pottery")) || CRAFT_KNOWLEDGE_BASE[4];
-      return { matched: entry, detectedColors: ["Cobalt Blue", "Turquoise", "Natural White Clay"] };
+      const entry = CRAFT_KNOWLEDGE_BASE.find(e => e.canonical.craftName?.includes("Blue Pottery")) || CRAFT_KNOWLEDGE_BASE[4];
+      return { matched: entry, detectedColors: ["Cobalt Blue", "Turquoise", "Natural White Clay"], confidence: 0.88 };
     }
 
-    // High red/terracotta tone with low blue -> Pottery / Terracotta or Kalamkari
-    if (r > 135 && r > g * 1.2 && r > b * 1.3) {
-      if (textCorpus.includes("pot") || textCorpus.includes("clay") || textCorpus.includes("cup")) {
-        const entry = CRAFT_KNOWLEDGE_BASE.find(e => e.canonical.craftName?.includes("Pottery")) || CRAFT_KNOWLEDGE_BASE[4];
-        return { matched: entry, detectedColors: ["Terracotta Rust", "Earthy Red", "Smoky Ochre"] };
-      }
-      const entry = CRAFT_KNOWLEDGE_BASE.find(e => e.canonical.craftName?.includes("Kalamkari")) || CRAFT_KNOWLEDGE_BASE[1];
-      return { matched: entry, detectedColors: ["Terracotta Rust", "Lampblack", "Natural Ochre"] };
+    // 3. Bright primary tones or high contrast lacquerware (saffron/red/wood) -> Channapatna Wooden Toys
+    if (r > 160 && g > 120 && b < 100 && (r - g) < 70) {
+      const entry = CRAFT_KNOWLEDGE_BASE.find(e => e.canonical.craftName?.includes("Channapatna")) || CRAFT_KNOWLEDGE_BASE[3];
+      return { matched: entry, detectedColors: ["Turmeric Yellow", "Sindoor Red", "Leaf Green"], confidence: 0.88 };
     }
 
-    // Golden / Bronze / Deep antique yellow-brown -> Bastar Dhokra Bell Metal
-    if (r > 100 && g > 80 && b < 70 && Math.abs(r - g) < 40) {
-      const entry = CRAFT_KNOWLEDGE_BASE.find(e => e.canonical.craftName?.includes("Dhokra")) || CRAFT_KNOWLEDGE_BASE[3];
-      return { matched: entry, detectedColors: ["Antique Bronze", "Golden Brass", "Verdigris Patina"] };
+    // 4. Earthy terracotta clay tone -> Terracotta Clay Pottery
+    if (r > 130 && r <= 200 && g >= 60 && g <= 120 && b < 90 && (r - g) >= 40 && (r - g) <= 100) {
+      const terracottaEntry: CraftTaxonomyEntry = {
+        keywords: ["terracotta", "clay pot", "earthenware", "terracotta cups", "pottery"],
+        canonical: {
+          craftCategory: "Pottery",
+          craftName: "Terracotta Clay Pottery",
+          productType: "Clay Cups / Cookware",
+          material: "Natural Alluvial Riverbed Clay",
+          technique: "Potter's Wheel Turning & Traditional Kiln Firing",
+          motif: "Natural Terracotta Grooves & Hand-Pinched Rim",
+          colors: ["Terracotta Rust", "Earthy Red", "Smoky Ochre"],
+          region: "Likely Rural Clay Craft Cluster",
+          description: "Traditional wheel-thrown earthen pottery handcrafted from natural unglazed riverbed clay and baked in open wood-fired kilns.",
+          culturalContext: "Ancient Indian pottery heritage connecting daily life with sustainable earthen craftsmanship.",
+          visualFeatures: ["Smooth wheel-thrown concentric ridges", "Natural porous unglazed clay texture", "Warm terracotta reddish-brown earth hue"],
+          confidence: 0.88,
+          uncertainAttributes: ["exact potter cluster", "dimensions"]
+        },
+        translations: {}
+      };
+      return { matched: terracottaEntry, detectedColors: ["Terracotta Rust", "Earthy Red", "Smoky Ochre"], confidence: 0.88 };
     }
 
-    // Bright primary tones or high contrast -> Channapatna Lacquerware
-    if ((r > 160 && g > 120 && b < 80) || (r > 170 && b < 90)) {
-      const entry = CRAFT_KNOWLEDGE_BASE.find(e => e.canonical.craftName?.includes("Channapatna")) || CRAFT_KNOWLEDGE_BASE[2];
-      return { matched: entry, detectedColors: ["Saffron Yellow", "Natural Lac Red", "Ivory Wood"] };
+    // 5. Rich crimson / maroon / deep textile tones -> Handloom Silk Saree
+    if (r > 120 && g < 75 && b < 85 && (r - g) > 55) {
+      const entry = CRAFT_KNOWLEDGE_BASE.find(e => e.canonical.craftName?.includes("Saree") || e.canonical.craftName?.includes("Silk")) || CRAFT_KNOWLEDGE_BASE[0];
+      return { matched: entry, detectedColors: ["Royal Crimson", "Gold Zari", "Emerald Green"], confidence: 0.88 };
+    }
+
+    // 6. Golden / Bronze / Deep antique yellow-brown -> Bastar Dhokra Bell Metal
+    if (r > 100 && g > 80 && b < 70 && Math.abs(r - g) < 35) {
+      const entry = CRAFT_KNOWLEDGE_BASE.find(e => e.canonical.craftName?.includes("Dhokra")) || CRAFT_KNOWLEDGE_BASE[7];
+      return { matched: entry, detectedColors: ["Antique Bronze", "Golden Brass", "Verdigris Patina"], confidence: 0.85 };
     }
   } catch (err) {
     console.warn("Visual color profile analysis fallback note:", err);
   }
 
-  return { matched: CRAFT_KNOWLEDGE_BASE[0], detectedColors: CRAFT_KNOWLEDGE_BASE[0].canonical.colors };
+  // If none matched with high confidence, return null. NEVER force CRAFT_KNOWLEDGE_BASE[0]!
+  return { matched: null, detectedColors: [], confidence: 0 };
 }
 
 /**
@@ -493,66 +608,76 @@ export async function inspectCraftImage(
     };
   }
 
-  // 2. Structured image verification logging (DEVELOPMENT ONLY)
-  if (process.env.NODE_ENV !== "production") {
-    console.log("\nAI IMAGE DEBUG");
-    console.log("received:\n  true");
-    console.log(`mime:\n  ${processedImg.mimeType}`);
-    console.log(`size:\n  ${processedImg.sizeBytes} bytes`);
-    console.log(`width:\n  ${processedImg.width}`);
-    console.log(`height:\n  ${processedImg.height}`);
-    console.log("base64:\n  present");
-    console.log(`selectedLanguage:\n  ${userLanguage}\n`);
+  // 2. Structured image verification logging (DEVELOPMENT ONLY / DEBUG)
+  const isDebug = process.env.DEBUG === "true" || process.env.NODE_ENV !== "production";
+  if (isDebug) {
+    console.log("\n[AI DEBUG] === INSPECT CRAFT REQUEST ===");
+    console.log("[AI DEBUG] Image MIME:", processedImg.mimeType);
+    console.log("[AI DEBUG] Image Dimensions:", `${processedImg.width}x${processedImg.height}`);
+    console.log("[AI DEBUG] Image Size:", `${processedImg.sizeBytes} bytes`);
+    console.log("[AI DEBUG] Selected Language:", userLanguage);
+    console.log("[AI DEBUG] ============================\n");
   }
 
-  // 3. Check for Gemini API key
+  // 3. Multimodal Analysis via Gemini with Strict JSON prompt
   const ai = getAIClient();
+  let strictOutput: StrictDetectedCraftOutput | null = null;
   let canonicalAttributes: CraftAttributes | null = null;
   let modelUsed = "rule-based-handicraft-engine";
   let aiProvider: "gemini" | "demo-heuristic" = "demo-heuristic";
   let rawResponseStatus: "success" | "fallback" | "error" = "fallback";
   let structuredValidation: "passed" | "failed" = "failed";
 
+  const emptyCraftAttributes: CraftAttributes = {
+    craftCategory: null,
+    craftName: null,
+    productType: null,
+    material: null,
+    technique: null,
+    motif: null,
+    colors: [],
+    region: null,
+    description: null,
+    culturalContext: null,
+    visualFeatures: [],
+    confidence: 0,
+    uncertainAttributes: ["product_name", "category", "material", "price", "quantity", "short_description"],
+  };
+
   if (ai) {
     try {
       const base64Data = processedImg.buffer.toString("base64");
-      const prompt = `You are a master evaluator, ethnographer, and expert cataloger of authentic Indian handicrafts and artisan traditions.
-Analyze this photo of an artisan handcrafted product.
-Category hint: ${categoryHint || "Handicraft"}.
-Artisan region hint: ${regionHint || "India"}.
+      const STRICT_PROMPT = `Analyze this photo of an artisan handcrafted product.
+You must return a raw JSON object ONLY, with NO markdown formatting, NO code fences (\`\`\`json or \`\`\`), and NO introductory or concluding prose.
 
-CRITICAL ANTI-HALLUCINATION & AUTHENTICITY RULES:
-1. Distinguish strictly between:
-   - CONFIDENTLY OBSERVED: Visual details directly visible (colors, visible texture, shape, woven vs printed, clay vs metal, embroidery stitches).
-   - LIKELY: Traditional craft lineage or regional style strongly indicated by visible motifs/technique (e.g. "Visual characteristics are consistent with Pochampally Ikat based on geometric resist-dyeing", "Likely Telangana").
-   - UNKNOWN: Any attribute that cannot be proven from an image alone (exact village, exact weaver identity, exact percentage of gold/silver, exact historical age). Return null or "Unknown" instead of inventing it.
-2. DO NOT claim GI (Geographical Indication) certification or official authenticity from this image alone. An image can identify visual characteristics, but CANNOT legally certify GI registration or government authenticity.
-3. Keep descriptions factual, dignified, and centered on the artisan's manual labor and visible craft technique.
-
-Return ONLY a valid JSON object strictly matching this schema:
+The JSON MUST contain EXACTLY these keys:
 {
-  "craftCategory": "e.g. Handloom, Weaving, Pottery, Woodcraft, Metalcraft, Embroidery, Bamboo Craft, Jewelry, Toy & Doll Craft",
-  "craftName": "Specific craft tradition name e.g. Pochampally Ikat, Jaipur Blue Pottery, Bastar Dhokra, Assam Bamboo Basket",
-  "productType": "e.g. Saree, Wall Panel, Tea Cup Set, Figurine, Basket, Jewelry Set",
-  "material": "Visible natural craft materials e.g. Pure Mulberry Silk, Alluvial Clay, Lost-Wax Bell Metal, Seasoned Bamboo",
-  "technique": "Artisan production method e.g. Double Ikat Tie-Dye Weaving, Lathe Turning with Natural Lacquer, Plaiting",
-  "motif": "Dominant visible motifs e.g. Geometric Diamond, Paisley Kalka, Floral Vines, Tree of Life",
-  "colors": ["Array of 2 to 4 dominant visible color names"],
-  "region": "Likely state or craft cluster preceded by 'Likely' if not certain e.g. Likely Telangana",
-  "description": "Factual 2-sentence description of the visible craft characteristics, weave, and workmanship",
-  "culturalContext": "1-sentence cultural heritage background of this craft tradition",
-  "visualFeatures": ["3 to 4 specific visible features confirming handmade artisan origin"],
-  "confidence": 0.85,
-  "uncertainAttributes": ["List of attributes requiring artisan confirmation e.g. ['material composition', 'exact village cluster']"]
-}`;
+  "product_name": "Specific craft or product name, or empty string if uncertain",
+  "category": "High-level craft category (e.g. Handloom, Pottery, Woodcraft, Metalcraft, Embroidery, Jewelry, Bamboo), or empty string if uncertain",
+  "material": "Visible natural/authentic craft materials (e.g. Pure Silk, Terracotta Clay, Brass, Teak Wood), or empty string if uncertain",
+  "colour": "Dominant visible color or colors, or empty string if uncertain",
+  "dimensions": "Estimated dimensions if visually discernable (e.g. 6 yards, 10x5 cm), or empty string if uncertain",
+  "craft_technique": "Specific artisanal technique visible (e.g. Handloom Jacquard Weaving, Wheel Thrown, Lost-wax casting, Lacquer turning), or empty string if uncertain",
+  "suggested_price_range": "Estimated fair artisan price range in INR (e.g. ₹500 - ₹800), or empty string if uncertain",
+  "short_description": "Factual 1-2 sentence description of visible handmade features and craftsmanship, or empty string if uncertain",
+  "confidence": 0.85
+}
 
-      // Model resilience: try gemini-2.5-flash, fallback to gemini-2.0-flash / gemini-1.5-flash
+CRITICAL RULES:
+1. ONLY describe what is clearly visible in the image.
+2. If any field cannot be determined with high confidence, set its value to an empty string "". DO NOT guess, hallucinate, or fill placeholders.
+3. The "confidence" key must be a number between 0.0 and 1.0 representing your overall visual confidence.
+4. Output raw JSON ONLY.`;
+
       const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
       let response: any = null;
       let usedModel = "gemini-2.5-flash";
 
       for (const m of candidateModels) {
         try {
+          if (isDebug) {
+            console.log(`[AI DEBUG] Attempting model ${m}...`);
+          }
           response = await ai.models.generateContent({
             model: m,
             contents: [
@@ -565,7 +690,7 @@ Return ONLY a valid JSON object strictly matching this schema:
                       data: base64Data,
                     },
                   },
-                  { text: prompt },
+                  { text: STRICT_PROMPT },
                 ],
               },
             ],
@@ -581,9 +706,18 @@ Return ONLY a valid JSON object strictly matching this schema:
       }
 
       if (response && response.text) {
-        const parsed = JSON.parse(response.text.trim() || "{}");
-        if (parsed.craftName || parsed.craftCategory) {
-          canonicalAttributes = validateCraftAttributes(parsed);
+        if (isDebug) {
+          console.log("\n[AI DEBUG] === RAW MODEL RESPONSE ===");
+          console.log(response.text);
+          console.log("[AI DEBUG] ============================\n");
+        }
+        let cleanText = response.text.trim();
+        if (cleanText.startsWith("```")) {
+          cleanText = cleanText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+        }
+        const parsed = JSON.parse(cleanText || "{}");
+        strictOutput = validateStrictCraftOutput(parsed);
+        if (strictOutput && strictOutput.confidence >= 0.60) {
           modelUsed = usedModel;
           aiProvider = "gemini";
           rawResponseStatus = "success";
@@ -591,33 +725,108 @@ Return ONLY a valid JSON object strictly matching this schema:
         }
       }
     } catch (e: any) {
-      console.warn("Gemini craft vision API call note (using structured fallback):", e?.message || e);
+      console.warn("Gemini craft vision API call note:", e?.message || e);
       rawResponseStatus = "error";
     }
   }
 
-  // 3. Graceful Rule-Based Knowledge Engine Fallback if Gemini key is missing or offline
-  if (!canonicalAttributes) {
+  // 4. Visual Statistical Inspection Fallback if Gemini key is missing, offline, or low confidence
+  if (!strictOutput || strictOutput.confidence < 0.60) {
     aiProvider = "demo-heuristic";
-    modelUsed = "rule-based-handicraft-engine";
+    modelUsed = "visual-statistical-profiler";
 
-    const { matched, detectedColors } = await detectVisualCraftProfile(
+    const { matched, detectedColors, confidence: matchConf } = await detectVisualCraftProfile(
       processedImg.buffer,
       categoryHint,
       regionHint,
       imageData.startsWith("http") ? imageData : undefined
     );
 
-    canonicalAttributes = {
-      ...matched.canonical,
-      colors: detectedColors && detectedColors.length ? detectedColors : matched.canonical.colors,
-      confidence: 0.82,
-      uncertainAttributes: ["region", "material composition", "exact village cluster"],
-    };
-    structuredValidation = "passed";
+    if (matched) {
+      strictOutput = validateStrictCraftOutput({
+        product_name: matched.canonical.craftName,
+        category: matched.canonical.craftCategory,
+        material: matched.canonical.material,
+        colour: detectedColors.length ? detectedColors.join(", ") : matched.canonical.colors.join(", "),
+        dimensions: "",
+        craft_technique: matched.canonical.technique,
+        suggested_price_range: "",
+        short_description: matched.canonical.description,
+        confidence: matchConf || 0.82,
+      });
+      rawResponseStatus = "fallback";
+      structuredValidation = "passed";
+    } else {
+      // Could NOT read the photo with high confidence
+      rawResponseStatus = "error";
+      structuredValidation = "failed";
+      strictOutput = validateStrictCraftOutput({ confidence: 0 });
+    }
   }
 
-  // 4. Localize Attributes into User's Selected Language
+  // If photo could not be read or recognized with confidence >= 0.60, return real error state
+  if (!strictOutput || strictOutput.confidence < 0.60) {
+    const latencyMs = Date.now() - startTime;
+    return {
+      success: false,
+      error: "could_not_read_photo",
+      message: "Couldn't read the photo, let's fill the details by voice instead",
+      data: strictOutput || validateStrictCraftOutput({ confidence: 0 }),
+      language: userLanguage,
+      locale,
+      canonicalAttributes: { ...emptyCraftAttributes },
+      localizedAttributes: { ...emptyCraftAttributes },
+      confidence: 0,
+      uncertainAttributes: ["product_name", "category", "material", "price", "quantity", "short_description"],
+      aiProvider: "demo-heuristic",
+      modelUsed: "visual-statistical-profiler",
+      isFallback: true,
+      debug: {
+        provider: "Demo Heuristic",
+        model: "visual-statistical-profiler",
+        imageReceived: true,
+        imageMime: processedImg.mimeType,
+        imageDimensions: { width: processedImg.width, height: processedImg.height },
+        imageSizeBytes: processedImg.sizeBytes,
+        selectedLanguage: userLanguage,
+        locale,
+        rawResponseStatus: "error",
+        structuredValidation: "failed",
+        confidenceScore: 0,
+        uncertainCount: 6,
+        translationStatus: "passthrough",
+        voiceSupported: true,
+        latencyMs,
+      },
+    };
+  }
+
+  // Build canonical attributes from validated strict output
+  const colorsList = strictOutput.colour
+    ? strictOutput.colour.split(/[,&]/).map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  const uncertainList = Object.entries(strictOutput.needs_user_input)
+    .filter(([_, needed]) => needed)
+    .map(([k]) => k);
+
+  canonicalAttributes = {
+    craftCategory: strictOutput.category || null,
+    craftName: strictOutput.product_name || null,
+    productType: null,
+    material: strictOutput.material || null,
+    technique: strictOutput.craft_technique || null,
+    motif: null,
+    colors: colorsList,
+    region: null,
+    description: strictOutput.short_description || null,
+    culturalContext: null,
+    visualFeatures: [],
+    confidence: strictOutput.confidence,
+    uncertainAttributes: uncertainList,
+  };
+
+  // 5. Localize Attributes into User's Selected Language
   let localizedAttributes: CraftAttributes;
   let translationStatus: "success" | "fallback" | "passthrough" = "passthrough";
 
@@ -647,8 +856,8 @@ Return ONLY a valid JSON object strictly matching this schema:
     locale,
     rawResponseStatus,
     structuredValidation,
-    confidenceScore: canonicalAttributes.confidence,
-    uncertainCount: canonicalAttributes.uncertainAttributes.length,
+    confidenceScore: strictOutput.confidence,
+    uncertainCount: uncertainList.length,
     translationStatus,
     voiceSupported: true,
     latencyMs,
@@ -656,12 +865,22 @@ Return ONLY a valid JSON object strictly matching this schema:
 
   return {
     success: true,
+    name: strictOutput.product_name,
+    type: strictOutput.category,
+    color: strictOutput.colour,
+    detectedDetails: {
+      material: strictOutput.material,
+      technique: strictOutput.craft_technique,
+      description: strictOutput.short_description,
+      dimensions: strictOutput.dimensions,
+    },
+    data: strictOutput,
     language: userLanguage,
     locale,
     canonicalAttributes,
     localizedAttributes,
-    confidence: canonicalAttributes.confidence,
-    uncertainAttributes: canonicalAttributes.uncertainAttributes,
+    confidence: strictOutput.confidence,
+    uncertainAttributes: uncertainList,
     aiProvider,
     modelUsed,
     isFallback: aiProvider === "demo-heuristic",

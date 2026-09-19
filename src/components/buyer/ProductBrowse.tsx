@@ -101,28 +101,28 @@ export function ProductBrowse() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
       {/* Top Banner & Natural Language Bar */}
-      <div className="bg-white p-6 sm:p-7 rounded-3xl border border-[#eadfd4] shadow-xs space-y-4">
+      <div className="artisan-card p-6 sm:p-7 rounded-3xl border border-[#D9CEB8] shadow-xs space-y-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fdf2e9] text-[#9c4124] text-xs font-black uppercase tracking-wider mb-2 border border-[#f8d7c2]">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#A8462D]/10 text-[#A8462D] text-xs font-black uppercase tracking-wider mb-2 border border-[#A8462D]/20">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Direct Artisan Crafts</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#262220] font-['Rozha_One',serif]">
+          <h1 className="text-2xl sm:text-3xl font-black text-[#29221D] font-serif">
             Discover Living Indian Craft Heritage
           </h1>
-          <p className="text-xs text-stone-600 mt-0.5">
+          <p className="text-xs text-[#6B5E55] mt-0.5">
             Handcrafted with patience and cultural reverence. 100% direct artisan payments.
           </p>
         </div>
 
         {/* Natural Language Prompt Suggestions */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
-          <span className="text-xs font-bold text-stone-500">Popular queries:</span>
+          <span className="text-xs font-bold text-[#6B5E55]">Popular queries:</span>
           {naturalQueries.map((nq, i) => (
             <button
               key={i}
               onClick={() => handleNaturalSearch(nq)}
-              className="px-3 py-1.5 rounded-xl bg-[#faf7f2] hover:bg-[#fdf2e9] border border-[#eadfd4] hover:border-[#9c4124] text-xs font-bold text-stone-700 hover:text-[#9c4124] transition-all cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-[#FFFDF8] hover:bg-[#F7F2E8] border border-[#D9CEB8] hover:border-[#A8462D] text-xs font-bold text-[#29221D] hover:text-[#A8462D] transition-all cursor-pointer shadow-2xs"
             >
               {nq.label}
             </button>
@@ -133,18 +133,18 @@ export function ProductBrowse() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
           {/* Search Box */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-stone-400" />
+            <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#8C827A]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder='Search crafts or type natural requests e.g. "handmade gifts under 1500"...'
-              className="w-full pl-10 pr-8 py-2.5 bg-[#faf7f2] border border-[#eadfd4] rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-[#9c4124] focus:outline-none"
+              className="w-full pl-10 pr-8 py-2.5 bg-[#FFFDF8] border border-[#D9CEB8] rounded-xl text-xs sm:text-sm font-medium text-[#29221D] placeholder-[#8C827A] focus:ring-2 focus:ring-[#A8462D] focus:outline-none"
             />
             {searchQuery && (
               <button
                 onClick={() => { setSearchQuery(''); setMaxPrice(10000); }}
-                className="absolute right-3 top-3 text-stone-400 hover:text-stone-600 cursor-pointer"
+                className="absolute right-3 top-3 text-[#8C827A] hover:text-[#29221D] cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -153,11 +153,11 @@ export function ProductBrowse() {
 
           {/* Sort Select */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-stone-500 whitespace-nowrap">Sort:</span>
+            <span className="text-xs font-bold text-[#6B5E55] whitespace-nowrap">Sort:</span>
             <select
               value={sortBy}
               onChange={(e: any) => setSortBy(e.target.value)}
-              className="px-3 py-2 border border-[#eadfd4] rounded-xl text-xs font-bold bg-[#faf7f2] text-stone-800 focus:outline-none"
+              className="px-3 py-2 border border-[#D9CEB8] rounded-xl text-xs font-bold bg-[#FFFDF8] text-[#29221D] focus:outline-none cursor-pointer"
             >
               <option value="featured">Featured Artisans</option>
               <option value="price-asc">Price: Low to High</option>
@@ -167,15 +167,15 @@ export function ProductBrowse() {
         </div>
 
         {/* Category Filter Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar pt-2 border-t border-[#eadfd4]">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar pt-2 border-t border-[#D9CEB8]">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 selectedCategory === cat
-                  ? 'bg-[#9c4124] text-white shadow-xs'
-                  : 'bg-[#faf7f2] text-stone-600 hover:bg-[#f5efeb] border border-[#eadfd4]'
+                  ? 'bg-[#A8462D] text-white shadow-xs'
+                  : 'bg-[#FFFDF8] text-[#6B5E55] hover:bg-[#F7F2E8] border border-[#D9CEB8]'
               }`}
             >
               {cat}
@@ -186,15 +186,15 @@ export function ProductBrowse() {
 
       {/* Products Grid */}
       {loading ? (
-        <div className="p-16 text-center text-stone-500">
-          <div className="w-8 h-8 border-2 border-stone-300 border-t-[#9c4124] rounded-full animate-spin mx-auto mb-2" />
+        <div className="p-16 text-center text-[#6B5E55]">
+          <div className="w-8 h-8 border-2 border-[#D9CEB8] border-t-[#A8462D] rounded-full animate-spin mx-auto mb-2" />
           <span>Loading verified artisan collection...</span>
         </div>
       ) : filteredProducts.length === 0 ? (
-        <div className="p-16 text-center bg-white rounded-3xl border border-[#eadfd4] space-y-3">
-          <Filter className="w-12 h-12 text-stone-300 mx-auto mb-2" />
-          <h3 className="text-base font-bold text-stone-800">No handicraft products found</h3>
-          <p className="text-xs text-stone-500 max-w-sm mx-auto">
+        <div className="p-16 text-center bg-[#FFFDF8] rounded-3xl border border-[#D9CEB8] space-y-3">
+          <Filter className="w-12 h-12 text-[#8C827A] mx-auto mb-2" />
+          <h3 className="text-base font-bold text-[#29221D] font-serif">No handicraft products found</h3>
+          <p className="text-xs text-[#6B5E55] max-w-sm mx-auto">
             Try adjusting your search keywords or resetting your price filters.
           </p>
           <button
@@ -210,7 +210,7 @@ export function ProductBrowse() {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs text-stone-500 font-semibold px-1">
+          <div className="flex items-center justify-between text-xs text-[#6B5E55] font-semibold px-1">
             <span>Showing {filteredProducts.length} authentic handicraft listings</span>
             <span>Zero middleman markups</span>
           </div>
@@ -224,9 +224,9 @@ export function ProductBrowse() {
                 <div
                   key={prod.id}
                   onClick={() => navigate(`/buyer/product/${prod.id}`)}
-                  className="bg-white rounded-3xl border border-[#eadfd4] overflow-hidden shadow-xs hover:border-[#c85a32] hover:shadow-md transition-all flex flex-col group cursor-pointer"
+                  className="artisan-card rounded-2xl border border-[#D9CEB8] overflow-hidden shadow-xs hover:border-[#A8462D] hover:shadow-md hover:-translate-y-1 transition-all flex flex-col group cursor-pointer"
                 >
-                  <div className="relative aspect-square bg-[#faf7f2] overflow-hidden">
+                  <div className="relative aspect-square bg-[#F7F2E8] overflow-hidden">
                     {img ? (
                       <img
                         src={img}
@@ -234,7 +234,7 @@ export function ProductBrowse() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-stone-400">
+                      <div className="w-full h-full flex items-center justify-center text-[#8C827A]">
                         📦 Handicraft
                       </div>
                     )}
@@ -243,14 +243,14 @@ export function ProductBrowse() {
                       onClick={(e) => toggleWishlist(e, prod)}
                       className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all ${
                         inWishlist
-                          ? 'bg-red-50 text-red-600 shadow-md'
-                          : 'bg-white/80 text-stone-600 hover:text-red-500 hover:bg-white'
+                          ? 'bg-rose-50 text-rose-600 shadow-md'
+                          : 'bg-[#FFFDF8]/90 text-[#6B5E55] hover:text-rose-600 hover:bg-[#FFFDF8]'
                       }`}
                     >
-                      <Heart className={`w-4 h-4 ${inWishlist ? 'fill-red-500' : ''}`} />
+                      <Heart className={`w-4 h-4 ${inWishlist ? 'fill-rose-500' : ''}`} />
                     </button>
 
-                    <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded-full bg-stone-900/80 backdrop-blur text-[10px] font-bold text-amber-300 flex items-center gap-1 shadow-sm">
+                    <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded-full bg-[#273B59]/90 backdrop-blur text-[10px] font-bold text-[#F3E5AB] flex items-center gap-1 shadow-sm">
                       <ShieldCheck className="w-3 h-3 text-emerald-400" />
                       100% Handmade
                     </span>
@@ -258,35 +258,35 @@ export function ProductBrowse() {
 
                   <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                     <div>
-                      <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-[#9c4124] uppercase mb-1">
+                      <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-[#A8462D] uppercase tracking-wider mb-1">
                         <span>{prod.category}</span>
                         <span>•</span>
-                        <span className="text-stone-500 flex items-center gap-0.5">
-                          <MapPin className="w-3 h-3 text-stone-400" />
+                        <span className="text-[#6B5E55] flex items-center gap-0.5">
+                          <MapPin className="w-3 h-3 text-[#8C827A]" />
                           {prod.artisan_district || 'India'}
                         </span>
                       </div>
 
-                      <h3 className="font-extrabold text-sm text-[#262220] leading-snug line-clamp-2 group-hover:text-[#9c4124] transition-colors">
+                      <h3 className="font-bold text-sm text-[#29221D] leading-snug line-clamp-2 group-hover:text-[#A8462D] transition-colors">
                         {prod.title}
                       </h3>
 
                       {/* Artisan Attribution */}
-                      <p className="text-[11px] text-stone-500 mt-1 flex items-center gap-1">
+                      <p className="text-[11px] text-[#6B5E55] mt-1 flex items-center gap-1">
                         <span>By</span>
-                        <strong className="text-stone-800 font-semibold">{prod.artisan_name || 'Village Master Artisan'}</strong>
+                        <strong className="text-[#29221D] font-semibold">{prod.artisan_name || 'Village Master Artisan'}</strong>
                       </p>
                     </div>
 
-                    <div className="pt-2 border-t border-[#eadfd4] flex items-center justify-between">
+                    <div className="pt-2 border-t border-[#D9CEB8] flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] text-stone-500 font-semibold uppercase block">Direct Price</span>
-                        <span className="text-base font-black text-[#262220]">
+                        <span className="text-[10px] text-[#6B5E55] font-semibold uppercase tracking-wider block">Direct Price</span>
+                        <span className="text-base font-black text-[#29221D] font-mono">
                           {formatINR(prod.final_price || 1850)}
                         </span>
                       </div>
 
-                      <span className="text-xs font-extrabold text-[#9c4124] group-hover:underline">
+                      <span className="text-xs font-extrabold text-[#A8462D] group-hover:underline">
                         View Craft →
                       </span>
                     </div>

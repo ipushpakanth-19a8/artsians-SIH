@@ -81,71 +81,74 @@ export function BillPreview({ bill }: BillPreviewProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-stone-200 shadow-lg p-6 sm:p-10 max-w-4xl mx-auto font-sans print:p-0 print:border-0 print:shadow-none" id="printable-bill">
+    <div className="bg-[#FFFDF8] rounded-3xl border border-[#D9CEB8] shadow-sm p-6 sm:p-10 max-w-4xl mx-auto font-sans print:p-0 print:border-0 print:shadow-none relative overflow-hidden" id="printable-bill">
+      {/* Decorative top heritage stripe */}
+      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#A8462D] via-[#C88732] to-[#273B59]" />
+
       {/* Invoice Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-stone-800 pb-6 mb-6 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start border-b border-[#D9CEB8] pb-6 mb-6 gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-600 to-orange-700 flex items-center justify-center text-amber-100 font-black text-sm">
-              SS
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#A8462D] to-[#8C3822] flex items-center justify-center text-[#FFFDF8] font-bold text-xs shadow-xs">
+              ✦
             </div>
-            <span className="text-2xl font-black text-stone-900 font-['Rozha_One',serif]">ShilpSetu</span>
-            <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-900 rounded border border-amber-300 uppercase">ShilpSetu</span>
+            <span className="text-2xl font-bold text-[#29221D] font-['Playfair_Display',serif]">ShilpSetu</span>
+            <span className="px-2 py-0.5 text-[10px] font-bold bg-[#A8462D]/10 text-[#A8462D] rounded-full border border-[#A8462D]/20 uppercase">Fair Trade</span>
           </div>
-          <p className="text-xs text-stone-500 font-medium tracking-wide">
+          <p className="text-xs text-[#7A6B5D] font-medium tracking-wide">
             Official Indian Handicraft Artisan Valuation & Invoice
           </p>
-          <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+          <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
             <ShieldCheck className="w-3.5 h-3.5" /> Direct Artisan Fair-Trade Certified
           </div>
         </div>
 
         <div className="sm:text-right">
-          <span className="inline-block px-3 py-1 bg-amber-100 text-amber-900 rounded-md text-xs font-black uppercase tracking-wider mb-2">
+          <span className="inline-block px-3 py-1 bg-[#F7F2E8] text-[#A8462D] border border-[#D9CEB8] rounded-full text-xs font-bold uppercase tracking-wider mb-2">
             Handicraft Bill
           </span>
-          <p className="text-sm font-extrabold text-stone-900">
-            {t.invoiceNumber}: <span className="font-mono text-amber-800">{bill.billNumber}</span>
+          <p className="text-sm font-bold text-[#29221D]">
+            {t.invoiceNumber}: <span className="font-mono text-[#A8462D] font-bold">{bill.billNumber}</span>
           </p>
-          <p className="text-xs text-stone-500 mt-0.5">
+          <p className="text-xs text-[#7A6B5D] mt-0.5">
             {t.billDate}: {new Date(bill.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
           </p>
         </div>
       </div>
 
       {/* Seller & Transaction Information */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 bg-stone-50 rounded-xl border border-stone-200 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-5 bg-[#F7F2E8] rounded-2xl border border-[#D9CEB8] mb-6">
         <div>
-          <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-stone-500 mb-2">
+          <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#7A6B5D] mb-1.5">
             {t.sellerInfo}
           </h3>
-          <p className="text-base font-bold text-stone-900">{bill.sellerName}</p>
-          <p className="text-xs text-stone-600">Location: {bill.sellerLocation}</p>
-          <p className="text-xs text-stone-600">Contact: {bill.sellerPhone}</p>
-          <p className="text-xs text-stone-600">ID: {bill.sellerId}</p>
+          <p className="text-base font-bold text-[#29221D] font-['Playfair_Display',serif]">{bill.sellerName}</p>
+          <p className="text-xs text-[#7A6B5D] mt-1">Location: {bill.sellerLocation}</p>
+          <p className="text-xs text-[#7A6B5D]">Contact: {bill.sellerPhone}</p>
+          <p className="text-xs text-[#7A6B5D] font-mono">ID: {bill.sellerId}</p>
         </div>
 
         <div className="sm:text-right">
-          <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-stone-500 mb-2">
+          <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#7A6B5D] mb-1.5">
             {t.productDetails}
           </h3>
-          <p className="text-base font-bold text-stone-900">{bill.productName}</p>
-          <p className="text-xs text-stone-600">{t.category}: <span className="font-semibold">{bill.productCategory}</span></p>
-          <p className="text-xs text-stone-600">{t.quantity}: <span className="font-bold text-stone-900">{bill.quantity} units</span></p>
+          <p className="text-base font-bold text-[#29221D] font-['Playfair_Display',serif]">{bill.productName}</p>
+          <p className="text-xs text-[#7A6B5D] mt-1">{t.category}: <span className="font-semibold text-[#29221D]">{bill.productCategory}</span></p>
+          <p className="text-xs text-[#7A6B5D]">{t.quantity}: <span className="font-bold text-[#29221D] font-mono">{bill.quantity} units</span></p>
         </div>
       </div>
 
       {/* Prominent FAIR PRICE BREAKDOWN Box */}
-      <div className="mb-6 p-5 sm:p-6 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-white rounded-2xl border-2 border-amber-300 shadow-xs print:border-stone-300">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-200">
+      <div className="mb-6 p-5 sm:p-6 bg-gradient-to-br from-[#A8462D]/5 via-[#C88732]/5 to-[#FFFDF8] rounded-2xl border border-[#D9CEB8] shadow-xs print:border-stone-300">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#D9CEB8]">
           <div>
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-600" />
-              <h3 className="text-sm font-black uppercase tracking-wider text-amber-950">
+              <Sparkles className="w-4 h-4 text-[#C88732]" />
+              <h3 className="text-sm font-bold uppercase tracking-wider text-[#29221D] font-['Playfair_Display',serif]">
                 FAIR PRICE BREAKDOWN
               </h3>
             </div>
-            <p className="text-[11px] text-stone-600 mt-0.5">
+            <p className="text-[11px] text-[#7A6B5D] mt-0.5">
               Cost-plus living wage formula audited and certified for fair trade
             </p>
           </div>
@@ -154,10 +157,10 @@ export function BillPreview({ bill }: BillPreviewProps) {
           <button
             type="button"
             onClick={handleExplainFairPrice}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all print:hidden ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all print:hidden cursor-pointer ${
               isSpeaking
-                ? 'bg-amber-600 text-white animate-pulse'
-                : 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
+                ? 'bg-[#A8462D] text-white animate-pulse'
+                : 'bg-gradient-to-r from-[#A8462D] to-[#8C3822] text-white shadow-xs hover:opacity-95'
             }`}
           >
             {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
@@ -168,22 +171,22 @@ export function BillPreview({ bill }: BillPreviewProps) {
         {/* Breakdown Items List */}
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Raw Material */}
-          <div className="p-3 bg-white rounded-xl border border-stone-200">
-            <span className="text-[11px] font-bold text-stone-500 uppercase flex items-center gap-1">
+          <div className="p-3.5 bg-[#FFFDF8] rounded-xl border border-[#D9CEB8]">
+            <span className="text-[11px] font-bold text-[#7A6B5D] uppercase flex items-center gap-1">
               🧵 Raw Material
             </span>
-            <p className="text-base font-black text-stone-900 mt-1 font-mono">
+            <p className="text-base font-bold text-[#29221D] mt-1 font-mono">
               {formatINR(materialCost)}
             </p>
-            <p className="text-[10px] text-stone-400">Authentic materials</p>
+            <p className="text-[10px] text-[#7A6B5D]">Authentic materials</p>
           </div>
 
           {/* Your Work */}
-          <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200">
+          <div className="p-3.5 bg-emerald-50/70 rounded-xl border border-emerald-200">
             <span className="text-[11px] font-bold text-emerald-900 uppercase flex items-center gap-1">
               👩‍🎨 Your Work
             </span>
-            <p className="text-base font-black text-emerald-950 mt-1 font-mono">
+            <p className="text-base font-bold text-emerald-950 mt-1 font-mono">
               {formatINR(laborValue)}
             </p>
             <p className="text-[10px] text-emerald-700 font-medium">
@@ -192,47 +195,47 @@ export function BillPreview({ bill }: BillPreviewProps) {
           </div>
 
           {/* Base Production Cost */}
-          <div className="p-3 bg-white rounded-xl border border-stone-200">
-            <span className="text-[11px] font-bold text-stone-500 uppercase flex items-center gap-1">
+          <div className="p-3.5 bg-[#FFFDF8] rounded-xl border border-[#D9CEB8]">
+            <span className="text-[11px] font-bold text-[#7A6B5D] uppercase flex items-center gap-1">
               📦 Base Cost
             </span>
-            <p className="text-base font-black text-stone-900 mt-1 font-mono">
+            <p className="text-base font-bold text-[#29221D] mt-1 font-mono">
               {formatINR(baseCost)}
             </p>
-            <p className="text-[10px] text-stone-400">Materials + Labor</p>
+            <p className="text-[10px] text-[#7A6B5D]">Materials + Labor</p>
           </div>
 
           {/* Margin / Contingency */}
-          <div className="p-3 bg-orange-50/60 rounded-xl border border-orange-200">
-            <span className="text-[11px] font-bold text-orange-950 uppercase flex items-center gap-1">
+          <div className="p-3.5 bg-[#C88732]/10 rounded-xl border border-[#C88732]/30">
+            <span className="text-[11px] font-bold text-[#A8462D] uppercase flex items-center gap-1">
               📈 Margin (25%)
             </span>
-            <p className="text-base font-black text-orange-950 mt-1 font-mono">
+            <p className="text-base font-bold text-[#A8462D] mt-1 font-mono">
               {formatINR(marginOrContingency)}
             </p>
-            <p className="text-[10px] text-orange-700">Contingency reserve</p>
+            <p className="text-[10px] text-[#7A6B5D]">Contingency reserve</p>
           </div>
         </div>
 
         {/* Totals Comparison */}
-        <div className="mt-4 pt-3 border-t border-amber-200/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <div className="mt-4 pt-3.5 border-t border-[#D9CEB8] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
-            <span className="text-xs font-black uppercase text-amber-950">
+            <span className="text-xs font-bold uppercase text-[#29221D]">
               RECOMMENDED FAIR PRICE
             </span>
-            <span className="text-xs text-stone-500 ml-2 font-mono">
+            <span className="text-xs text-[#7A6B5D] ml-2 font-mono">
               ({formatINR(recommendedFairPrice)} / unit)
             </span>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <span className="text-[10px] text-stone-500 block uppercase font-bold">Recommended</span>
-              <span className="text-lg font-black text-amber-900 font-mono">{formatINR(recommendedFairPrice * bill.quantity)}</span>
+              <span className="text-[10px] text-[#7A6B5D] block uppercase font-bold">Recommended</span>
+              <span className="text-lg font-bold text-[#A8462D] font-mono">{formatINR(recommendedFairPrice * bill.quantity)}</span>
             </div>
-            <div className="h-6 w-px bg-amber-300"></div>
+            <div className="h-6 w-px bg-[#D9CEB8]"></div>
             <div className="text-right">
-              <span className="text-[10px] text-stone-500 block uppercase font-bold">Artisan Selling Price</span>
-              <span className="text-lg font-black text-emerald-800 font-mono">{formatINR(sellingPrice * bill.quantity)}</span>
+              <span className="text-[10px] text-[#7A6B5D] block uppercase font-bold">Artisan Selling Price</span>
+              <span className="text-lg font-bold text-emerald-800 font-mono">{formatINR(sellingPrice * bill.quantity)}</span>
             </div>
           </div>
         </div>
@@ -240,49 +243,49 @@ export function BillPreview({ bill }: BillPreviewProps) {
 
       {/* Itemized Cost Breakdown Table */}
       <div className="mb-6">
-        <h3 className="text-xs font-extrabold uppercase tracking-wider text-stone-500 mb-3">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-[#7A6B5D] mb-3">
           {t.costBreakdown}
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="border-b border-stone-300 text-stone-500 text-xs font-bold uppercase">
+              <tr className="border-b border-[#D9CEB8] text-[#7A6B5D] text-xs font-bold uppercase">
                 <th className="py-2.5">Component</th>
                 <th className="py-2.5 text-right">Cost Per Unit</th>
                 <th className="py-2.5 text-right">Qty</th>
                 <th className="py-2.5 text-right">Subtotal</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100 text-stone-700">
+            <tbody className="divide-y divide-[#EBE3D5] text-[#29221D]">
               <tr>
                 <td className="py-2.5 font-medium">{t.materialCost}</td>
-                <td className="py-2.5 text-right">{formatINR(materialCost)}</td>
-                <td className="py-2.5 text-right">{bill.quantity}</td>
-                <td className="py-2.5 text-right font-medium">{formatINR(materialCost * bill.quantity)}</td>
+                <td className="py-2.5 text-right font-mono">{formatINR(materialCost)}</td>
+                <td className="py-2.5 text-right font-mono">{bill.quantity}</td>
+                <td className="py-2.5 text-right font-medium font-mono">{formatINR(materialCost * bill.quantity)}</td>
               </tr>
               <tr>
                 <td className="py-2.5 font-medium">{t.labourCost} ({laborHours}h @ {formatINR(fairHourlyWage)}/hr)</td>
-                <td className="py-2.5 text-right">{formatINR(laborValue)}</td>
-                <td className="py-2.5 text-right">{bill.quantity}</td>
-                <td className="py-2.5 text-right font-medium">{formatINR(laborValue * bill.quantity)}</td>
+                <td className="py-2.5 text-right font-mono">{formatINR(laborValue)}</td>
+                <td className="py-2.5 text-right font-mono">{bill.quantity}</td>
+                <td className="py-2.5 text-right font-medium font-mono">{formatINR(laborValue * bill.quantity)}</td>
               </tr>
               <tr>
                 <td className="py-2.5 font-medium">{t.transportationCost}</td>
-                <td className="py-2.5 text-right">{formatINR(bill.transportationCost || 0)}</td>
-                <td className="py-2.5 text-right">{bill.quantity}</td>
-                <td className="py-2.5 text-right font-medium">{formatINR((bill.transportationCost || 0) * bill.quantity)}</td>
+                <td className="py-2.5 text-right font-mono">{formatINR(bill.transportationCost || 0)}</td>
+                <td className="py-2.5 text-right font-mono">{bill.quantity}</td>
+                <td className="py-2.5 text-right font-medium font-mono">{formatINR((bill.transportationCost || 0) * bill.quantity)}</td>
               </tr>
               <tr>
                 <td className="py-2.5 font-medium">{t.otherExpenses}</td>
-                <td className="py-2.5 text-right">{formatINR(bill.otherCost || 0)}</td>
-                <td className="py-2.5 text-right">{bill.quantity}</td>
-                <td className="py-2.5 text-right font-medium">{formatINR((bill.otherCost || 0) * bill.quantity)}</td>
+                <td className="py-2.5 text-right font-mono">{formatINR(bill.otherCost || 0)}</td>
+                <td className="py-2.5 text-right font-mono">{bill.quantity}</td>
+                <td className="py-2.5 text-right font-medium font-mono">{formatINR((bill.otherCost || 0) * bill.quantity)}</td>
               </tr>
             </tbody>
             <tfoot>
-              <tr className="border-t-2 border-stone-300 font-bold text-stone-900 bg-stone-50">
-                <td className="py-3 px-2" colSpan={3}>{t.totalCost}</td>
-                <td className="py-3 px-2 text-right">{formatINR(baseCost * bill.quantity)}</td>
+              <tr className="border-t-2 border-[#D9CEB8] font-bold text-[#29221D] bg-[#F7F2E8]">
+                <td className="py-3 px-3" colSpan={3}>{t.totalCost}</td>
+                <td className="py-3 px-3 text-right font-mono">{formatINR(baseCost * bill.quantity)}</td>
               </tr>
             </tfoot>
           </table>
@@ -291,71 +294,71 @@ export function BillPreview({ bill }: BillPreviewProps) {
 
       {/* Market Benchmark vs Final Valuation */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-        <div className="p-4 bg-amber-50/60 border border-amber-200 rounded-xl">
-          <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-900 mb-2">
+        <div className="p-4 bg-[#F7F2E8] border border-[#D9CEB8] rounded-2xl">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#A8462D] mb-2 font-['Playfair_Display',serif]">
             {t.marketPriceSection}
           </h4>
-          <div className="space-y-1.5 text-xs text-stone-700">
+          <div className="space-y-1.5 text-xs text-[#7A6B5D]">
             <div className="flex justify-between">
               <span>{t.marketMinPrice}:</span>
-              <span className="font-semibold">{formatINR(bill.marketMinPrice || recommendedFairPrice * 0.88)}</span>
+              <span className="font-semibold font-mono text-[#29221D]">{formatINR(bill.marketMinPrice || recommendedFairPrice * 0.88)}</span>
             </div>
-            <div className="flex justify-between font-bold text-amber-900">
+            <div className="flex justify-between font-bold text-[#A8462D]">
               <span>{t.marketAvgPrice}:</span>
-              <span>{formatINR(bill.marketAveragePrice || recommendedFairPrice * 1.15)}</span>
+              <span className="font-mono">{formatINR(bill.marketAveragePrice || recommendedFairPrice * 1.15)}</span>
             </div>
             <div className="flex justify-between">
               <span>{t.marketMaxPrice}:</span>
-              <span className="font-semibold">{formatINR(bill.marketMaxPrice || recommendedFairPrice * 1.45)}</span>
+              <span className="font-semibold font-mono text-[#29221D]">{formatINR(bill.marketMaxPrice || recommendedFairPrice * 1.45)}</span>
             </div>
-            <div className="flex justify-between pt-1 border-t border-amber-200 text-amber-800 font-bold">
+            <div className="flex justify-between pt-1.5 border-t border-[#D9CEB8] text-[#A8462D] font-bold">
               <span>{t.aiRecommendedPrice}:</span>
-              <span>{formatINR(recommendedFairPrice)}</span>
+              <span className="font-mono">{formatINR(recommendedFairPrice)}</span>
             </div>
           </div>
         </div>
 
         {/* Financial Summary */}
-        <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl flex flex-col justify-between">
-          <h4 className="text-xs font-extrabold uppercase tracking-wider text-emerald-900 mb-2">
+        <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl flex flex-col justify-between">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-900 mb-2 font-['Playfair_Display',serif]">
             {t.financialSummary}
           </h4>
           <div className="space-y-1.5 text-xs">
-            <div className="flex justify-between text-stone-700">
+            <div className="flex justify-between text-[#7A6B5D]">
               <span>Recommended Unit Fair Price:</span>
-              <span className="font-bold text-amber-900">{formatINR(recommendedFairPrice)}</span>
+              <span className="font-bold text-[#A8462D] font-mono">{formatINR(recommendedFairPrice)}</span>
             </div>
-            <div className="flex justify-between text-stone-700">
+            <div className="flex justify-between text-[#7A6B5D]">
               <span>Artisan Approved Selling Price:</span>
-              <span className="font-extrabold text-stone-900">{formatINR(sellingPrice)}</span>
+              <span className="font-bold text-[#29221D] font-mono">{formatINR(sellingPrice)}</span>
             </div>
-            <div className="flex justify-between text-stone-700">
+            <div className="flex justify-between text-[#7A6B5D]">
               <span>Total Bill Amount ({bill.quantity} pcs):</span>
-              <span className="text-base font-black text-stone-900">{formatINR(sellingPrice * bill.quantity)}</span>
+              <span className="text-base font-bold text-[#29221D] font-mono">{formatINR(sellingPrice * bill.quantity)}</span>
             </div>
-            <div className="flex justify-between pt-1 border-t border-emerald-200 font-extrabold text-emerald-800">
+            <div className="flex justify-between pt-1.5 border-t border-emerald-200 font-bold text-emerald-800">
               <span>{t.profitLabel}:</span>
-              <span className="text-sm">+{formatINR((sellingPrice - baseCost) * bill.quantity)} ({bill.profitPercentage || Math.round(((sellingPrice - baseCost) / baseCost) * 100)}%)</span>
+              <span className="text-sm font-mono">+{formatINR((sellingPrice - baseCost) * bill.quantity)} ({bill.profitPercentage || Math.round(((sellingPrice - baseCost) / baseCost) * 100)}%)</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Authenticity Stamp and Sign-off */}
-      <div className="pt-6 border-t border-stone-200 flex flex-col sm:flex-row justify-between items-center text-xs text-stone-500 gap-4">
+      <div className="pt-6 border-t border-[#D9CEB8] flex flex-col sm:flex-row justify-between items-center text-xs text-[#7A6B5D] gap-4">
         <div className="flex items-center gap-3">
-          <Award className="w-8 h-8 text-amber-600" />
+          <Award className="w-8 h-8 text-[#C88732]" />
           <div>
-            <p className="font-bold text-stone-800">Verified Handicraft Origin</p>
-            <p>Protected by ShilpSetu (ShilpSetu) Fair Pricing & Provenance protocol.</p>
+            <p className="font-bold text-[#29221D]">Verified Handicraft Origin</p>
+            <p>Protected by ShilpSetu Fair Pricing & Provenance protocol.</p>
           </div>
         </div>
 
         <div className="text-center sm:text-right border-t sm:border-t-0 pt-3 sm:pt-0">
-          <div className="w-32 h-10 border-b border-dashed border-stone-400 mx-auto sm:ml-auto mb-1 flex items-end justify-center font-['Rozha_One',serif] text-stone-700 italic">
+          <div className="w-36 h-10 border-b border-dashed border-[#A8462D]/40 mx-auto sm:ml-auto mb-1 flex items-end justify-center font-['Playfair_Display',serif] text-[#29221D] italic font-semibold">
             {bill.sellerName}
           </div>
-          <p className="text-[10px] text-stone-400">Authorized Artisan Signature</p>
+          <p className="text-[10px] text-[#7A6B5D]">Authorized Artisan Signature</p>
         </div>
       </div>
     </div>
