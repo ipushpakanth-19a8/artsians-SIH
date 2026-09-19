@@ -10,7 +10,6 @@ import { useLanguage } from '../../lib/LanguageContext';
 import { translations, speakText } from '../../lib/i18n';
 import { Order, Bill } from '../../types';
 import { formatINR } from '../../lib/billingService';
-import { ShowMeButton } from '../tutorial/ContextualHelp';
 import { PageHeader, MetricCard } from './ui';
 
 export function SalesHistory() {
@@ -78,7 +77,6 @@ export function SalesHistory() {
         description="Track your monthly craft income, profit retention, direct UPI settlements, and middleman elimination savings."
         action={
           <div className="flex items-center gap-2">
-            <ShowMeButton missionId="explore-sales" />
             <button
               onClick={handleListen}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFFDF8] hover:bg-[#F7F2E8] border border-[#D9CEB8] text-[#A8462D] text-xs font-bold shadow-2xs transition-all cursor-pointer active:scale-95"

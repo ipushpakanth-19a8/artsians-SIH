@@ -122,7 +122,6 @@ export function SellerDashboard() {
           </div>
 
           <div className="flex items-center gap-2.5 self-start sm:self-center">
-            <ShowMeButton missionId="meet-shop" />
             <button
               onClick={handleListenSummary}
               className="py-2.5 px-4 text-xs font-bold rounded-full bg-[#FFFDF8] text-[#A8462D] border border-[#D9CEB8] hover:bg-[#F7F2E8] hover:border-[#A8462D] shadow-2xs inline-flex items-center gap-2 transition-all group cursor-pointer active:scale-95"

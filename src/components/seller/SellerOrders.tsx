@@ -7,7 +7,6 @@ import { useLanguage } from '../../lib/LanguageContext';
 import { translations, speakText } from '../../lib/i18n';
 import { Order } from '../../types';
 import { formatINR } from '../../lib/billingService';
-import { ShowMeButton } from '../tutorial/ContextualHelp';
 import { PageHeader, StatusBadge, OrderTimeline } from './ui';
 
 const DEFAULT_SAMPLE_ORDERS: Order[] = [
@@ -151,7 +150,6 @@ export function SellerOrders() {
         description="Track and manage buyer orders, update preparation and shipment statuses with real-time customer tracking."
         action={
           <div className="flex items-center gap-2">
-            <ShowMeButton missionId="explore-orders" />
             <button
               onClick={handleListen}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFFDF8] hover:bg-[#F7F2E8] border border-[#D9CEB8] text-[#A8462D] text-xs font-bold shadow-2xs transition-all cursor-pointer active:scale-95"

@@ -10,7 +10,6 @@ import { getRegionalCraftsForState } from '../../config/stateLanguageMap';
 import { translations, speakText } from '../../lib/i18n';
 import { formatINR } from '../../lib/billingService';
 import { useTutorial } from '../tutorial/TutorialContext';
-import { ShowMeButton } from '../tutorial/ContextualHelp';
 import {
   CraftInspectionResult,
   CraftAttributes,
