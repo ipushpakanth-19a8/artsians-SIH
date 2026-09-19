@@ -28,6 +28,7 @@ import { useLanguage } from './lib/LanguageContext';
 import { useAuth } from './lib/AuthContext';
 
 import { OfflineBanner } from './components/common/OfflineBanner';
+import { TutorialProvider } from './components/tutorial/TutorialContext';
 import { initNativeAppChrome } from './lib/nativeBridge';
 
 import { LanguageSelectionModal } from './components/common/LanguageSelectionModal';
